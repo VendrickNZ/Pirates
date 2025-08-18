@@ -1,7 +1,10 @@
+import runCLI from "./runCLI.js";
+import runGUI from "./runGUI.js";
+
 console.log('hello world');
 
-if (process.argv[2] != null) {
-  console.log('I think you wrote this:', process.argv[2]);
+if (process.argv[2] == 'nogui') {
+  runCLI();
 } else {
-  console.log('womp womp jakib');
+  runGUI();
 }
