@@ -1,7 +1,5 @@
-import runCLI from "./runCLI.js";
-import runGUI from "./runGUI.js";
-
-console.log('hello world');
+import runCLI from "./runCLI";
+import runGUI from "./runGUI";
 
 if (process.argv[2] == 'nogui') {
   runCLI();
