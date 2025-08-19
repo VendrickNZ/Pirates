@@ -2,6 +2,7 @@ import { exit, stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
 import Player from "./Player";
 import GameManager from "./GameManager";
+import { getDocks } from "./DeserializeDocks";
 
 export async function createNewGame() {
     const rl = createInterface({
@@ -13,9 +14,18 @@ export async function createNewGame() {
     const duration = await rl.question('How many days do you want the game to last (20-50)?: ')
     const seed = await rl.question('Enter a world seed (optional): ');
 
-    const player = new Player(name);
+    createPlayer(name);
+
     const gm = new GameManager(parseInt(duration), parseInt(seed));
     
-    console.log('Welcome to Pirates!', player.getName());
+    const docks = getDocks();
+    console.log(docks["Port Royal"])
 
+    //console.log('Welcome to Pirates!', player.getName());
+
+}
+
+function createPlayer(name: string) {
+
+    const player = new Player(name);
 }
