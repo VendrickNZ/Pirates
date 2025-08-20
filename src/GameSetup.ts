@@ -2,7 +2,6 @@ import { exit, stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
 import Player from "./Player";
 import GameManager from "./GameManager";
-import { getDocks } from "./DeserializeDocks";
 
 export async function createNewGame() {
     const rl = createInterface({
@@ -17,9 +16,6 @@ export async function createNewGame() {
     createPlayer(name);
 
     const gm = new GameManager(parseInt(duration), parseInt(seed));
-    
-    const docks = getDocks();
-    console.log(docks["Port Royal"])
 
     //console.log('Welcome to Pirates!', player.getName());
 
@@ -28,4 +24,8 @@ export async function createNewGame() {
 function createPlayer(name: string) {
 
     const player = new Player(name);
+    console.log(player.name);
+    console.log(player.balance);
+    console.log(player.dockedAt.name);
+    console.log(player.ship.name);
 }
