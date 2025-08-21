@@ -1,5 +1,5 @@
 import type { Dictionary } from './Generic';
-import jsonDocks from './resources/locations.json'
+import jsonDocks from '../resources/locations.json'
 
 export type Dock = {
     name: string

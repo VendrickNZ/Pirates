@@ -1,7 +1,7 @@
 import { exit, stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
-import Player from "./Player";
-import GameManager from "./GameManager";
+import Player from "../models/Player";
+import GameManager from "../models/GameManager";
 
 export async function createNewGame() {
     const rl = createInterface({
