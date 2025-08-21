@@ -1,11 +1,5 @@
-import type { Dictionary } from './Generic';
 import jsonDocks from '../resources/locations.json'
-
-export type Dock = {
-    name: string
-}
-
-export type Docks = Dictionary<Dock>;
+import type { Docks, Dock } from '../models/Dock';
 
 export function getDocks(): Docks {
     const locations = Object.fromEntries(

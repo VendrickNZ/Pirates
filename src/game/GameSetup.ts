@@ -13,6 +13,8 @@ export async function createNewGame() {
     const duration = await rl.question('How many days do you want the game to last (20-50)?: ')
     const seed = await rl.question('Enter a world seed (optional): ');
 
+    rl.write('Intro text...\n');
+
     createPlayer(name);
 
     const gm = new GameManager(parseInt(duration), parseInt(seed));
@@ -24,8 +26,4 @@ export async function createNewGame() {
 function createPlayer(name: string) {
 
     const player = new Player(name);
-    console.log(player.name);
-    console.log(player.balance);
-    console.log(player.dockedAt.name);
-    console.log(player.ship.name);
 }
