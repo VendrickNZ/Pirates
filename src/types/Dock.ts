@@ -1,4 +1,4 @@
-import type { Dictionary } from "../utils/Generic";
+import type { Dictionary } from "./Dictionary";
 
 export type Dock = {
     name: string

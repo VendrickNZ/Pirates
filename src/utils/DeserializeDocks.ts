@@ -1,5 +1,5 @@
 import jsonDocks from '../resources/locations.json'
-import type { Docks, Dock } from '../models/Dock';
+import type { Docks, Dock } from '../types/Dock';
 
 export function getDocks(): Docks {
     const locations = Object.fromEntries(
