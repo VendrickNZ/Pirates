@@ -15,15 +15,14 @@ export async function createNewGame() {
 
     rl.write('Intro text...\n');
 
-    createPlayer(name);
+    const player = createPlayer(name);
 
-    const gm = new GameManager(parseInt(duration), parseInt(seed));
-
-    //console.log('Welcome to Pirates!', player.getName());
-
+    const gm = new GameManager(parseInt(duration), parseInt(seed), player);
+    gm.printAvailableCommands();
 }
 
-function createPlayer(name: string) {
+function createPlayer(name: string): Player {
 
     const player = new Player(name);
+    return player;
 }
