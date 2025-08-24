@@ -1,3 +1,4 @@
 export interface State {
-    text: string
+    input(): void
+    update(): void 
 }
