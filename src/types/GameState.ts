@@ -1,0 +1,1 @@
+export type GameState = 'At Island' | 'View Ship' | 'View Cargo' | 'Visit Docks' | 'Visit Vendor' | 'Hire Crew' | 'Exit';

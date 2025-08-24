@@ -2,22 +2,31 @@ import { createInterface } from "readline/promises";
 import IslandCommand from "./commands/IslandCommand";
 import type Player from "./Player";
 import { stdin, stdout } from "process";
-import type { State } from "../types/State";
-import IslandState from "../states/IslandState";
-import ViewShipState from "../states/viewShipState";
+import type { GameState } from "../types/GameState";
 
 export default class GameManager {
-    //private _currentState: number;
     private _duration: number;
     private _seed: number;
     private _player: Player;
-    private _activeState: State;
+    private _exitGame: boolean;
+    private _state: GameState;
 
     constructor(duration: number, seed: number, player: Player) {
         this._duration = duration;
         this._seed = seed;
         this._player = player;
-        this._activeState = new IslandState();
+        this._exitGame = false;
+        this._state = 'At Island';
+    }
+
+    public get daysRemaining(): number {
+        return this._duration;
+    }
+
+    public async run() {
+        while (!this._exitGame) {
+            this._state = await this.handleState(this._state);
+        }
     }
 
     public printValues() {
@@ -27,11 +36,11 @@ export default class GameManager {
     public printAvailableCommands() {
         const command = new IslandCommand(this, this._player);
         command.printCommands();
-        this.promptPlayer();
+        this.run();
 
     }
 
-    public async promptPlayer() {
+    public async promptPlayer(): Promise<GameState> {
         const rl = createInterface({
             input: stdin,
             output: stdout
@@ -40,39 +49,30 @@ export default class GameManager {
         const playerResponse = await rl.question('What would you like to do? ');
         rl.close();
 
-        this.nextState(playerResponse);
+        return playerResponse as GameState;
     }
 
-    public input(): void {
-
-    }
-
-    public update(): void {
-
-    }
-
-    public changeState(state: State): void {
-        this._activeState = state;
-    }
-
-    public nextState(response: string) {
-        switch(response) {
+    public handleState(state: GameState): Promise<GameState> {
+        switch (state) {
+            case 'At Island':
+                return this.promptPlayer();
             case 'View Ship':
-                this.changeState(new ViewShipState())
-                break;
+                return this.viewShip()
+            case 'Exit':
+                return this.endGame();
             default:
-                console.log(`Invalid response: ${response}. Please try again`);
-                this.promptPlayer();
-                break;
+                console.log(`Invalid State ${state}. Please try again`);
+                return this.promptPlayer();
         }
     }
-
-    public viewShip() {
+    public async viewShip(): Promise<GameState> {
         console.log('Print stuff...');
-        setTimeout(this.promptPlayer, 5000)
+        setTimeout(() => {}, 2500) // make a func for this
+        return 'At Island'
     }
 
-    public get daysRemaining(): number {
-        return this._duration;
+    public async endGame(): Promise<GameState> {
+        this._exitGame = true;
+        return 'Exit';
     }
 }
