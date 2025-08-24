@@ -1,5 +1,7 @@
+import { createInterface } from "readline/promises";
 import IslandCommand from "./commands/IslandCommand";
 import type Player from "./Player";
+import { stdin, stdout } from "process";
 
 export default class GameManager {
     //private _currentState: number;
@@ -20,29 +22,22 @@ export default class GameManager {
     public printAvailableCommands() {
         const command = new IslandCommand(this, this._player);
         command.printCommands();
+        this.promptPlayer();
         // based off state
         // switch? if state this then call sub function
         // sub function decides what to do based on context
+    }
+
+    public promptPlayer() {
+        const rl = createInterface({
+            input: stdin,
+            output: stdout
+        });
+
+        rl.question('What would you like to do? ');
     }
 
     public get daysRemaining(): number {
         return this._duration;
     }
 }
-
-/** based on state, do something */
-/** need to figure out how to make a builder for text? */
-
-/** possible states:
- * view ship
- * view cargo
- * at vendor
- * at dock
- * hire crew
- * base state?
- * 
- * travelling/combat/randomevent
- * 
- * 
- * 
- * **/

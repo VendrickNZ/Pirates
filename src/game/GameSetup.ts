@@ -14,6 +14,7 @@ export async function createNewGame() {
     const seed = await rl.question('Enter a world seed (optional): ');
 
     rl.write('Intro text...\n');
+    rl.close();
 
     const player = createPlayer(name);
 

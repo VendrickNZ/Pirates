@@ -26,6 +26,5 @@ export default class IslandCommand {
         console.log('- Visit Vendor');
         console.log('- Hire Crew');
         console.log('- Exit');
-        console.log('What would you like to do?');
     }
 }
