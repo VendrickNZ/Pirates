@@ -149,17 +149,3 @@ function printShipStatistics(ship: Ship): string {
         `Upgrades: ${ship.upgrades.currentNumber} / ${ship.upgrades.maxNumber} slots filled`,
     ].join('\n');
 }
-
-
-// Name: Treasure Ship
-// Current health: 250 / 250 (100%)
-// Crew: 85
-// Number of beds: 100
-// Minimum crew to sail: 90
-// Wages per day: 11.05 Doubloons
-// Speed: 43 km / day
-// Armor: 40, Damage: 15
-// Current weight: 160
-// Max weight: 2000
-// Cargo: 0 / 200 slots filled
-// Upgrades (0 / 7 slots filled)
