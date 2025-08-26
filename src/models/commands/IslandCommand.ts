@@ -12,19 +12,4 @@ export default class IslandCommand {
         this._balance = player.balance
         this._dock = player.dockedAt;
     }
-
-    public printCommands() {
-        console.log('======================');
-        console.log('Days remaining: %d', this._daysRemaining);
-        console.log('Current balance: %d', this._balance);
-        console.log('Docked at: %s', this._dock.name);
-        console.log('======================');
-        console.log('Available Commands:');
-        console.log('- View Ship');
-        console.log('- View Cargo');
-        console.log('- Visit Docks');
-        console.log('- Visit Vendor');
-        console.log('- Hire Crew');
-        console.log('- Exit');
-    }
 }

@@ -6,4 +6,12 @@ export default class Cargo {
         this._count = 0;
         this._maxCapacity = 0 // ship.maxCapacity
     }
+
+    public get count() {
+        return this._count;
+    }
+
+    public get maxCapacity() {
+        return this._maxCapacity;
+    }
 }

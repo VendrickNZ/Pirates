@@ -1,5 +1,8 @@
 import Upgrades from "./Upgrades"
 import Cargo from "./Cargo"
+import type { GameState } from "../types/GameState"
+import TimeoutInSeconds from "../utils/Timeout"
+import printInformation from "../utils/PrintInformation"
 
 export interface Ship {
     name: string
@@ -106,4 +109,57 @@ export class BaseShip implements Ship {
     public get upgrades(): Upgrades {
         return this._upgrades
     }
+
+    public get cargoCount(): number {
+        return this.cargo.count;
+    }
+
+    public get cargoMax(): number {
+        return this.cargo.maxCapacity;
+    }
+
+    public get upgradeCount(): number {
+        return this.upgrades.currentNumber;
+    }
+
+    public get upgradeMax(): number {
+        return this.upgrades.maxNumber;
+    }
 }
+
+export async function viewShip(ship: Ship): Promise<GameState> {
+    printInformation(printShipStatistics(ship))
+    await TimeoutInSeconds(3);
+    return 'At Island'
+}
+
+function printShipStatistics(ship: Ship): string {
+    return [
+        `Name: ${ship.name}`,
+        `Current health: ${ship.currentHealth}`,
+        `Crew: ${ship.crew}`,
+        `Number of beds: ${ship.numberOfBeds}`,
+        `Minimum crew to sail: ${ship.minimumCrewToSail}`,
+        `Wages per day: ${ship.wagesPerDay} Doubloons`,
+        `Speed: ${ship.speed} km / day`,
+        `Armor: ${ship.armor}, Damage: ${ship.damage}`,
+        `Current weight: ${ship.currentWeight}`,
+        `Max weight: ${ship.maxWeight}`,
+        `Cargo: ${ship.cargo.count} / ${ship.cargo.maxCapacity} slots filled`,
+        `Upgrades: ${ship.upgrades.currentNumber} / ${ship.upgrades.maxNumber} slots filled`,
+    ].join('\n');
+}
+
+
+// Name: Treasure Ship
+// Current health: 250 / 250 (100%)
+// Crew: 85
+// Number of beds: 100
+// Minimum crew to sail: 90
+// Wages per day: 11.05 Doubloons
+// Speed: 43 km / day
+// Armor: 40, Damage: 15
+// Current weight: 160
+// Max weight: 2000
+// Cargo: 0 / 200 slots filled
+// Upgrades (0 / 7 slots filled)

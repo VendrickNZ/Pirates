@@ -29,6 +29,10 @@ export default class Player {
         return this._dockedAt;
     }
 
+    public get dockName(): string {
+        return this.dockedAt.name;
+    }
+
     public get ship(): Ship {
         return this._ship;
     }

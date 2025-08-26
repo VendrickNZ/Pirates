@@ -1,8 +1,8 @@
 import { createInterface } from "readline/promises";
-import IslandCommand from "./commands/IslandCommand";
 import type Player from "./Player";
 import { stdin, stdout } from "process";
 import type { GameState } from "../types/GameState";
+import { viewShip } from "./Ship";
 
 export default class GameManager {
     private _duration: number;
@@ -34,10 +34,7 @@ export default class GameManager {
     }
 
     public printAvailableCommands() {
-        const command = new IslandCommand(this, this._player);
-        command.printCommands();
         this.run();
-
     }
 
     public async promptPlayer(): Promise<GameState> {
@@ -45,11 +42,26 @@ export default class GameManager {
             input: stdin,
             output: stdout
         });
-
+        this.printCommands();
         const playerResponse = await rl.question('What would you like to do? ');
         rl.close();
 
         return playerResponse as GameState;
+    }
+
+    public printCommands() {
+        console.log('======================');
+        console.log('Days remaining: %d', this.daysRemaining);
+        console.log('Current balance: %d', this._player.balance);
+        console.log('Docked at: %s', this._player.dockName);
+        console.log('======================');
+        console.log('Available Commands:');
+        console.log('- View Ship');
+        console.log('- View Cargo');
+        console.log('- Visit Docks');
+        console.log('- Visit Vendor');
+        console.log('- Hire Crew');
+        console.log('- Exit');
     }
 
     public handleState(state: GameState): Promise<GameState> {
@@ -57,18 +69,13 @@ export default class GameManager {
             case 'At Island':
                 return this.promptPlayer();
             case 'View Ship':
-                return this.viewShip()
+                return viewShip(this._player.ship)
             case 'Exit':
                 return this.endGame();
             default:
                 console.log(`Invalid State ${state}. Please try again`);
                 return this.promptPlayer();
         }
-    }
-    public async viewShip(): Promise<GameState> {
-        console.log('Print stuff...');
-        setTimeout(() => {}, 2500) // make a func for this
-        return 'At Island'
     }
 
     public async endGame(): Promise<GameState> {
