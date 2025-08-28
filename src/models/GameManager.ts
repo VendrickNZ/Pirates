@@ -3,6 +3,7 @@ import type Player from "./Player";
 import { stdin, stdout } from "process";
 import type { GameState } from "../types/GameState";
 import { viewShip } from "./Ship";
+import formatCommand from "../utils/Validate";
 
 export default class GameManager {
     private _duration: number;
@@ -46,7 +47,7 @@ export default class GameManager {
         const playerResponse = await rl.question('What would you like to do? ');
         rl.close();
 
-        return playerResponse as GameState;
+        return formatCommand(playerResponse) as GameState;
     }
 
     public printCommands() {
