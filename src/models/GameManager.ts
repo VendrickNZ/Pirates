@@ -4,6 +4,7 @@ import { stdin, stdout } from "process";
 import type { GameState } from "../types/GameState";
 import { viewShip } from "./Ship";
 import formatCommand from "../utils/Validate";
+import completer from "../utils/Completer";
 
 export default class GameManager {
     private _duration: number;
@@ -41,7 +42,8 @@ export default class GameManager {
     public async promptPlayer(): Promise<GameState> {
         const rl = createInterface({
             input: stdin,
-            output: stdout
+            output: stdout,
+            completer: completer
         });
         this.printCommands();
         const playerResponse = await rl.question('What would you like to do? ');
