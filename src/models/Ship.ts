@@ -1,8 +1,7 @@
 import Upgrades from "./Upgrades"
 import Cargo from "./Cargo"
 import type { GameState } from "../types/GameState"
-import TimeoutInSeconds from "../utils/Timeout"
-import printInformation from "../utils/PrintInformation"
+import { printInformation, TimeoutInSeconds } from "../utils/TextUtils"
 
 export interface Ship {
     name: string

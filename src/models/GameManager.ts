@@ -3,8 +3,7 @@ import type Player from "./Player";
 import { stdin, stdout } from "process";
 import type { GameState } from "../types/GameState";
 import { viewShip } from "./Ship";
-import formatCommand from "../utils/Validate";
-import completer from "../utils/Completer";
+import { completer, formatCommand } from "../utils/TextUtils";
 
 export default class GameManager {
     private _duration: number;

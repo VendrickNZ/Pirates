@@ -2,7 +2,7 @@ import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline/promises";
 import Player from "../models/Player";
 import GameManager from "../models/GameManager";
-import printInformation from "../utils/PrintInformation";
+import { printInformation } from "../utils/TextUtils";
 
 export async function createNewGame() {
     const rl = createInterface({
