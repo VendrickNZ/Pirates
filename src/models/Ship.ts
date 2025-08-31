@@ -1,7 +1,9 @@
 import Upgrades from "./Upgrades"
 import Cargo from "./Cargo"
 import type { GameState } from "../types/GameState"
-import { printInformation, TimeoutInSeconds } from "../utils/TextUtils"
+import { isNumber, printInformation, timeoutInSeconds } from "../utils/TextUtils"
+import { constructReadline } from "../utils/ReadlineUtils"
+import type { Interface } from "readline/promises"
 
 export interface Ship {
     name: string
@@ -18,9 +20,11 @@ export interface Ship {
     maxWeight: number
     cargo: Cargo
     upgrades: Upgrades
+    addCrew(crewToHire: number): string
+    viewCargo(): string
 }
 
-export class BaseShip implements Ship {
+export class StartingShip implements Ship {
     private _name: string
     private _currentHealth: number
     private _maxHealth: number
@@ -124,11 +128,23 @@ export class BaseShip implements Ship {
     public get upgradeMax(): number {
         return this.upgrades.maxNumber;
     }
+
+    public addCrew(crewToHire: number): string {
+        if (this._crew + crewToHire > this.numberOfBeds) {
+            return 'There arrrr not enough beds for all of ye cabin crew. Try again. '; // can make functions for these, return string not boolean
+        }
+        this._crew += crewToHire;
+        return `You hired ${crewToHire} for n Doubloons!`;
+    }
+
+    public viewCargo(): string {
+        return this.cargo.printCargoStatistics();
+    }
 }
 
 export async function viewShip(ship: Ship): Promise<GameState> {
     printInformation(printShipStatistics(ship))
-    await TimeoutInSeconds(3);
+    await timeoutInSeconds(3);
     return 'At Island'
 }
 
@@ -147,4 +163,24 @@ function printShipStatistics(ship: Ship): string {
         `Cargo: ${ship.cargo.count} / ${ship.cargo.maxCapacity} slots filled`,
         `Upgrades: ${ship.upgrades.currentNumber} / ${ship.upgrades.maxNumber} slots filled`,
     ].join('\n');
+}
+
+export async function hireCrew(ship: Ship, rl?: Interface): Promise<GameState> {
+    if (!rl) {
+        rl = constructReadline();
+    }
+
+    const crewToHire = await rl.question("Enter the number of crew you'd like to hire: ");
+
+    if (!isNumber(crewToHire)) {
+        rl.write(`${crewToHire} is not a number, please try again. \n`)
+        return hireCrew(ship, rl);
+    }
+
+    if (!ship.addCrew(parseInt(crewToHire))) {
+        return hireCrew(ship, rl);
+    }
+
+    rl.close();
+    return 'At Island';
 }
