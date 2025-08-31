@@ -1,6 +1,6 @@
 import { getStartingDock } from "../utils/DeserializeDocks"
 import type { Dock } from "../types/Dock"
-import { BaseShip, type Ship } from "./Ship"
+import { StartingShip, type Ship } from "./Ship"
 
 export default class Player {
     private _name: string
@@ -12,7 +12,7 @@ export default class Player {
         this._name = name;
         this._balance = 0;
         this._dockedAt = getStartingDock();
-        this._ship = new BaseShip();
+        this._ship = new StartingShip();
 
         this.addFunds(750);
     }

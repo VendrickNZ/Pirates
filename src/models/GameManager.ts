@@ -1,9 +1,9 @@
-import { createInterface } from "readline/promises";
 import type Player from "./Player";
-import { stdin, stdout } from "process";
 import type { GameState } from "../types/GameState";
-import { viewShip } from "./Ship";
+import { hireCrew, viewShip } from "./Ship";
 import { completer, formatCommand } from "../utils/TextUtils";
+import { constructReadline } from "../utils/ReadlineUtils";
+import { viewShipCargo } from "./Cargo";
 
 export default class GameManager {
     private _duration: number;
@@ -39,11 +39,7 @@ export default class GameManager {
     }
 
     public async promptPlayer(): Promise<GameState> {
-        const rl = createInterface({
-            input: stdin,
-            output: stdout,
-            completer: completer
-        });
+        const rl = constructReadline(completer);
         this.printCommands();
         const playerResponse = await rl.question('What would you like to do? ');
         rl.close();
@@ -72,10 +68,18 @@ export default class GameManager {
                 return this.promptPlayer();
             case 'View Ship':
                 return viewShip(this._player.ship)
+            case 'View Cargo':
+                return viewShipCargo(this._player.ship);
+            case 'Visit Docks':
+                return viewShip(this._player.ship)
+            case 'Visit Vendor':
+                return viewShip(this._player.ship)
+            case 'Hire Crew':
+                return hireCrew(this._player.ship);
             case 'Exit':
                 return this.endGame();
             default:
-                console.log(`Invalid State ${state}. Please try again`);
+                console.log(`Invalid command ${state}. Please try again`);
                 return this.promptPlayer();
         }
     }

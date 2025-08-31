@@ -28,13 +28,20 @@ export function formatCommand(command: string): string {
     return commandInTitleCase;
 }
 
-export function TimeoutInSeconds(seconds: number): Promise<NodeJS.Timeout> {
+export function timeoutInSeconds(seconds: number): Promise<NodeJS.Timeout> {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000)) // timeout uses milliseconds
 }
 
 export function isValidPlayerName(name: string): boolean {
     const regex = new RegExp('^[a-zA-Z ]{3,15}$');
     return regex.test(name);
+}
+
+// https://stackoverflow.com/questions/23437476/in-typescript-how-to-check-if-a-string-is-numeric
+export function isNumber(value?: string | number): boolean {
+    return ((value != null)
+        && (value != '')
+        && !isNaN(Number(value.toString())));
 }
 
 export function isValidGameDuration(durationString: string): boolean {
@@ -48,11 +55,4 @@ export function isValidGameDuration(durationString: string): boolean {
 export function isValidWorldSeed(worldSeed: string) {
     // TODO: implement properly
     return true ? worldSeed.length == 0 || isNumber(worldSeed) : false;
-}
-
-// https://stackoverflow.com/questions/23437476/in-typescript-how-to-check-if-a-string-is-numeric
-export function isNumber(value?: string | number): boolean {
-    return ((value != null)
-        && (value != '')
-        && !isNaN(Number(value.toString())));
 }
