@@ -1,14 +1,12 @@
-import { stdin, stdout } from "node:process";
-import { createInterface, Interface } from "node:readline/promises";
+import { Interface } from "node:readline/promises";
 import Player from "../models/Player";
 import GameManager from "../models/GameManager";
 import { isValidGameDuration, isValidPlayerName, isValidWorldSeed, printInformation } from "../utils/TextUtils";
+import { constructReadline } from "../utils/ReadlineUtils";
 
 export async function createNewGame() {
-    const rl = createInterface({
-        input: stdin,
-        output: stdout,
-    });
+    const rl = constructReadline();
+
     const name = await promptPlayerName(rl);
     const duration = await promptGameDuration(rl);
     const worldSeed = await promptWorldSeed(rl);
@@ -23,10 +21,7 @@ export async function createNewGame() {
 }
 
 function createPlayer(name: string): Player {
-
-
-    const player = new Player(name);
-    return player;
+    return new Player(name);
 }
 
 async function promptPlayerName(rl: Interface): Promise<string> {
