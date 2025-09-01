@@ -20,7 +20,7 @@ export interface Ship {
     maxWeight: number
     cargo: Cargo
     upgrades: Upgrades
-    addCrew(crewToHire: number): string
+    addCrew(crewToHire: number): CrewOutcome
     viewCargo(): string
 }
 
@@ -129,12 +129,12 @@ export class StartingShip implements Ship {
         return this.upgrades.maxNumber;
     }
 
-    public addCrew(crewToHire: number): string {
+    public addCrew(crewToHire: number): CrewOutcome {
         if (this._crew + crewToHire > this.numberOfBeds) {
-            return 'There arrrr not enough beds for all of ye cabin crew. Try again. '; // can make functions for these, return string not boolean
+            return { kind: 'NotEnoughBeds', beds: this._numberOfBeds, attempted: crewToHire }
         }
         this._crew += crewToHire;
-        return `You hired ${crewToHire} for n Doubloons!`;
+        return { kind: "Success", cost: crewToHire * 20, crew: crewToHire}
     }
 
     public viewCargo(): string {
@@ -169,18 +169,37 @@ export async function hireCrew(ship: Ship, rl?: Interface): Promise<GameState> {
     if (!rl) {
         rl = constructReadline();
     }
-
     const crewToHire = await rl.question("Enter the number of crew you'd like to hire: ");
 
+    let outcome: CrewOutcome;
     if (!isNumber(crewToHire)) {
-        rl.write(`${crewToHire} is not a number, please try again. \n`)
+        rl.write(message({ kind: 'InvalidInput', input: crewToHire }));
         return hireCrew(ship, rl);
     }
 
-    if (!ship.addCrew(parseInt(crewToHire))) {
+    outcome = ship.addCrew(parseInt(crewToHire));
+
+    rl.write(message(outcome));
+
+    if (outcome.kind !== 'Success') {
         return hireCrew(ship, rl);
     }
 
     rl.close();
     return 'At Island';
 }
+
+type CrewOutcome = 
+ | { kind: 'Success'; cost: number; crew: number }
+ | { kind: 'NotEnoughBeds'; beds: number; attempted: number }
+ | { kind: 'NotEnoughMoney'; cost: number; balance: number }
+ | { kind: 'InvalidInput'; input: string }
+
+ function message(outcome: CrewOutcome) {
+    switch (outcome.kind) {
+        case 'Success': return `Ye hired ${outcome.crew} crew fer ${outcome.cost} Doubloons!\n`
+        case 'NotEnoughBeds': return `Thar be nah enough cots on yer ship. Ye only 'ave ${outcome.beds} cots but be wantin' t' add ${outcome.attempted} crew.\n`
+        case 'NotEnoughMoney': return `Cost ${outcome.cost}, balance ${outcome.balance}.\n`
+        case 'InvalidInput': return `Blast ye! ${outcome.input} ain't a number. Give it another go.\n`
+    }
+ }
