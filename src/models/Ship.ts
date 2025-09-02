@@ -133,6 +133,7 @@ export class StartingShip implements Ship {
         if (this._crew + crewToHire > this.numberOfBeds) {
             return { kind: 'NotEnoughBeds', beds: this._numberOfBeds, attempted: crewToHire }
         }
+
         this._crew += crewToHire;
         return { kind: "Success", cost: crewToHire * 20, crew: crewToHire}
     }
@@ -169,12 +170,16 @@ export async function hireCrew(ship: Ship, rl?: Interface): Promise<GameState> {
     if (!rl) {
         rl = constructReadline();
     }
-    const crewToHire = await rl.question("Enter the number of crew you'd like to hire: ");
+    const crewToHire = parseInt(await rl.question("Enter the number of crew you'd like to hire: "));
 
     let outcome: CrewOutcome;
-    if (!isNumber(crewToHire)) {
-        rl.write(message({ kind: 'InvalidInput', input: crewToHire }));
+    if ((Number.isNaN(crewToHire))) {
+        rl.write(message({ kind: 'NotANumber', input: crewToHire }));
         return hireCrew(ship, rl);
+    }
+
+    if (crewToHire < 0) {
+        rl.write(message({ kind: }))
     }
 
     outcome = ship.addCrew(parseInt(crewToHire));
@@ -193,13 +198,14 @@ type CrewOutcome =
  | { kind: 'Success'; cost: number; crew: number }
  | { kind: 'NotEnoughBeds'; beds: number; attempted: number }
  | { kind: 'NotEnoughMoney'; cost: number; balance: number }
- | { kind: 'InvalidInput'; input: string }
+ | { kind: 'NotANumber'; input: number }
+ | { kind: 'NegativeValue'; input: number }
 
  function message(outcome: CrewOutcome) {
     switch (outcome.kind) {
         case 'Success': return `Ye hired ${outcome.crew} crew fer ${outcome.cost} Doubloons!\n`
         case 'NotEnoughBeds': return `Thar be nah enough cots on yer ship. Ye only 'ave ${outcome.beds} cots but be wantin' t' add ${outcome.attempted} crew.\n`
         case 'NotEnoughMoney': return `Cost ${outcome.cost}, balance ${outcome.balance}.\n`
-        case 'InvalidInput': return `Blast ye! ${outcome.input} ain't a number. Give it another go.\n`
+        case 'NotANumber': return `Blast ye! ${outcome.input} ain't a number. Give it another go.\n`
     }
  }
