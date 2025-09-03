@@ -170,19 +170,22 @@ export async function hireCrew(ship: Ship, rl?: Interface): Promise<GameState> {
     if (!rl) {
         rl = constructReadline();
     }
-    const crewToHire = parseInt(await rl.question("Enter the number of crew you'd like to hire: "));
+    const crewToHirePlayerResponse = await rl.question("Enter the number of crew you'd like to hire: ");
 
     let outcome: CrewOutcome;
-    if ((Number.isNaN(crewToHire))) {
-        rl.write(message({ kind: 'NotANumber', input: crewToHire }));
+    if (!isNumber(crewToHirePlayerResponse)) {
+        rl.write(message({ kind: 'NotANumber', input: crewToHirePlayerResponse }));
         return hireCrew(ship, rl);
     }
 
+    const crewToHire = parseInt(crewToHirePlayerResponse);
+
     if (crewToHire < 0) {
-        rl.write(message({ kind: }))
+        rl.write(message({ kind: 'NegativeValue' }))
+        return hireCrew(ship, rl);
     }
 
-    outcome = ship.addCrew(parseInt(crewToHire));
+    outcome = ship.addCrew(crewToHire);
 
     rl.write(message(outcome));
 
@@ -198,8 +201,8 @@ type CrewOutcome =
  | { kind: 'Success'; cost: number; crew: number }
  | { kind: 'NotEnoughBeds'; beds: number; attempted: number }
  | { kind: 'NotEnoughMoney'; cost: number; balance: number }
- | { kind: 'NotANumber'; input: number }
- | { kind: 'NegativeValue'; input: number }
+ | { kind: 'NotANumber'; input: string }
+ | { kind: 'NegativeValue'; }
 
  function message(outcome: CrewOutcome) {
     switch (outcome.kind) {
@@ -207,5 +210,6 @@ type CrewOutcome =
         case 'NotEnoughBeds': return `Thar be nah enough cots on yer ship. Ye only 'ave ${outcome.beds} cots but be wantin' t' add ${outcome.attempted} crew.\n`
         case 'NotEnoughMoney': return `Cost ${outcome.cost}, balance ${outcome.balance}.\n`
         case 'NotANumber': return `Blast ye! ${outcome.input} ain't a number. Give it another go.\n`
+        case 'NegativeValue': return `Ye caught me, I 'ave nah added sellin' yet.\n`
     }
  }
