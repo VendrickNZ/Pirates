@@ -40,4 +40,8 @@ export default class Player {
     public addFunds(funds: number) {
         this._balance += funds;
     }
+
+    public removeFunds(funds: number) {
+        this._balance -= funds;
+    }
 }

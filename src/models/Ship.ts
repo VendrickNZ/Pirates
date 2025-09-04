@@ -4,6 +4,7 @@ import type { GameState } from "../types/GameState"
 import { isNumber, printInformation, timeoutInSeconds } from "../utils/TextUtils"
 import { constructReadline } from "../utils/ReadlineUtils"
 import type { Interface } from "readline/promises"
+import type Player from "./Player"
 
 export interface Ship {
     name: string
@@ -20,7 +21,7 @@ export interface Ship {
     maxWeight: number
     cargo: Cargo
     upgrades: Upgrades
-    addCrew(crewToHire: number): CrewOutcome
+    addCrew(crewToHire: number, player: Player): CrewOutcome
     viewCargo(): string
 }
 
@@ -129,13 +130,18 @@ export class StartingShip implements Ship {
         return this.upgrades.maxNumber;
     }
 
-    public addCrew(crewToHire: number): CrewOutcome {
+    public addCrew(crewToHire: number, player: Player): CrewOutcome {
         if (this._crew + crewToHire > this.numberOfBeds) {
-            return { kind: 'NotEnoughBeds', beds: this._numberOfBeds, attempted: crewToHire }
+            return { kind: 'NotEnoughBeds', beds: this._numberOfBeds, currentCrew: this._crew, attempted: crewToHire }
+        }
+
+        const cost = crewToHire * 200;
+        if (cost > player.balance) {
+            return { kind: 'NotEnoughMoney', cost, balance: player.balance }
         }
 
         this._crew += crewToHire;
-        return { kind: "Success", cost: crewToHire * 20, crew: crewToHire}
+        return { kind: "Success", cost, crew: crewToHire}
     }
 
     public viewCargo(): string {
@@ -166,32 +172,34 @@ function printShipStatistics(ship: Ship): string {
     ].join('\n');
 }
 
-export async function hireCrew(ship: Ship, rl?: Interface): Promise<GameState> {
+export async function hireCrew(player: Player, rl?: Interface): Promise<GameState> {
     if (!rl) {
         rl = constructReadline();
     }
+
     const crewToHirePlayerResponse = await rl.question("Enter the number of crew you'd like to hire: ");
 
     let outcome: CrewOutcome;
     if (!isNumber(crewToHirePlayerResponse)) {
         rl.write(message({ kind: 'NotANumber', input: crewToHirePlayerResponse }));
-        return hireCrew(ship, rl);
+        return hireCrew(player, rl);
     }
 
     const crewToHire = parseInt(crewToHirePlayerResponse);
 
     if (crewToHire < 0) {
         rl.write(message({ kind: 'NegativeValue' }))
-        return hireCrew(ship, rl);
+        return hireCrew(player, rl);
     }
 
-    outcome = ship.addCrew(crewToHire);
-
+    outcome = player.ship.addCrew(crewToHire, player);
+    
     rl.write(message(outcome));
-
     if (outcome.kind !== 'Success') {
-        return hireCrew(ship, rl);
+        return hireCrew(player, rl);
     }
+
+    player.removeFunds(outcome.cost);
 
     rl.close();
     return 'At Island';
@@ -199,16 +207,16 @@ export async function hireCrew(ship: Ship, rl?: Interface): Promise<GameState> {
 
 type CrewOutcome = 
  | { kind: 'Success'; cost: number; crew: number }
- | { kind: 'NotEnoughBeds'; beds: number; attempted: number }
+ | { kind: 'NotEnoughBeds'; beds: number; attempted: number; currentCrew: number }
  | { kind: 'NotEnoughMoney'; cost: number; balance: number }
  | { kind: 'NotANumber'; input: string }
  | { kind: 'NegativeValue'; }
 
  function message(outcome: CrewOutcome) {
     switch (outcome.kind) {
-        case 'Success': return `Ye hired ${outcome.crew} crew fer ${outcome.cost} Doubloons!\n`
-        case 'NotEnoughBeds': return `Thar be nah enough cots on yer ship. Ye only 'ave ${outcome.beds} cots but be wantin' t' add ${outcome.attempted} crew.\n`
-        case 'NotEnoughMoney': return `Cost ${outcome.cost}, balance ${outcome.balance}.\n`
+        case 'Success': return `Ye hired ${outcome.crew} crewmate fer ${outcome.cost} Doubloons!\n`
+        case 'NotEnoughBeds': return `Thar be nah enough cots on yer ship. Ye only 'ave ${outcome.beds} cots 'n ${outcome.currentCrew} crew but be wantin' t' add ${outcome.attempted} more.\n`
+        case 'NotEnoughMoney': return `Ye be tryin' t' spend ${outcome.cost} Doubloons, but ye only 'ave ${outcome.balance}. Ye be broke.\n`
         case 'NotANumber': return `Blast ye! ${outcome.input} ain't a number. Give it another go.\n`
         case 'NegativeValue': return `Ye caught me, I 'ave nah added sellin' yet.\n`
     }
