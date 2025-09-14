@@ -1,9 +1,9 @@
 import type Player from "./Player";
 import type { GameState } from "../types/GameState";
-import { hireCrew, viewShip } from "./Ship";
 import { completer, formatCommand } from "../utils/TextUtils";
 import { constructReadline } from "../utils/ReadlineUtils";
 import { viewShipCargo } from "./Cargo";
+import { viewShip, hireCrew } from "./Ship";
 
 export default class GameManager {
     private _duration: number;
