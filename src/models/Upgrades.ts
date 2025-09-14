@@ -12,11 +12,11 @@ export default class Upgrades implements Upgrade {
         this._maxNumber = 0; // this will become = ship.upgradeSlots or something
     }
 
-    public get currentNumber() {
+    get currentNumber() {
         return this._currentNumber;
     }
 
-    public get maxNumber() {
+    get maxNumber() {
         return this._maxNumber;
     }
 }

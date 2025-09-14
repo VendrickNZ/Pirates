@@ -20,25 +20,25 @@ export default class GameManager {
         this._state = 'At Island';
     }
 
-    public get daysRemaining(): number {
+    get daysRemaining(): number {
         return this._duration;
     }
 
-    public async run() {
+    async run() {
         while (!this._exitGame) {
             this._state = await this.handleState(this._state);
         }
     }
 
-    public printValues() {
+    printValues() {
         console.log(this._duration, this._seed);
     }
 
-    public printAvailableCommands() {
+    printAvailableCommands() {
         this.run();
     }
 
-    public async promptPlayer(): Promise<GameState> {
+    async promptPlayer(): Promise<GameState> {
         const rl = constructReadline(completer);
         this.printCommands();
         const playerResponse = await rl.question('What would you like to do? ');
@@ -47,7 +47,7 @@ export default class GameManager {
         return formatCommand(playerResponse) as GameState;
     }
 
-    public printCommands() {
+    printCommands() {
         console.log('======================');
         console.log('Days remaining: %d', this.daysRemaining);
         console.log('Current balance: %d', this._player.balance);
@@ -62,7 +62,7 @@ export default class GameManager {
         console.log('- Exit');
     }
 
-    public handleState(state: GameState): Promise<GameState> {
+    handleState(state: GameState): Promise<GameState> {
         switch (state) {
             case 'At Island':
                 return this.promptPlayer();
@@ -84,7 +84,7 @@ export default class GameManager {
         }
     }
 
-    public async endGame(): Promise<GameState> {
+    async endGame(): Promise<GameState> {
         this._exitGame = true;
         return 'Exit';
     }

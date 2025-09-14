@@ -11,15 +11,15 @@ export default class Cargo {
         this._maxCapacity = 0 // ship.maxCapacity
     }
 
-    public get count() {
+    get count() {
         return this._count;
     }
 
-    public get maxCapacity() {
+    get maxCapacity() {
         return this._maxCapacity;
     }
 
-    public printCargoStatistics(): string {
+    printCargoStatistics(): string {
         if (this._count == 0) return 'You have no cargo!';
 
         return [

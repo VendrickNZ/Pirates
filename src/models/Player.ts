@@ -17,31 +17,31 @@ export default class Player {
         this.addFunds(750);
     }
 
-    public get name(): string {
+    get name(): string {
         return this._name;
     }
 
-    public get balance(): number {
+    get balance(): number {
         return this._balance;
     }
 
-    public get dockedAt(): Dock {
+    get dockedAt(): Dock {
         return this._dockedAt;
     }
 
-    public get dockName(): string {
+    get dockName(): string {
         return this.dockedAt.name;
     }
 
-    public get ship(): Ship {
+    get ship(): Ship {
         return this._ship;
     }
 
-    public addFunds(funds: number) {
+    addFunds(funds: number) {
         this._balance += funds;
     }
 
-    public removeFunds(funds: number) {
+    removeFunds(funds: number) {
         this._balance -= funds;
     }
 }
