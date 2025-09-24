@@ -4,6 +4,7 @@ import { completer, formatCommand } from "../utils/TextUtils";
 import { constructReadline } from "../utils/ReadlineUtils";
 import { viewShipCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
+import { Vendor, visitVendor } from "./Vendor";
 
 export default class GameManager {
     private _duration: number;
@@ -11,6 +12,7 @@ export default class GameManager {
     private _player: Player;
     private _exitGame: boolean;
     private _state: GameState;
+    private _vendor: Vendor;
 
     constructor(duration: number, seed: number, player: Player) {
         this._duration = duration;
@@ -18,6 +20,7 @@ export default class GameManager {
         this._player = player;
         this._exitGame = false;
         this._state = 'At Island';
+        this._vendor = new Vendor(); // not final lol
     }
 
     get daysRemaining(): number {
@@ -73,7 +76,7 @@ export default class GameManager {
             case 'Visit Docks':
                 return viewShip(this._player.ship)
             case 'Visit Vendor':
-                return viewShip(this._player.ship)
+                return visitVendor(this._vendor);
             case 'Hire Crew':
                 return hireCrew(this._player);
             case 'Exit':

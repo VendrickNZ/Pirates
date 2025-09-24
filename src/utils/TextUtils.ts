@@ -4,7 +4,7 @@ const MIN_GAME_DURATION = 20;
 const MAX_GAME_DURATION = 50;
 
 export function completer(line: string): CompleterResult {
-    const completions = ['View Ship', 'View Cargo', 'Visit Dock', 'View Vendor', 'Hire Crew', 'Exit'];
+    const completions = ['View Ship', 'View Cargo', 'Visit Dock', 'Visit Vendor', 'Hire Crew', 'Exit'];
     const formattedLine = formatCommand(line);
     const hits = completions.filter(c => c.startsWith(formattedLine));
 
