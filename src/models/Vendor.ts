@@ -1,5 +1,5 @@
 import type { GameState } from "../types/GameState";
-import { GameItems, getItems, getItemsOfType, type Item } from "../types/Item";
+import { getItems, type Item } from "../types/Item";
 import { timeoutInSeconds } from "../utils/TextUtils";
 
 type VendorStock = Item[]
@@ -40,6 +40,18 @@ export async function visitVendor(vendor: Vendor): Promise<GameState> {
 function printVendorStock(vendor: Vendor) {
     const stock = vendor.stock;
     for (let i = 0; i < stock.length; ++i) {
-        console.log(i+1, stock[i].name, (stock[i].type) + ':', stock[i].baseValue, 'Doubloons')
+        console.log(`${i+1} - ${stock[i].name} (${stock[i].type})...... ${stock[i].baseValue} Doubloons`);
     }
+}
+
+function deduplicateStock(stock: VendorStock) {
+    const map = new Map<string, number>();
+    for (let item of stock) {
+        map.set(item.name, (map.get(item.name) ?? 0) + 1)
+    }
+    return map;
+}
+
+function stockFormatter(stock: Item, index: number){
+    const len = stock.name.length + stock.type.length + index.toString().length;
 }
