@@ -1,7 +1,24 @@
-import type { Dictionary } from "./Dictionary";
+type DockNames = 'Barataria Bay' | 'Port Royal' | 'Tortuga'
+export type Dock = Record<string, DockNames>;
 
-export type Dock = {
-    name: string
+const docks: Dock[] = [
+    {
+        "name": "Barataria Bay"
+    },
+    {
+        "name": "Port Royal"
+    },
+    {
+        "name": "Tortuga"
+    }
+]
+
+export function getDocks(): Dock[] {
+    return docks;
 }
 
-export type Docks = Dictionary<Dock>;
+export function getStartingDock(): Dock {
+    const docks = getDocks()
+    return docks.find(d => d.name == 'Port Royal')!;
+}
+

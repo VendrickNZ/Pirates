@@ -76,7 +76,7 @@ export default class GameManager {
             case 'Visit Docks':
                 return viewShip(this._player.ship)
             case 'Visit Vendor':
-                return visitVendor(this._vendor);
+                return visitVendor(this._vendor, this._player);
             case 'Hire Crew':
                 return hireCrew(this._player);
             case 'Exit':

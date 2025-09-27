@@ -1,16 +1,20 @@
+import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
 import { getItems, type Item } from "../types/Item";
 import { timeoutInSeconds } from "../utils/TextUtils";
+import type Player from "./Player";
 
 type VendorStock = Item[]
 
 export class Vendor {
     private _balance: number;
-    private _stock: VendorStock
+    private _stock: VendorStock;
+    private _location: Dock;
 
     constructor() {
         this._balance = 200;
         this._stock = restock()
+        this._location = getStartingDock();
     }
 
     get balance() {
@@ -30,11 +34,14 @@ export function restock() {
     return items;
 }
 
-export async function visitVendor(vendor: Vendor): Promise<GameState> {
-    console.log('Yarrrrrrr these are my not placeholder testing items on stock yarrrrrrrrr');
+export async function visitVendor(vendor: Vendor, player: Player): Promise<GameState> {
     printVendorStock(vendor);
     await timeoutInSeconds(3);
     return 'At Island';
+}
+
+function printVendorHeader(vendor: Vendor) {
+
 }
 
 function printVendorStock(vendor: Vendor) {
