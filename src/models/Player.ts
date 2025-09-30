@@ -1,5 +1,4 @@
-import { getStartingDock } from "../utils/DeserializeDocks"
-import type { Dock } from "../types/Dock"
+import { getStartingDock, type Dock } from "../types/Dock"
 import { createShip, type Ship } from "./Ship"
 
 export default class Player {

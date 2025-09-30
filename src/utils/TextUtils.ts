@@ -12,9 +12,13 @@ export function completer(line: string): CompleterResult {
 }
 
 export function printInformation(toPrint: string): void {
-    console.log('\n');
+    console.log(newLine(1))
     console.log(toPrint);
-    console.log('\n');
+    console.log(newLine(1))
+}
+
+export function newLine(n: number) {
+    return '\n'.repeat(n);
 }
 
 function filterOutWhiteSpace(command: string[]): string[] {

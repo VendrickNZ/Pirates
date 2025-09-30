@@ -1,20 +1,28 @@
 import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
 import { getItems, type Item } from "../types/Item";
-import { timeoutInSeconds } from "../utils/TextUtils";
+import { newLine, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 
 type VendorStock = Item[]
+type Page = {
+    current: number;
+    max: number;
+}
+
+const PAGE_SIZE = 10;
 
 export class Vendor {
     private _balance: number;
     private _stock: VendorStock;
     private _location: Dock;
+    private _page: Page;
 
     constructor() {
         this._balance = 200;
         this._stock = restock()
         this._location = getStartingDock();
+        this._page = { current: 1, max: 1 };
     }
 
     get balance() {
@@ -23,6 +31,26 @@ export class Vendor {
 
     get stock() {
         return this._stock;
+    }
+
+    get location() {
+        return this._location;
+    }
+
+    get currentPageNumber(): number {
+        return this._page.current;
+    }
+
+    set currentPageNumber(n: number) {
+        this._page.current = n;
+    }
+
+    get maxPageNumber(): number {
+        return this._page.max;
+    }
+
+    set maxPageNumber(n: number) {
+        this._page.max = n;
     }
 }
 
@@ -35,15 +63,26 @@ export function restock() {
 }
 
 export async function visitVendor(vendor: Vendor, player: Player): Promise<GameState> {
+    printVendorHeader(player);
     printVendorStock(vendor);
+    printPageNumber(vendor);
     await timeoutInSeconds(3);
     return 'At Island';
 }
 
-function printVendorHeader(vendor: Vendor) {
-
+function printVendorHeader(player: Player) {
+    console.log(newLine(1))
+    console.log(`Current balance: ${player.balance} Doubloons`)
+    console.log(`===== ${player.dockedAt.name} Vendor Stock =====`)
 }
 
+function calculateMaxPages(vendor: Vendor) {
+    vendor.maxPageNumber = Math.floor(vendor.stock.length / PAGE_SIZE);
+}
+function printPageNumber(vendor: Vendor) {
+    calculateMaxPages(vendor);
+    console.log(`===== Page ${vendor.currentPageNumber} of ${vendor.maxPageNumber} =====`)
+}
 function printVendorStock(vendor: Vendor) {
     const stock = vendor.stock;
     for (let i = 0; i < stock.length; ++i) {
