@@ -1,7 +1,9 @@
+import type { Interface } from "readline/promises";
 import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
 import { getItems, type Item } from "../types/Item";
-import { newLine, timeoutInSeconds } from "../utils/TextUtils";
+import { constructReadline } from "../utils/ReadlineUtils";
+import { formatCommand, isNumber, newLine, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 
 type VendorStock = Item[]
@@ -49,6 +51,11 @@ export class Vendor {
     }
 
     set currentPageNumber(n: number) {
+        if (n > this._page.max) {
+            console.log('The script is not long enough yar');
+            return;
+        }
+        console.log(`Went from ${this._page.current} to ${n}`);
         this._page.current = n;
     }
 
@@ -99,8 +106,87 @@ export async function visitVendor(vendor: Vendor, player: Player): Promise<GameS
     printVendorHeader(player);
     printVendorStock(vendor);
     printPageNumber(vendor);
+    printPlayerInstruction();
+
+    const rl = constructReadline();
+    let choice = await promptPlayer(rl, vendor);
+
+    while (choice !== 'Return') {
+        console.log(playerAnswer(choice, vendor, player));
+        choice = await promptPlayer(rl, vendor);
+    }
+
     await timeoutInSeconds(3);
+    rl.close();
     return 'At Island';
+}
+
+async function promptPlayer(rl: Interface, vendor: Vendor) {
+    const rawAnswer = await rl.question('');
+    if (isNumber(rawAnswer)) {
+        const playerNumber = parseInt(rawAnswer);
+        const itemChosen = selectItem(playerNumber, vendor);
+        return itemChosen.name
+    } else {
+        return formatCommand(rawAnswer);
+    }
+}
+
+function selectItem(number: number, vendor: Vendor) {
+    const maxNumber = vendor.pageSize;
+    const minNumber = 1;
+    const currentPage = vendor.currentPageNumber;
+
+    if (number > maxNumber || number < minNumber) {
+        throw new Error('womp womp kid, ya number was wrong');
+    }
+
+    const chosenItem = vendor.pageItems[currentPage][number - 1]
+    return chosenItem;
+}
+
+type VendorOptions = 'Next Page' | 'Previous Page' | 
+    'Sell Cargo' | 'Return'
+
+    // please improve this; why do i pass player & vendor lol so disgusting really
+function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOptions {
+    switch (answer) {
+        case 'Next Page': {
+            vendor.currentPageNumber++;
+            printAllInformation(player, vendor);
+            return 'Next Page';
+        }
+        case 'Previous Page': {
+            return 'Previous Page';
+        }
+        case 'Sell Cargo': {
+            return 'Sell Cargo';
+        }
+        case 'Return': {
+            return 'Return';
+        }
+        default: {
+            throw new Error('Womp womp cracka');
+        }
+
+    }
+}
+
+function nextPage() {
+    
+}
+
+function printAllInformation(player: Player, vendor: Vendor) {
+    printVendorHeader(player);
+    printVendorStock(vendor);
+    printPageNumber(vendor);
+    printPlayerInstruction();
+}
+
+function printPlayerInstruction() {
+    console.log("Type the number of the item you wish to buy, or type 'next page' or 'previous page' to see what else this vendor has.")
+    console.log("If you wish to sell your cargo, type 'sell cargo'.")
+    console.log("Type 'return' if you wish to go back.")
 }
 
 function printVendorHeader(player: Player) {
@@ -109,15 +195,17 @@ function printVendorHeader(player: Player) {
     console.log(`===== ${player.dockedAt.name} Vendor Stock =====`)
 }
 
-
 function printPageNumber(vendor: Vendor) {
     console.log(`===== Page ${vendor.currentPageNumber} of ${vendor.maxPageNumber} =====`)
 }
 function printVendorStock(vendor: Vendor) {
     const pageToDisplay = vendor.getPage(vendor.currentPageNumber);
+    const pageNumberIndexShift = (vendor.currentPageNumber - 1) * 10
+    console.log(vendor.currentPageNumber, pageNumberIndexShift);
     for (let i = 0; i < pageToDisplay.length; ++i) {
         const item = pageToDisplay[i]
-        console.log(`${i + 1} - ${item.name} (${item.type}) x${item.units} ${stockFormatter(item, i + 1)} ${item.baseValue} Doubloons`);
+        const itemIndex = i + 1 + pageNumberIndexShift;
+        console.log(`${itemIndex} - ${item.name} (${item.type}) x${item.units} ${stockFormatter(item, i + 1)} ${item.baseValue} Doubloons`);
     }
 }
 
