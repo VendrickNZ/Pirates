@@ -8,6 +8,8 @@ export type Item = {
     units: number
 }
 
+export type ItemList = Item[]
+
 export const GameItems: Item[] = [
     { name: "Barrel of Rum", type: "Alcohol", baseValue: 30.0, weight: 5, units: 1 },
     { name: "Barrel of Wine", type: "Alcohol", baseValue: 35.0, weight: 5, units: 1 },
