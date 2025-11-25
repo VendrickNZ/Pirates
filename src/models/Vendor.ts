@@ -103,8 +103,8 @@ export class Vendor {
             if (this.inventory[i].units == 0) {
                 this.inventory.splice(i, 1);
             }
-            paginate(this);
         }
+        paginate(this);
     }
 }
 
