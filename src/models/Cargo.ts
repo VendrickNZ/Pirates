@@ -84,6 +84,10 @@ export default class Cargo {
         return Math.max(Math.ceil(this.inventory.length / PAGE_SIZE), 1);
     }
 
+    set count(toAdd: number) {
+        this._count += toAdd;
+    }
+
     printCargoStatistics(): string {
         if (this._count == 0) return 'You have no cargo!';
 

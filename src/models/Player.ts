@@ -43,4 +43,20 @@ export default class Player {
     removeFunds(funds: number) {
         this._balance -= funds;
     }
-}
+
+    canPurchase(cost: number, weight: number) {
+        const hasEnoughMoney = (this.balance - cost) >= 0;
+        const shipHasEnoughSpace = (this.ship.currentWeight + weight <= this.ship.maxWeight);
+
+        return hasEnoughMoney && shipHasEnoughSpace;
+    }
+
+    // assumes Player can purchase
+    purchaseItem(cost: number, weight: number) {
+        this._balance -= cost;
+        this._ship.currentWeight += weight;
+        this._ship.cargo
+
+        return;
+    }
+} 

@@ -24,6 +24,7 @@ export class Vendor {
             size: PAGE_SIZE,
             items: [this._inventory]
         };
+        paginate(this);
     }
 
     get balance() {
@@ -52,7 +53,6 @@ export class Vendor {
             console.log('The script cannae be off the map yar');
             return;
         }
-        console.log(`Went from ${this._page.current} to ${n}`);
         this._page.current = n;
     }
 
@@ -87,6 +87,25 @@ export class Vendor {
     calculateMaxPages() {
         return Math.floor(this.inventory.length / PAGE_SIZE);
     }
+
+    buyItem(id: number, player: Player) {
+        const item = this._inventory.find(item => item.id == id);
+        if (!item) return;
+        if (!player.canPurchase(item.baseValue, item.weight)) return;
+        
+        player.purchaseItem(item.baseValue, item.weight);
+        item.units--;
+        this.cleanInventory();
+    }
+
+    cleanInventory() {
+        for (let i = 0; i < this.inventory.length; i++) {
+            if (this.inventory[i].units == 0) {
+                this.inventory.splice(i, 1);
+            }
+            paginate(this);
+        }
+    }
 }
 
 /**
@@ -99,18 +118,16 @@ export function restock() {
 }
 
 export async function visitVendor(vendor: Vendor, player: Player): Promise<GameState> {
-    paginate(vendor);
     printHeader(player);
     printInventoryStock(vendor);
     printPageNumber(vendor);
     printPlayerInstruction();
 
     const rl = constructReadline();
-    let choice = await promptPlayer(rl, vendor);
+    let choice = await promptPlayer(rl, vendor, player);
 
     while (choice !== 'Return') {
-        console.log(playerAnswer(choice, vendor, player));
-        choice = await promptPlayer(rl, vendor);
+        choice = await promptPlayer(rl, vendor, player);
     }
 
     await timeoutInSeconds(3);
@@ -118,26 +135,27 @@ export async function visitVendor(vendor: Vendor, player: Player): Promise<GameS
     return 'At Island';
 }
 
-async function promptPlayer(rl: Interface, vendor: Vendor) {
+async function promptPlayer(rl: Interface, vendor: Vendor, player: Player): Promise<VendorOptions> {
     const rawAnswer = await rl.question('');
     if (isNumber(rawAnswer)) {
         const playerNumber = parseInt(rawAnswer);
         const itemChosen = selectItem(playerNumber, vendor);
-        return itemChosen.name
+        vendor.buyItem(itemChosen.id, player);
+        return playerAnswer(itemChosen.name, vendor, player); // call new func, return them to playerAnswer after stuff
     } else {
-        return formatCommand(rawAnswer);
+        const formattedAnswer = formatCommand(rawAnswer);
+        return playerAnswer(formattedAnswer, vendor, player);
     }
 }
 
 function selectItem(number: number, vendor: Vendor) {
-
     const maxNumber = vendor.inventory.length;
     const minNumber = 0;
     const currentPage = vendor.currentPageNumberIndex;
 
     if (number > maxNumber || number < minNumber) {
-        console.log(minNumber, maxNumber, number);
-        throw new Error('womp womp kid, ya number was wrong');
+        throw new Error('temp');
+        //return -1;
     }
 
     const numberIndexInPage = (number - (currentPage * PAGE_SIZE) - 1)
@@ -164,7 +182,8 @@ function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOpt
             return returnToMenu()
         }
         default: {
-            throw new Error('Womp womp cracka');
+            console.log('Hit default switch');
+            return returnToMenu();
         }
 
     }

@@ -52,6 +52,10 @@ export class Ship {
     get upgradeCount(): number { return this.upgrades.currentNumber; }
     get upgradeMax(): number { return this.upgrades.maxNumber; }
 
+    set currentWeight(weightToAdd: number) {
+        this.stats.currentWeight += weightToAdd;
+    }
+
 
     addCrew(crewToHire: number, player: Player): CrewOutcome {
         if (this.stats.crew + crewToHire > this.numberOfBeds) {

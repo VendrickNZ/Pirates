@@ -20,7 +20,7 @@ export default class GameManager {
         this._player = player;
         this._exitGame = false;
         this._state = 'At Island';
-        this._vendor = new Vendor(); // not final lol
+        this._vendor = new Vendor(); // not final lol - this will need to be a list of Vendors I would guess?
     }
 
     get daysRemaining(): number {
