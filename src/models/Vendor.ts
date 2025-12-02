@@ -1,7 +1,6 @@
 import type { Interface } from "readline/promises";
 import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
-import { constructReadline } from "../utils/ReadlineUtils";
 import { formatCommand, isNumber, newLine, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { PAGE_SIZE, paginate, printInventoryStock, printPageNumber, type Page } from "../types/Page";

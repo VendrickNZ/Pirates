@@ -1,6 +1,5 @@
 import type { Interface } from "readline/promises"
 import type { GameState } from "../types/GameState"
-import { constructReadline } from "../utils/ReadlineUtils"
 import { printInformation, timeoutInSeconds, isNumber } from "../utils/TextUtils"
 import Cargo from "./Cargo"
 import type Player from "./Player"
