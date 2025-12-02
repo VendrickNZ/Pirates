@@ -90,7 +90,6 @@ export default class Cargo {
 
     printCargoStatistics(): string {
         if (this._count == 0) return 'You have no cargo!';
-
         return [
             `Will add this shortly`,
         ].join('\n');

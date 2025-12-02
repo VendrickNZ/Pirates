@@ -117,13 +117,12 @@ export function restock() {
     return items;
 }
 
-export async function visitVendor(vendor: Vendor, player: Player): Promise<GameState> {
+export async function visitVendor(vendor: Vendor, player: Player, rl: Interface): Promise<GameState> {
     printHeader(player);
     printInventoryStock(vendor);
     printPageNumber(vendor);
     printPlayerInstruction();
 
-    const rl = constructReadline();
     let choice = await promptPlayer(rl, vendor, player);
 
     while (choice !== 'Return') {
@@ -131,7 +130,6 @@ export async function visitVendor(vendor: Vendor, player: Player): Promise<GameS
     }
 
     await timeoutInSeconds(3);
-    rl.close();
     return 'At Island';
 }
 

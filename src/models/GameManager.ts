@@ -1,10 +1,10 @@
 import type Player from "./Player";
 import type { GameState } from "../types/GameState";
-import { completer, formatCommand } from "../utils/TextUtils";
-import { constructReadline } from "../utils/ReadlineUtils";
+import { formatCommand } from "../utils/TextUtils";
 import { viewShipCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { Vendor, visitVendor } from "./Vendor";
+import type { Interface } from "node:readline/promises";
 
 export default class GameManager {
     private _duration: number;
@@ -13,14 +13,16 @@ export default class GameManager {
     private _exitGame: boolean;
     private _state: GameState;
     private _vendor: Vendor;
+    private _rl: Interface;
 
-    constructor(duration: number, seed: number, player: Player) {
+    constructor(duration: number, seed: number, player: Player, rl: Interface) {
         this._duration = duration;
         this._seed = seed;
         this._player = player;
         this._exitGame = false;
         this._state = 'At Island';
         this._vendor = new Vendor(); // not final lol - this will need to be a list of Vendors I would guess?
+        this._rl = rl;
     }
 
     get daysRemaining(): number {
@@ -37,18 +39,16 @@ export default class GameManager {
         console.log(this._duration, this._seed);
     }
 
-    printAvailableCommands() {
+    beginGame() {
         this.run();
     }
 
     async promptPlayer(): Promise<GameState> {
-        const rl = constructReadline(completer);
         this.printCommands();
-        const playerResponse = await rl.question('What would you like to do? ');
-        rl.close();
-
+        const playerResponse = await this._rl.question('What would you like to do? ');
         return formatCommand(playerResponse) as GameState;
     }
+
 
     printCommands() {
         console.log('======================');
@@ -76,9 +76,9 @@ export default class GameManager {
             case 'Visit Docks':
                 return viewShip(this._player.ship)
             case 'Visit Vendor':
-                return visitVendor(this._vendor, this._player);
+                return visitVendor(this._vendor, this._player, this._rl);
             case 'Hire Crew':
-                return hireCrew(this._player);
+                return hireCrew(this._player, this._rl);
             case 'Exit':
                 return this.endGame();
             default:
@@ -89,6 +89,7 @@ export default class GameManager {
 
     async endGame(): Promise<GameState> {
         this._exitGame = true;
+        this._rl.close();
         return 'Exit';
     }
 }

@@ -1,23 +1,21 @@
 import { Interface } from "node:readline/promises";
 import Player from "../models/Player";
 import GameManager from "../models/GameManager";
-import { isValidGameDuration, isValidPlayerName, isValidWorldSeed, printInformation } from "../utils/TextUtils";
+import { completer, isValidGameDuration, isValidPlayerName, isValidWorldSeed, printInformation } from "../utils/TextUtils";
 import { constructReadline } from "../utils/ReadlineUtils";
 
 export async function createNewGame() {
-    const rl = constructReadline();
+    const rl = constructReadline(completer);
 
     const name = await promptPlayerName(rl);
     const duration = await promptGameDuration(rl);
     const worldSeed = await promptWorldSeed(rl);
-    rl.close();
 
     printInformation('Intro text...')
 
     const player = createPlayer(name);
-
-    const gm = new GameManager(duration, worldSeed, player);
-    gm.printAvailableCommands();
+    const gm = new GameManager(duration, worldSeed, player, rl);
+    gm.beginGame();
 }
 
 function createPlayer(name: string): Player {

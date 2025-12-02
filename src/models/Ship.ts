@@ -116,11 +116,7 @@ function printShipStatistics(ship: Ship): string {
     ].join('\n');
 }
 
-export async function hireCrew(player: Player, rl?: Interface): Promise<GameState> {
-    if (!rl) {
-        rl = constructReadline();
-    }
-
+export async function hireCrew(player: Player, rl: Interface): Promise<GameState> {
     const crewToHirePlayerResponse = await rl.question("Enter the number of crew you'd like to hire: ");
 
     let outcome: CrewOutcome;
@@ -145,7 +141,6 @@ export async function hireCrew(player: Player, rl?: Interface): Promise<GameStat
 
     player.removeFunds(outcome.cost);
 
-    rl.close();
     return 'At Island';
 }
 
