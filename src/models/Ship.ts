@@ -120,20 +120,20 @@ export async function hireCrew(player: Player, rl: Interface): Promise<GameState
 
     let outcome: CrewOutcome;
     if (!isNumber(crewToHirePlayerResponse)) {
-        rl.write(message({ kind: 'NotANumber', input: crewToHirePlayerResponse }));
+        console.log(message({ kind: 'NotANumber', input: crewToHirePlayerResponse }));
         return hireCrew(player, rl);
     }
 
     const crewToHire = parseInt(crewToHirePlayerResponse);
 
     if (crewToHire < 0) {
-        rl.write(message({ kind: 'NegativeValue' }))
+        console.log(message({ kind: 'NegativeValue' }))
         return hireCrew(player, rl);
     }
 
     outcome = player.ship.addCrew(crewToHire, player);
 
-    rl.write(message(outcome));
+    console.log(message(outcome));
     if (outcome.kind !== 'Success') {
         return hireCrew(player, rl);
     }

@@ -26,7 +26,7 @@ async function promptPlayerName(rl: Interface): Promise<string> {
     const name = await rl.question('Enter player name (3-15 characters, letters and spaces only): ');
 
     if (!isValidPlayerName(name)) {
-        rl.write(`${name} is invalid, please try again. \n`)
+        console.log(`${name} is invalid, please try again. \n`)
         return promptPlayerName(rl);
     } else {
         return name;
@@ -37,7 +37,7 @@ async function promptGameDuration(rl: Interface): Promise<number> {
     const duration = await rl.question('How many days do you want the game to last (20-50)?: ');
 
     if (!isValidGameDuration(duration)) {
-        rl.write(`${duration} is invalid, please try again. \n`)
+        console.log(`${duration} is invalid, please try again. \n`)
         return promptGameDuration(rl);
     } else {
         return parseInt(duration);
@@ -48,7 +48,7 @@ async function promptWorldSeed(rl: Interface): Promise<number> {
     const seed = await rl.question('Enter a world seed (optional): ');
 
     if (!isValidWorldSeed(seed)) {
-        rl.write(`${seed} is invalid, please try again. \n`)
+        console.log(`${seed} is invalid, please try again. \n`)
         return promptWorldSeed(rl);
     } else {
         return parseInt(seed);
