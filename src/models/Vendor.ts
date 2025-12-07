@@ -3,13 +3,12 @@ import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
-import { PAGE_SIZE, paginate, printInventoryStock, printPageNumber, type Page } from "../types/Page";
-import { getItems, type ItemList } from "../types/Item";
-
+import { cleanInventory, PAGE_SIZE, paginate, printInventoryStock, printPageNumber, type Page } from "../types/Page";
+import { GameItems, type ItemReferenceList, getItems } from "../types/Item";
 
 export class Vendor {
     private _balance: number;
-    private _inventory: ItemList;
+    private _inventory: ItemReferenceList;
     private _location: Dock;
     private _page: Page;
 
@@ -63,7 +62,7 @@ export class Vendor {
         this._page.max = n;
     }
 
-    set pageItems(list: ItemList[]) {
+    set pageItems(list: ItemReferenceList[]) {
         this._page.items = list;
     }
 
@@ -88,22 +87,17 @@ export class Vendor {
     }
 
     buyItem(id: number, player: Player) {
-        const item = this._inventory.find(item => item.id == id);
+        const itemRef = this._inventory.find(item => item.id == id);
+        if (!itemRef) return;
+
+        const item = GameItems.find(x => x.id == itemRef.id);
         if (!item) return;
+
         if (!player.canPurchase(item.baseValue, item.weight)) return;
         
-        player.purchaseItem(item.baseValue, item.weight);
-        item.units--;
-        this.cleanInventory();
-    }
-
-    cleanInventory() {
-        for (let i = 0; i < this.inventory.length; i++) {
-            if (this.inventory[i].units == 0) {
-                this.inventory.splice(i, 1);
-            }
-        }
-        paginate(this);
+        player.purchaseItem(itemRef);
+        itemRef.units--;
+        cleanInventory(this);
     }
 }
 
@@ -117,7 +111,8 @@ export function restock() {
 }
 
 export async function visitVendor(vendor: Vendor, player: Player, rl: Interface): Promise<GameState> {
-    printHeader(player);
+    const isVendor = true;
+    printHeader(player, isVendor);
     printInventoryStock(vendor);
     printPageNumber(vendor);
     printPlayerInstruction();
@@ -128,7 +123,7 @@ export async function visitVendor(vendor: Vendor, player: Player, rl: Interface)
         choice = await promptPlayer(rl, vendor, player);
     }
 
-    await timeoutInSeconds(3);
+    await timeoutInSeconds(1);
     return 'At Island';
 }
 
@@ -136,13 +131,18 @@ async function promptPlayer(rl: Interface, vendor: Vendor, player: Player): Prom
     const rawAnswer = await rl.question('');
     if (isNumber(rawAnswer)) {
         const playerNumber = parseInt(rawAnswer);
-        const itemChosen = selectItem(playerNumber, vendor);
-        vendor.buyItem(itemChosen.id, player);
-        return playerAnswer(itemChosen.name, vendor, player); // call new func, return them to playerAnswer after stuff
-    } else {
-        const formattedAnswer = formatCommand(rawAnswer);
-        return playerAnswer(formattedAnswer, vendor, player);
+        const itemReferenceChosen = selectItem(playerNumber, vendor);
+
+        if (itemReferenceChosen !== -1) { // number found
+            vendor.buyItem(itemReferenceChosen.id, player);
+            const item = GameItems.find(x => x.id == itemReferenceChosen.id)!;
+            return playerAnswer(item.name, vendor, player); // call new func, return them to playerAnswer after stuff
+        }
+        return playerAnswer(itemReferenceChosen.toString(), vendor, player);
     }
+
+    const formattedAnswer = formatCommand(rawAnswer);
+    return playerAnswer(formattedAnswer, vendor, player);
 }
 
 function selectItem(number: number, vendor: Vendor) {
@@ -151,14 +151,14 @@ function selectItem(number: number, vendor: Vendor) {
     const currentPage = vendor.currentPageNumberIndex;
 
     if (number > maxNumber || number < minNumber) {
-        throw new Error('temp');
-        //return -1;
+        console.log('yer number is out of bounds, yarrr');
+        return -1;
     }
 
     const numberIndexInPage = (number - (currentPage * PAGE_SIZE) - 1)
 
-    const chosenItem = vendor.pageItems[currentPage][numberIndexInPage];
-    return chosenItem;
+    const chosenItemRef = vendor.pageItems[currentPage][numberIndexInPage];
+    return chosenItemRef;
 }
 
 type VendorOptions = 'Next Page' | 'Previous Page' | 

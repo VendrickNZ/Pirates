@@ -2,7 +2,7 @@ import { stdin, stdout } from "process";
 import { createInterface, Interface, type Completer, type ReadLineOptions } from "readline/promises";
 
 
-export function constructReadline(completerFunction?: Completer): Interface{
+export function constructReadline(completerFunction?: Completer): Interface {
     const rlConstructor: ReadLineOptions = {
         input: stdin,
         output: stdout,

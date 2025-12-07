@@ -4,6 +4,7 @@ import { printInformation, timeoutInSeconds, isNumber } from "../utils/TextUtils
 import Cargo from "./Cargo"
 import type Player from "./Player"
 import Upgrades from "./Upgrades"
+import { GameItems, type ItemReference } from "../types/Item"
 
 export interface ShipStats {
     name: string
@@ -28,7 +29,7 @@ export class Ship {
 
     constructor(stats: ShipStats) {
         this.stats = stats;
-        this._cargo = new Cargo();
+        this._cargo = new Cargo(this.maxWeight);
         this._upgrades = new Upgrades();
     }
 
@@ -46,7 +47,6 @@ export class Ship {
     get maxWeight(): number { return this.stats.maxWeight; }
     get cargo(): Cargo { return this._cargo; }
     get upgrades(): Upgrades { return this._upgrades; }
-    get cargoCount(): number { return this.cargo.count; }
     get cargoMax(): number { return this.cargo.maxCapacity; }
     get upgradeCount(): number { return this.upgrades.currentNumber; }
     get upgradeMax(): number { return this.upgrades.maxNumber; }
@@ -55,6 +55,24 @@ export class Ship {
         this.stats.currentWeight += weightToAdd;
     }
 
+    addCargo(itemRef: ItemReference) {
+        const existingItem = this._cargo.inventory.find(x => x.id == itemRef.id);
+        if (existingItem) {
+            existingItem.units++;
+        } else {
+            const newItem: ItemReference = { id: itemRef.id, units: 1 };
+            this._cargo.inventory.push(newItem);
+        }
+
+        const item = GameItems.find(x => x.id == itemRef.id)!;
+
+        this.cargo.currentCapacity += item.weight;
+        this._cargo.update();
+    }
+
+    removeCargo() {
+
+    }
 
     addCrew(crewToHire: number, player: Player): CrewOutcome {
         if (this.stats.crew + crewToHire > this.numberOfBeds) {
@@ -70,8 +88,8 @@ export class Ship {
         return { kind: "Success", cost, crew: crewToHire }
     }
 
-    viewCargo(): string {
-        return this.cargo.printCargoStatistics();
+    viewCargo() {
+        this.cargo.printCargoStatistics();
     }
 }
 
@@ -110,7 +128,7 @@ function printShipStatistics(ship: Ship): string {
         `Armor: ${ship.armor}, Damage: ${ship.damage}`,
         `Current weight: ${ship.currentWeight}`,
         `Max weight: ${ship.maxWeight}`,
-        `Cargo: ${ship.cargo.count} / ${ship.cargo.maxCapacity} slots filled`,
+        `Cargo: ${ship.cargo.currentCapacity} / ${ship.cargo.maxCapacity} slots filled`,
         `Upgrades: ${ship.upgrades.currentNumber} / ${ship.upgrades.maxNumber} slots filled`,
     ].join('\n');
 }

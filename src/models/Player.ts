@@ -1,4 +1,5 @@
 import { getStartingDock, type Dock } from "../types/Dock"
+import { GameItems, type Item, type ItemReference } from "../types/Item"
 import { createShip, type Ship } from "./Ship"
 
 export default class Player {
@@ -52,11 +53,12 @@ export default class Player {
     }
 
     // assumes Player can purchase
-    purchaseItem(cost: number, weight: number) {
-        this._balance -= cost;
-        this._ship.currentWeight += weight;
-        this._ship.cargo
+    purchaseItem(itemRef: ItemReference) {
+        const chosenItem = GameItems.find(x => x.id == itemRef.id);
+        if (!chosenItem) return;
 
-        return;
+        this._balance -= chosenItem.baseValue;
+        this._ship.currentWeight += chosenItem.weight;
+        this._ship.addCargo(itemRef);
     }
 }
