@@ -4,7 +4,9 @@ import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { cleanInventory, PAGE_SIZE, paginate, printInventoryStock, printPageNumber, type Page } from "../types/Page";
-import { GameItems, type ItemReferenceList, getItems } from "../types/Item";
+import { GameItems, type Item, type ItemReferenceList, getItems } from "../types/Item";
+
+type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
 
 export class Vendor {
     private _balance: number;
@@ -14,7 +16,7 @@ export class Vendor {
 
     constructor() {
         this._balance = 200;
-        this._inventory = restock()
+        this._inventory = restock();
         this._location = getStartingDock();
         this._page = {
             current: 0,
@@ -23,6 +25,7 @@ export class Vendor {
             items: [this._inventory]
         };
         paginate(this);
+        this._page.max = this.calculateMaxPages();
     }
 
     get balance() {
@@ -71,11 +74,11 @@ export class Vendor {
     }
 
     getPage(pageNumber: number) {
-        let page = this._page.items[pageNumber]
+        const page = this._page.items[pageNumber];
         if (page) {
             return page;
         }
-        throw new Error('womp womp');
+        throw new Error(`Page ${pageNumber} not found. Vendors inventory: ${JSON.stringify(this._inventory)}`);
     }
 
     get pageSize() {
@@ -83,21 +86,26 @@ export class Vendor {
     }
 
     calculateMaxPages() {
-        return Math.floor(this.inventory.length / PAGE_SIZE);
+        if (this.inventory.length === 0) return 0;
+        return Math.floor((this.inventory.length - 1) / PAGE_SIZE);
     }
 
     buyItem(id: number, player: Player) {
-        const itemRef = this._inventory.find(item => item.id == id);
+        const itemRef = this._inventory.find(item => item.id === id);
         if (!itemRef) return;
 
-        const item = GameItems.find(x => x.id == itemRef.id);
+        const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return;
 
         if (!player.canPurchase(item.baseValue, item.weight)) return;
-        
+
         player.purchaseItem(itemRef);
         itemRef.units--;
         cleanInventory(this);
+        this._page.max = this.calculateMaxPages();
+        if (this._page.current > this._page.max) {
+            this._page.current = this._page.max;
+        }
     }
 }
 
@@ -112,6 +120,11 @@ export function restock() {
 
 export async function visitVendor(vendor: Vendor, player: Player, rl: Interface): Promise<GameState> {
     const isVendor = true;
+
+    vendor.currentPageNumberIndex = 0;
+    paginate(vendor);
+    vendor.maxPageNumber = vendor.calculateMaxPages();
+
     printHeader(player, isVendor);
     printInventoryStock(vendor);
     printPageNumber(vendor);
@@ -129,40 +142,60 @@ export async function visitVendor(vendor: Vendor, player: Player, rl: Interface)
 
 async function promptPlayer(rl: Interface, vendor: Vendor, player: Player): Promise<VendorOptions> {
     const rawAnswer = await rl.question('');
+
     if (isNumber(rawAnswer)) {
         const playerNumber = parseInt(rawAnswer);
         const itemReferenceChosen = selectItem(playerNumber, vendor);
 
-        if (itemReferenceChosen !== -1) { // number found
-            vendor.buyItem(itemReferenceChosen.id, player);
-            const item = GameItems.find(x => x.id == itemReferenceChosen.id)!;
-            return playerAnswer(item.name, vendor, player); // call new func, return them to playerAnswer after stuff
+        if (itemReferenceChosen === -1) {
+            printAllVendorInformation(player, vendor);
+            printPlayerInstruction();
+            return 'Continue';
         }
-        return playerAnswer(itemReferenceChosen.toString(), vendor, player);
+
+        const item = GameItems.find(x => x.id === itemReferenceChosen.id);
+        if (!item) {
+            printAllVendorInformation(player, vendor);
+            printPlayerInstruction();
+            return 'Continue';
+        }
+
+        vendor.buyItem(itemReferenceChosen.id, player);
+        purchaseItem(item);
+        printAllVendorInformation(player, vendor);
+        printPlayerInstruction();
+        return 'Continue';
     }
 
     const formattedAnswer = formatCommand(rawAnswer);
     return playerAnswer(formattedAnswer, vendor, player);
 }
 
-function selectItem(number: number, vendor: Vendor) {
-    const maxNumber = vendor.inventory.length;
-    const minNumber = 0;
-    const currentPage = vendor.currentPageNumberIndex;
+function purchaseItem(item: Item): VendorOptions {
+    console.log(`Ye purchased ${item.name} for ${item.baseValue} Doubloons!`);
+    return 'Continue';
+}
 
-    if (number > maxNumber || number < minNumber) {
+function selectItem(number: number, vendor: Vendor) {
+    const currentPage = vendor.currentPageNumberIndex;
+    const page = vendor.pageItems[currentPage];
+
+    if (!page || page.length === 0) {
+        console.log('Thar be no cargo on this page, yarrr');
+        return -1;
+    }
+
+    const startIndex = currentPage * PAGE_SIZE + 1;
+    const endIndex = startIndex + page.length - 1;
+
+    if (number < startIndex || number > endIndex) {
         console.log('yer number is out of bounds, yarrr');
         return -1;
     }
 
-    const numberIndexInPage = (number - (currentPage * PAGE_SIZE) - 1)
-
-    const chosenItemRef = vendor.pageItems[currentPage][numberIndexInPage];
-    return chosenItemRef;
+    const numberIndexInPage = number - startIndex;
+    return page[numberIndexInPage];
 }
-
-type VendorOptions = 'Next Page' | 'Previous Page' | 
-    'Sell Cargo' | 'Return'
 
 function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOptions {
     switch (answer) {
@@ -176,36 +209,36 @@ function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOpt
             return sellCargo(player, vendor);
         }
         case 'Return': {
-            return returnToMenu()
-        }
-        default: {
-            console.log('Hit default switch');
             return returnToMenu();
         }
-
+        default: {
+            return returnToMenu();
+        }
     }
 }
 
 function nextPage(player: Player, vendor: Vendor): VendorOptions {
     vendor.currentPageNumberIndex++;
     printAllVendorInformation(player, vendor);
-    return 'Next Page'
+    printPlayerInstruction();
+    return 'Next Page';
 }
 
 function previousPage(player: Player, vendor: Vendor): VendorOptions {
     vendor.currentPageNumberIndex--;
     printAllVendorInformation(player, vendor);
-    return 'Previous Page'
+    printPlayerInstruction();
+    return 'Previous Page';
 }
 
 function sellCargo(player: Player, vendor: Vendor): VendorOptions {
-    printAllSellCargoInformation(player)
+    printAllSellCargoInformation(player);
     // call get all cargo items
     return 'Sell Cargo';
 }
 
 function returnToMenu(): VendorOptions {
-    return 'Return'
+    return 'Return';
 }
 
 function printAllSellCargoInformation(player: Player) {
@@ -216,35 +249,27 @@ function printAllSellCargoInformation(player: Player) {
     cargo.printCargoStatistics();
     printInventoryStock(cargo);
     printPageNumber(cargo);
-    printPlayerInstruction2();
-
 }
+
 function printAllVendorInformation(player: Player, vendor: Vendor) {
     const isVendor = true;
     printHeader(player, isVendor);
     printInventoryStock(vendor);
     printPageNumber(vendor);
-    printPlayerInstruction();
 }
-
 
 function printPlayerInstruction() {
-    console.log("Type the number of the item you wish to buy, or type 'next page' or 'previous page' to see what else this vendor has.")
-    console.log("If you wish to sell your cargo, type 'sell cargo'.")
-    console.log("Type 'return' if you wish to go back.")
-}
-
-function printPlayerInstruction2() {
-    console.log("Type the number of the item you wish to sell, or type 'next page' or 'previous page' to see what else this vendor has.")
-    console.log("Type 'return' if you wish to go back.")
+    console.log("Type the number of the item you wish to buy, or type 'next page' or 'previous page' to see what else this vendor has.");
+    console.log("If you wish to sell your cargo, type 'sell cargo'.");
+    console.log("Type 'return' if you wish to go back.");
 }
 
 function printHeader(player: Player, isVendor?: boolean) {
-    console.log(newLine(1))
-    console.log(`Current balance: ${player.balance} Doubloons`)
+    console.log(newLine(1));
+    console.log(`Current balance: ${player.balance} Doubloons`);
 
     if (isVendor) {
-        console.log(`===== ${player.dockedAt.name} Vendor Stock =====`)
+        console.log(`===== ${player.dockedAt.name} Vendor Stock =====`);
         return;
     }
 
