@@ -33,7 +33,10 @@ export function paginate(pageOwner: PageOwner) {
         const reference = { id: inventory[i].id, units:  inventory[i].units }
         page.push(reference);
     }
-    if (inventory.length % pageSize != 0) pageList.push(page);
+
+    if (inventory.length - 1 % pageSize != 0) {
+        pageList.push(page);
+    }
     pageOwner.pageItems = pageList;
 }
 

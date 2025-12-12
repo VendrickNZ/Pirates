@@ -78,7 +78,8 @@ export class Vendor {
         if (page) {
             return page;
         }
-        throw new Error(`Page ${pageNumber} not found. Vendors inventory: ${JSON.stringify(this._inventory)}`);
+        // TODO: dont throw an error lol
+        throw new Error(`Page ${pageNumber} not found.`);
     }
 
     get pageSize() {
@@ -97,7 +98,10 @@ export class Vendor {
         const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return;
 
-        if (!player.canPurchase(item.baseValue, item.weight)) return;
+        if (!player.canPurchase(item.baseValue, item.weight)) {
+            // TODO: change msg
+            console.log(`cant purchase, ${player.balance} ${item.baseValue} ${player.ship.maxWeight} ${player.ship.currentWeight} ${item.weight}`);
+        };
 
         player.purchaseItem(itemRef);
         itemRef.units--;
