@@ -1,5 +1,6 @@
 import type Cargo from "../models/Cargo";
 import type { Vendor } from "../models/Vendor";
+import { printInformation } from "../utils/TextUtils";
 import { GameItems, type ItemReference, type ItemReferenceList } from "./Item";
 
 export const PAGE_SIZE = 10; 
@@ -15,28 +16,24 @@ type PageOwner = Vendor | Cargo;
 
 export function paginate(pageOwner: PageOwner) {
     const inventory = pageOwner.inventory;
-    if (inventory.length == 0) {
-        return;
-    }
-
     const pageSize = pageOwner.pageSize;
     const pageList: ItemReferenceList[] = [];
     let page: ItemReferenceList = [];
 
-    page.push({ id: inventory[0].id, units: inventory[0].units });
+    for (let i = 0; i < inventory.length; i++) {
+        const reference = { id: inventory[i].id, units: inventory[i].units }
+        page.push(reference);
 
-    for (let i = 1; i < inventory.length; ++i) {
-        if (i % pageSize == 0) {
+        if (page.length === pageSize) {
             pageList.push(page);
             page = [];
         }
-        const reference = { id: inventory[i].id, units:  inventory[i].units }
-        page.push(reference);
     }
 
-    if (inventory.length - 1 % pageSize != 0) {
+    if (page.length > 0) {
         pageList.push(page);
     }
+
     pageOwner.pageItems = pageList;
 }
 
@@ -46,11 +43,17 @@ export function printPageNumber(pageOwner: PageOwner) {
 
 export function printInventoryStock(pageOwner: PageOwner) {
     const pageToDisplay = pageOwner.getPage(pageOwner.currentPageNumberIndex);
-    const pageNumberIndexShift = (pageOwner.currentPageNumberIndex) * 10
+
+    if (pageToDisplay === null) {
+        printInformation('Ye ave plundered the vendor!');
+        return;
+    }
+
+    const pageNumberIndexShift = (pageOwner.currentPageNumberIndex) * 10;
     for (let i = 0; i < pageToDisplay.length; ++i) {
         const itemRef = pageToDisplay[i]
 
-        const item = GameItems.find(x => x.id == itemRef.id);
+        const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) continue;
 
         const itemIndex = i + 1 + pageNumberIndexShift;
@@ -64,6 +67,7 @@ export function inventoryFormatter(itemRef: ItemReference, index: number) {
     const itemVariableLength = item.name.length + item.type.length + itemRef.units.toString().length + index.toString().length;
     return '.'.repeat(spacing - itemVariableLength);
 }
+
 
 export function cleanInventory(pageOwner: PageOwner) {
     const inventory = pageOwner.inventory;

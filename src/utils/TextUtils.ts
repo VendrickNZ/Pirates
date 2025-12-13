@@ -11,10 +11,10 @@ export function completer(line: string): CompleterResult {
     return [hits.length ? hits : completions, formattedLine];
 }
 
-export function printInformation(toPrint: string): void {
-    console.log(newLine(1))
+export function printInformation(toPrint: string, spacing: number = 1): void {
+    console.log(newLine(spacing))
     console.log(toPrint);
-    console.log(newLine(1))
+    console.log(newLine(spacing))
 }
 
 export function newLine(n: number) {

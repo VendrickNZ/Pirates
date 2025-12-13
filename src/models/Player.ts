@@ -1,5 +1,5 @@
 import { getStartingDock, type Dock } from "../types/Dock"
-import { GameItems, type Item, type ItemReference } from "../types/Item"
+import { GameItems, type ItemReference } from "../types/Item"
 import { createShip, type Ship } from "./Ship"
 
 export default class Player {
@@ -57,6 +57,7 @@ export default class Player {
         const chosenItem = GameItems.find(x => x.id == itemRef.id);
         if (!chosenItem) return;
 
+        itemRef.units--;
         this._balance -= chosenItem.baseValue;
         this._ship.currentWeight += chosenItem.weight;
         this._ship.addCargo(itemRef);

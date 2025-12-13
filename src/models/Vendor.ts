@@ -78,6 +78,10 @@ export class Vendor {
         if (page) {
             return page;
         }
+
+        if (this.inventory.length === 0) {
+            return null;
+        }
         // TODO: dont throw an error lol
         throw new Error(`Page ${pageNumber} not found.`);
     }
@@ -94,18 +98,21 @@ export class Vendor {
     buyItem(id: number, player: Player) {
         const itemRef = this._inventory.find(item => item.id === id);
         if (!itemRef) return;
-
+        
         const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return;
-
+        
         if (!player.canPurchase(item.baseValue, item.weight)) {
             // TODO: change msg
             console.log(`cant purchase, ${player.balance} ${item.baseValue} ${player.ship.maxWeight} ${player.ship.currentWeight} ${item.weight}`);
         };
-
+        
         player.purchaseItem(itemRef);
-        itemRef.units--;
         cleanInventory(this);
+        this.updateMaxPages();
+    }
+
+    updateMaxPages() {
         this._page.max = this.calculateMaxPages();
         if (this._page.current > this._page.max) {
             this._page.current = this._page.max;
