@@ -45,7 +45,7 @@ export function printInventoryStock(pageOwner: PageOwner) {
     const pageToDisplay = pageOwner.getPage(pageOwner.currentPageNumberIndex);
 
     if (pageToDisplay === null) {
-        printInformation('Ye ave plundered the vendor!');
+        pageOwner.printEmptyInventoryMessage();
         return;
     }
 

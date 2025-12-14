@@ -1,7 +1,7 @@
 import type { GameState } from "../types/GameState";
 import type { ItemReferenceList } from "../types/Item";
 import { cleanInventory, PAGE_SIZE, printInventoryStock, type Page } from "../types/Page";
-import { timeoutInSeconds } from "../utils/TextUtils";
+import { printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type { Ship } from "./Ship";
 
 export default class Cargo {
@@ -20,11 +20,12 @@ export default class Cargo {
             size: PAGE_SIZE,
             items: [this._inventory]
         };
+        this.update();
     }
     update() {
         cleanInventory(this);
+        this._page.max = this.calculateMaxPages();
     }
-
 
     get inventory() {
         return this._inventory;
@@ -77,11 +78,16 @@ export default class Cargo {
     }
 
     getPage(pageNumber: number) {
-        let page = this._page.items[pageNumber]
+        const page = this._page.items[pageNumber];
         if (page) {
             return page;
         }
-        throw new Error('womp womp');
+
+        if (this.inventory.length === 0) {
+            return null;
+        }
+        // TODO: dont throw an error lol
+        throw new Error(`Page ${pageNumber} not found.`);
     }
 
     get pageSize() {
@@ -89,13 +95,18 @@ export default class Cargo {
     }
 
     calculateMaxPages() {
-        return Math.max(Math.ceil(this.inventory.length / PAGE_SIZE), 1);
+        if (this.inventory.length === 0) return 0;
+        return Math.floor((this.inventory.length - 1) / PAGE_SIZE);
     }
 
     printCargoStatistics() {
         this._inventory.length == 0 ?
             console.log('You have no cargo!') :
             printInventoryStock(this);
+    }
+
+    printEmptyInventoryMessage() {
+        printInformation('Ye cargo is empty!');
     }
 }
 

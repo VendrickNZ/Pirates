@@ -1,7 +1,7 @@
 import type { Interface } from "readline/promises";
 import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
-import { formatCommand, isNumber, newLine, timeoutInSeconds } from "../utils/TextUtils";
+import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { cleanInventory, PAGE_SIZE, paginate, printInventoryStock, printPageNumber, type Page } from "../types/Page";
 import { GameItems, type Item, type ItemReferenceList, getItems } from "../types/Item";
@@ -117,6 +117,10 @@ export class Vendor {
             this._page.current = this._page.max;
         }
     }
+
+    printEmptyInventoryMessage() {
+        printInformation('Ye ave plundered the vendor!');
+    }
 }
 
 /**
@@ -124,7 +128,7 @@ export class Vendor {
  * Looks redundant currently, but it aligns more with what I want to do in short term future
  */
 export function restock() {
-    const items = getItems(50);
+    const items = getItems(15);
     return items;
 }
 
@@ -258,7 +262,6 @@ function printAllSellCargoInformation(player: Player) {
     printHeader(player, isVendor);
 
     const cargo = player.ship.cargo;
-    cargo.printCargoStatistics();
     printInventoryStock(cargo);
     printPageNumber(cargo);
 }
