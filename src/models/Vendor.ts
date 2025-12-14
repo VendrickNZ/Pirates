@@ -95,21 +95,20 @@ export class Vendor {
         return Math.floor((this.inventory.length - 1) / PAGE_SIZE);
     }
 
-    buyItem(id: number, player: Player) {
+    async buyItem(id: number, player: Player) {
         const itemRef = this._inventory.find(item => item.id === id);
-        if (!itemRef) return;
+        if (!itemRef) return false;
         
         const item = GameItems.find(x => x.id === itemRef.id);
-        if (!item) return;
+        if (!item) return false;
         
-        if (!player.canPurchase(item.baseValue, item.weight)) {
-            // TODO: change msg
-            console.log(`cant purchase, ${player.balance} ${item.baseValue} ${player.ship.maxWeight} ${player.ship.currentWeight} ${item.weight}`);
-        };
+        if (!(await player.canPurchase(item.baseValue, item.weight))) return false;
         
         player.purchaseItem(itemRef);
         cleanInventory(this);
         this.updateMaxPages();
+
+        return true;
     }
 
     updateMaxPages() {
@@ -171,8 +170,10 @@ async function promptPlayer(rl: Interface, vendor: Vendor, player: Player): Prom
             return 'Continue';
         }
 
-        vendor.buyItem(itemReferenceChosen.id, player);
-        purchaseItem(item);
+        const isSuccessfulPurchase = await vendor.buyItem(itemReferenceChosen.id, player);
+        if (isSuccessfulPurchase) {
+            purchaseItem(item);
+        }
         printAllVendorInformation(player, vendor);
         printPlayerInstruction();
         return 'Continue';

@@ -17,6 +17,14 @@ export function printInformation(toPrint: string, spacing: number = 1): void {
     console.log(newLine(spacing))
 }
 
+export async function printInformationWithDelay(toPrint: string, spacing: number = 1, delayInSeconds: number = 1): Promise<void> {
+    console.log(newLine(spacing))
+    console.log(toPrint);
+    console.log(newLine(spacing))
+    await timeoutInSeconds(delayInSeconds);
+}
+
+
 export function newLine(n: number) {
     return '\n'.repeat(n);
 }

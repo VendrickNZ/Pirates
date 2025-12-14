@@ -1,5 +1,6 @@
 import { getStartingDock, type Dock } from "../types/Dock"
 import { GameItems, type ItemReference } from "../types/Item"
+import { printInformationWithDelay } from "../utils/TextUtils"
 import { createShip, type Ship } from "./Ship"
 
 export default class Player {
@@ -45,9 +46,15 @@ export default class Player {
         this._balance -= funds;
     }
 
-    canPurchase(cost: number, weight: number) {
+    async canPurchase(cost: number, weight: number): Promise<boolean> {
         const hasEnoughMoney = (this.balance - cost) >= 0;
+        if (!hasEnoughMoney) {
+            await printInformationWithDelay('Yarrr ye are poor!', 1, 2);
+        }
         const shipHasEnoughSpace = (this.ship.currentWeight + weight <= this.ship.maxWeight);
+        if (!shipHasEnoughSpace) {
+            await printInformationWithDelay('Ye ship is too small!', 1, 2);
+        }
 
         return hasEnoughMoney && shipHasEnoughSpace;
     }
