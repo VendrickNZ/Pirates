@@ -37,7 +37,7 @@ export class Vendor {
     }
 
     get location() {
-        return this._location;
+        return this._location; 
     }
 
     get currentPageNumberIndex(): number {
@@ -281,7 +281,7 @@ function printPlayerInstruction() {
 
 function printHeader(player: Player, isVendor?: boolean) {
     console.log(newLine(1));
-    console.log(`Current balance: ${player.balance} Doubloons`);
+    console.log(`Current balance: ${player.balance.toFixed(1)} Doubloons`);
 
     if (isVendor) {
         console.log(`===== ${player.dockedAt.name} Vendor Stock =====`);
