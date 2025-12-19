@@ -3,9 +3,18 @@ import Player from "../models/Player";
 import GameManager from "../models/GameManager";
 import { completer, isValidGameDuration, isValidPlayerName, isValidWorldSeed, printInformation } from "../utils/TextUtils";
 import { constructReadline } from "../utils/ReadlineUtils";
+import type { DevConfigs } from "./runDev";
 
-export async function createNewGame() {
+export async function createNewGame(configs?: DevConfigs) {
     const rl = constructReadline(completer);
+
+    if (configs) {
+        const { duration, worldSeed, name } = configs;
+        const player = createPlayer(name);
+        const gm = new GameManager(duration, worldSeed, player, rl);
+        gm.beginGame();
+        return;
+    }
 
     const name = await promptPlayerName(rl);
     const duration = await promptGameDuration(rl);
