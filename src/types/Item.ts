@@ -8,7 +8,7 @@ export type Item = {
     weight: number
 }
 
-export type ItemReferenceList = ItemReference[]
+export type Inventory = ItemReference[]
 
 export interface ItemReference {
     id: number;

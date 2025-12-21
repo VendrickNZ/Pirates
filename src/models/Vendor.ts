@@ -3,14 +3,14 @@ import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
-import { cleanInventory, PAGE_SIZE, paginate, printInventoryStock, printPageNumber, type Page } from "../types/Page";
-import { GameItems, type Item, type ItemReferenceList, getItems } from "../types/Item";
+import { cleanInventory, Page, PAGE_SIZE, paginate, printInventoryStock, printPageNumber } from "../types/Page";
+import { GameItems, type Item, type Inventory, getItems } from "../types/Item";
 
 type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
 
 export class Vendor {
     private _balance: number;
-    private _inventory: ItemReferenceList;
+    private _inventory: Inventory;
     private _location: Dock;
     private _page: Page;
 
@@ -18,14 +18,8 @@ export class Vendor {
         this._balance = 200;
         this._inventory = restock();
         this._location = getStartingDock();
-        this._page = {
-            current: 0,
-            max: this.calculateMaxPages(),
-            size: PAGE_SIZE,
-            items: [this._inventory]
-        };
+        this._page = new Page(this.inventory)
         paginate(this);
-        this._page.max = this.calculateMaxPages();
     }
 
     get balance() {
@@ -40,59 +34,8 @@ export class Vendor {
         return this._location; 
     }
 
-    get currentPageNumberIndex(): number {
-        return this._page.current;
-    }
-
-    set currentPageNumberIndex(n: number) {
-        if (n > this._page.max) {
-            console.log('The script is not long enough yar');
-            return;
-        }
-
-        if (n < 0) {
-            console.log('The script cannae be off the map yar');
-            return;
-        }
-        this._page.current = n;
-    }
-
-    get maxPageNumber(): number {
-        return this._page.max;
-    }
-
-    set maxPageNumber(n: number) {
-        this._page.max = n;
-    }
-
-    set pageItems(list: ItemReferenceList[]) {
-        this._page.items = list;
-    }
-
-    get pageItems() {
-        return this._page.items;
-    }
-
-    getPage(pageNumber: number) {
-        const page = this._page.items[pageNumber];
-        if (page) {
-            return page;
-        }
-
-        if (this.inventory.length === 0) {
-            return null;
-        }
-        // TODO: dont throw an error lol
-        throw new Error(`Page ${pageNumber} not found.`);
-    }
-
-    get pageSize() {
-        return this._page.size;
-    }
-
-    calculateMaxPages() {
-        if (this.inventory.length === 0) return 0;
-        return Math.floor((this.inventory.length - 1) / PAGE_SIZE);
+    get page() {
+        return this._page;
     }
 
     async buyItem(id: number, player: Player) {
@@ -106,16 +49,9 @@ export class Vendor {
         
         player.purchaseItem(itemRef);
         cleanInventory(this);
-        this.updateMaxPages();
+        this._page.updateMaxPages(this._inventory);
 
         return true;
-    }
-
-    updateMaxPages() {
-        this._page.max = this.calculateMaxPages();
-        if (this._page.current > this._page.max) {
-            this._page.current = this._page.max;
-        }
     }
 
     printEmptyInventoryMessage() {
@@ -135,9 +71,9 @@ export function restock() {
 export async function visitVendor(vendor: Vendor, player: Player, rl: Interface): Promise<GameState> {
     const isVendor = true;
 
-    vendor.currentPageNumberIndex = 0;
+    vendor.page.currentPageNumberIndex = 0;
     paginate(vendor);
-    vendor.maxPageNumber = vendor.calculateMaxPages();
+    vendor.page.maxPageNumber = vendor.page.calculateMaxPages(vendor.inventory);
 
     printHeader(player, isVendor);
     printInventoryStock(vendor);
@@ -193,8 +129,8 @@ function purchaseItem(item: Item): VendorOptions {
 }
 
 function selectItem(number: number, vendor: Vendor) {
-    const currentPage = vendor.currentPageNumberIndex;
-    const page = vendor.pageItems[currentPage];
+    const currentPage = vendor.page.currentPageNumberIndex;
+    const page = vendor.page.pageItems[currentPage];
 
     if (!page || page.length === 0) {
         console.log('Thar be no cargo on this page, yarrr');
@@ -234,14 +170,14 @@ function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOpt
 }
 
 function nextPage(player: Player, vendor: Vendor): VendorOptions {
-    vendor.currentPageNumberIndex++;
+    vendor.page.currentPageNumberIndex++;
     printAllVendorInformation(player, vendor);
     printPlayerInstruction();
     return 'Next Page';
 }
 
 function previousPage(player: Player, vendor: Vendor): VendorOptions {
-    vendor.currentPageNumberIndex--;
+    vendor.page.currentPageNumberIndex--;
     printAllVendorInformation(player, vendor);
     printPlayerInstruction();
     return 'Previous Page';

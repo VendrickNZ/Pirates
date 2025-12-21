@@ -1,24 +1,91 @@
 import type Cargo from "../models/Cargo";
-import type { Vendor } from "../models/Vendor";
-import { printInformation } from "../utils/TextUtils";
-import { GameItems, type ItemReference, type ItemReferenceList } from "./Item";
+import { type Vendor } from "../models/Vendor";
+import { GameItems, type ItemReference, type Inventory } from "./Item";
 
-export const PAGE_SIZE = 10; 
-
-export type Page = {
-    current: number;
-    max: number;
-    size: number;
-    items: ItemReferenceList[]
-}
+export const PAGE_SIZE = 10;
 
 type PageOwner = Vendor | Cargo;
 
+export class Page {
+    current: number;
+    max: number;
+    size: number;
+    items: Inventory[]
+
+    constructor(inventory: Inventory) {
+        this.current = 0;
+        this.max = this.calculateMaxPages(inventory);
+        this.size = PAGE_SIZE;
+        this.items = [inventory];
+    }
+
+    get currentPageNumberIndex(): number {
+        return this.current;
+    }
+
+    set currentPageNumberIndex(n: number) {
+        if (n > this.max) {
+            console.log('The script is not long enough yar');
+            return;
+        }
+
+        if (n < 0) {
+            console.log('The script cannae be off the map yar');
+            return;
+        }
+        this.current = n;
+    }
+
+    get maxPageNumber(): number {
+        return this.max;
+    }
+
+    set maxPageNumber(n: number) {
+        this.max = n;
+    }
+
+    set pageItems(list: Inventory[]) {
+        this.items = list;
+    }
+
+    get pageItems() {
+        return this.items;
+    }
+
+    getPage(pageNumber: number, inventory: Inventory) {
+        const page = this.items[pageNumber];
+        if (page) {
+            return page;
+        }
+
+        if (inventory.length === 0) {
+            return null;
+        }
+        throw new Error(`Page ${pageNumber} not found.`);
+    }
+
+    get pageSize() {
+        return this.size;
+    }
+
+    calculateMaxPages(inventory: Inventory) {
+        if (inventory.length === 0) return 0;
+        return Math.floor((inventory.length - 1) / PAGE_SIZE);
+    }
+
+    updateMaxPages(inventory: Inventory) {
+        this.max = this.calculateMaxPages(inventory);
+        if (this.current > this.max) {
+            this.current = this.max;
+        }
+    }
+}
+
 export function paginate(pageOwner: PageOwner) {
     const inventory = pageOwner.inventory;
-    const pageSize = pageOwner.pageSize;
-    const pageList: ItemReferenceList[] = [];
-    let page: ItemReferenceList = [];
+    const pageSize = pageOwner.page.pageSize;
+    const pageList: Inventory[] = [];
+    let page: Inventory = [];
 
     for (let i = 0; i < inventory.length; i++) {
         const reference = { id: inventory[i].id, units: inventory[i].units }
@@ -34,22 +101,22 @@ export function paginate(pageOwner: PageOwner) {
         pageList.push(page);
     }
 
-    pageOwner.pageItems = pageList;
+    pageOwner.page.pageItems = pageList;
 }
 
 export function printPageNumber(pageOwner: PageOwner) {
-    console.log(`===== Page ${pageOwner.currentPageNumberIndex + 1} of ${pageOwner.maxPageNumber + 1} =====`)
+    console.log(`===== Page ${pageOwner.page.currentPageNumberIndex + 1} of ${pageOwner.page.maxPageNumber + 1} =====`)
 }
 
 export function printInventoryStock(pageOwner: PageOwner) {
-    const pageToDisplay = pageOwner.getPage(pageOwner.currentPageNumberIndex);
+    const pageToDisplay = pageOwner.page.getPage(pageOwner.page.currentPageNumberIndex, pageOwner.inventory);
 
     if (pageToDisplay === null) {
         pageOwner.printEmptyInventoryMessage();
         return;
     }
 
-    const pageNumberIndexShift = (pageOwner.currentPageNumberIndex) * 10;
+    const pageNumberIndexShift = (pageOwner.page.currentPageNumberIndex) * 10;
     for (let i = 0; i < pageToDisplay.length; ++i) {
         const itemRef = pageToDisplay[i]
 
