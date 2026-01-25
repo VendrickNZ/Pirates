@@ -78,7 +78,7 @@ export async function visitVendor(vendor: Vendor, player: Player, rl: Interface)
     printHeader(player, isVendor);
     printInventoryStock(vendor);
     printPageNumber(vendor);
-    printPlayerInstruction();
+    printPlayerAtVendorInstructions();
 
     let choice = await promptPlayer(rl, vendor, player);
 
@@ -99,14 +99,14 @@ async function promptPlayer(rl: Interface, vendor: Vendor, player: Player): Prom
 
         if (itemReferenceChosen === -1) {
             printAllVendorInformation(player, vendor);
-            printPlayerInstruction();
+            printPlayerAtVendorInstructions();
             return 'Continue';
         }
 
         const item = GameItems.find(x => x.id === itemReferenceChosen.id);
         if (!item) {
             printAllVendorInformation(player, vendor);
-            printPlayerInstruction();
+            printPlayerAtVendorInstructions();
             return 'Continue';
         }
 
@@ -115,7 +115,7 @@ async function promptPlayer(rl: Interface, vendor: Vendor, player: Player): Prom
             purchaseItem(item);
         }
         printAllVendorInformation(player, vendor);
-        printPlayerInstruction();
+        printPlayerAtVendorInstructions();
         return 'Continue';
     }
 
@@ -172,19 +172,21 @@ function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOpt
 function nextPage(player: Player, vendor: Vendor): VendorOptions {
     vendor.page.currentPageNumberIndex++;
     printAllVendorInformation(player, vendor);
-    printPlayerInstruction();
+    printPlayerAtVendorInstructions();
     return 'Next Page';
 }
 
 function previousPage(player: Player, vendor: Vendor): VendorOptions {
     vendor.page.currentPageNumberIndex--;
     printAllVendorInformation(player, vendor);
-    printPlayerInstruction();
+    printPlayerAtVendorInstructions();
     return 'Previous Page';
 }
 
 function sellCargo(player: Player, vendor: Vendor): VendorOptions {
     printAllSellCargoInformation(player);
+    printPlayerSellingCargoInstructions();
+
     // call get all cargo items
     return 'Sell Cargo';
 }
@@ -209,9 +211,15 @@ function printAllVendorInformation(player: Player, vendor: Vendor) {
     printPageNumber(vendor);
 }
 
-function printPlayerInstruction() {
+function printPlayerAtVendorInstructions() {
     console.log("Type the number of the item you wish to buy, or type 'next page' or 'previous page' to see what else this vendor has.");
     console.log("If you wish to sell your cargo, type 'sell cargo'.");
+    console.log("Type 'return' if you wish to go back.");
+}
+
+// need to put my logs into some instruction builder at some point
+function printPlayerSellingCargoInstructions() {
+    console.log("Type the number of the item you wish to sell, or type 'next page' or 'previous page' to see what other items you have.")
     console.log("Type 'return' if you wish to go back.");
 }
 
