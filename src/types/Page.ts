@@ -4,7 +4,7 @@ import { GameItems, type ItemReference, type Inventory } from "./Item";
 
 export const PAGE_SIZE = 10;
 
-type PageOwner = Vendor | Cargo;
+export type PageOwner = Vendor | Cargo;
 
 export class Page {
     current: number;

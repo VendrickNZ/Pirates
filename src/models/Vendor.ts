@@ -4,9 +4,16 @@ import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { cleanInventory, Page, PAGE_SIZE, paginate, printInventoryStock, printPageNumber } from "../types/Page";
-import { GameItems, type Item, type Inventory, getItems } from "../types/Item";
+import { GameItems, type Item, type Inventory, getItems, type ItemReference } from "../types/Item";
+import { VendorContext } from "../contexts/VendorContext";
+import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
 
-type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
+
+export type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
+export type VendorSession = {
+    vendor: Vendor,
+    player: Player
+}
 
 export class Vendor {
     private _balance: number;
@@ -38,10 +45,11 @@ export class Vendor {
         return this._page;
     }
 
+    /** Checks if the Player can purchase item, if so, purchases it. */
     async buyItem(id: number, player: Player) {
         const itemRef = this._inventory.find(item => item.id === id);
         if (!itemRef) return false;
-        
+
         const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return false;
         
@@ -50,7 +58,6 @@ export class Vendor {
         player.purchaseItem(itemRef);
         cleanInventory(this);
         this._page.updateMaxPages(this._inventory);
-
         return true;
     }
 
@@ -68,67 +75,76 @@ export function restock() {
     return items;
 }
 
-export async function visitVendor(vendor: Vendor, player: Player, rl: Interface): Promise<GameState> {
-    const isVendor = true;
-
+function setupInitialVendorPages(vendor: Vendor) {
     vendor.page.currentPageNumberIndex = 0;
     paginate(vendor);
     vendor.page.maxPageNumber = vendor.page.calculateMaxPages(vendor.inventory);
+}
 
-    printHeader(player, isVendor);
-    printInventoryStock(vendor);
-    printPageNumber(vendor);
-    printPlayerAtVendorInstructions();
+export async function visitVendor(vendor: Vendor, player: Player, rl: Interface): Promise<GameState> {
+    const session: VendorSession = { vendor, player };
+    const vendorContext = new VendorContext(new BuyStrategy());
+    setupInitialVendorPages(vendor);
+    vendorContext.printAllPlayerInstructions(session);
 
-    let choice = await promptPlayer(rl, vendor, player);
-
+    let choice;
     while (choice !== 'Return') {
-        choice = await promptPlayer(rl, vendor, player);
+        choice = await promptPlayer(rl, session, vendorContext);
     }
 
     await timeoutInSeconds(1);
     return 'At Island';
 }
 
-async function promptPlayer(rl: Interface, vendor: Vendor, player: Player): Promise<VendorOptions> {
+async function promptPlayer(rl: Interface, session: VendorSession, ctx: VendorContext): Promise<VendorOptions> {
     const rawAnswer = await rl.question('');
 
     if (isNumber(rawAnswer)) {
-        const playerNumber = parseInt(rawAnswer);
-        const itemReferenceChosen = selectItem(playerNumber, vendor);
-
-        if (itemReferenceChosen === -1) {
-            printAllVendorInformation(player, vendor);
-            printPlayerAtVendorInstructions();
-            return 'Continue';
-        }
-
-        const item = GameItems.find(x => x.id === itemReferenceChosen.id);
-        if (!item) {
-            printAllVendorInformation(player, vendor);
-            printPlayerAtVendorInstructions();
-            return 'Continue';
-        }
-
-        const isSuccessfulPurchase = await vendor.buyItem(itemReferenceChosen.id, player);
-        if (isSuccessfulPurchase) {
-            purchaseItem(item);
-        }
-        printAllVendorInformation(player, vendor);
-        printPlayerAtVendorInstructions();
-        return 'Continue';
+        return executeItemSelection(rawAnswer, session, ctx)
     }
 
-    const formattedAnswer = formatCommand(rawAnswer);
-    return playerAnswer(formattedAnswer, vendor, player);
+    return executeCommandSelection(rawAnswer, session, ctx);
 }
 
-function purchaseItem(item: Item): VendorOptions {
+async function executeItemSelection(rawAnswer: string, session: VendorSession, ctx: VendorContext): Promise<VendorOptions> {
+    const itemRef = hasSelectedValidItem(rawAnswer, session.vendor);
+    if (!itemRef) return 'Continue';
+
+    await ctx.executeVendorPlayerTrade(itemRef, session);
+    ctx.printAllPlayerInstructions(session);
+
+    return 'Continue';
+}
+
+function executeCommandSelection(rawAnswer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
+    const formattedAnswer = formatCommand(rawAnswer);
+    return playerAnswer(formattedAnswer, session, ctx);
+}
+
+function hasSelectedValidItem(rawAnswer: string, vendor: Vendor): ItemReference | null {
+    const playerNumber = parseInt(rawAnswer);
+    const itemReferenceChosen = selectItem(playerNumber, vendor);
+
+    if (itemReferenceChosen === -1) {
+        return null;
+    }
+
+    const item = GameItems.find(x => x.id === itemReferenceChosen.id);
+    if (!item) {
+        return null;
+    }
+
+    return itemReferenceChosen;
+}
+
+export function printSuccessfulItemPurchase(item: Item): VendorOptions {
     console.log(`Ye purchased ${item.name} for ${item.baseValue} Doubloons!`);
     return 'Continue';
 }
 
-function selectItem(number: number, vendor: Vendor) {
+
+// i think i need to offload this to the strategies
+export function selectItem(number: number, vendor: Vendor): ItemReference | -1 {
     const currentPage = vendor.page.currentPageNumberIndex;
     const page = vendor.page.pageItems[currentPage];
 
@@ -149,16 +165,16 @@ function selectItem(number: number, vendor: Vendor) {
     return page[numberIndexInPage];
 }
 
-function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOptions {
+export function playerAnswer(answer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
     switch (answer) {
         case 'Next Page': {
-            return nextPage(player, vendor);
+            return nextPage(ctx, session);
         }
         case 'Previous Page': {
-            return previousPage(player, vendor);
+            return previousPage(ctx, session);
         }
         case 'Sell Cargo': {
-            return sellCargo(player, vendor);
+            return sellCargo(ctx, session);
         }
         case 'Return': {
             return returnToMenu();
@@ -169,68 +185,65 @@ function playerAnswer(answer: string, vendor: Vendor, player: Player): VendorOpt
     }
 }
 
-function nextPage(player: Player, vendor: Vendor): VendorOptions {
-    vendor.page.currentPageNumberIndex++;
-    printAllVendorInformation(player, vendor);
-    printPlayerAtVendorInstructions();
+export function nextPage(ctx: VendorContext, session: VendorSession): VendorOptions {
+    ctx.nextPage(session)
     return 'Next Page';
 }
 
-function previousPage(player: Player, vendor: Vendor): VendorOptions {
-    vendor.page.currentPageNumberIndex--;
-    printAllVendorInformation(player, vendor);
-    printPlayerAtVendorInstructions();
+export function previousPage(ctx: VendorContext, session: VendorSession): VendorOptions {
+    ctx.previousPage(session)
     return 'Previous Page';
 }
 
-function sellCargo(player: Player, vendor: Vendor): VendorOptions {
-    printAllSellCargoInformation(player);
-    printPlayerSellingCargoInstructions();
+export function sellCargo(ctx: VendorContext, session: VendorSession): VendorOptions {
+    ctx.vendorStrategy = new SellStrategy();
+    ctx.printAllPlayerInstructions(session);
 
     // call get all cargo items
-    return 'Sell Cargo';
+    return 'Continue';
 }
 
-function returnToMenu(): VendorOptions {
+export function returnToMenu(): VendorOptions {
     return 'Return';
 }
 
-function printAllSellCargoInformation(player: Player) {
-    const isVendor = false;
-    printHeader(player, isVendor);
+export function printAllSellCargoInformation(player: Player) {
+    printCargoHeader(player);
 
     const cargo = player.ship.cargo;
     printInventoryStock(cargo);
     printPageNumber(cargo);
 }
 
-function printAllVendorInformation(player: Player, vendor: Vendor) {
-    const isVendor = true;
-    printHeader(player, isVendor);
+export function printAllVendorInformation(session: VendorSession) {
+    const { vendor, player } = session;
+
+    printVendorHeader(player);
     printInventoryStock(vendor);
     printPageNumber(vendor);
 }
 
-function printPlayerAtVendorInstructions() {
+export function printPlayerAtVendorInstructions() {
     console.log("Type the number of the item you wish to buy, or type 'next page' or 'previous page' to see what else this vendor has.");
     console.log("If you wish to sell your cargo, type 'sell cargo'.");
     console.log("Type 'return' if you wish to go back.");
 }
 
 // need to put my logs into some instruction builder at some point
-function printPlayerSellingCargoInstructions() {
+export function printPlayerSellingCargoInstructions() {
     console.log("Type the number of the item you wish to sell, or type 'next page' or 'previous page' to see what other items you have.")
+    console.log("If you wish to buy an item, type 'buy items'.");
     console.log("Type 'return' if you wish to go back.");
 }
 
-function printHeader(player: Player, isVendor?: boolean) {
+export function printVendorHeader(player: Player) {
     console.log(newLine(1));
     console.log(`Current balance: ${player.balance.toFixed(1)} Doubloons`);
+    console.log(`===== ${player.dockedAt.name} Vendor Stock =====`);
+}
 
-    if (isVendor) {
-        console.log(`===== ${player.dockedAt.name} Vendor Stock =====`);
-        return;
-    }
-
+export function printCargoHeader(player: Player) {
+    console.log(newLine(1));
+    console.log(`Current balance: ${player.balance.toFixed(1)} Doubloons`);
     console.log(`===== Selling Cargo at ${player.dockedAt.name} =====`);
 }
