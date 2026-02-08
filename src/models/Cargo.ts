@@ -1,8 +1,9 @@
 import type { GameState } from "../types/GameState";
-import type { Inventory } from "../types/Item";
+import { GameItems, type Inventory } from "../types/Item";
 import { cleanInventory, Page, printInventoryStock } from "../types/Page";
 import { printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type { Ship } from "./Ship";
+import type { VendorSession } from "./Vendor";
 
 export default class Cargo {
     private _maxCapacity: number;
@@ -50,6 +51,23 @@ export default class Cargo {
 
     printEmptyInventoryMessage() {
         printInformation('Ye cargo is empty!');
+    }
+
+    async sellItem(id: number, session: VendorSession) {
+        const { player, vendor } = session;
+        const itemRef = this.inventory.find(item => item.id === id);
+        if (!itemRef) return false;
+
+        const item = GameItems.find(x => x.id === itemRef.id);
+        if (!item) return false;
+
+        if (!(await player.canSell(item.baseValue, vendor))) return false;
+
+        player.sellItem(itemRef);
+        vendor.acquireItem(itemRef);
+        cleanInventory(this);
+        this.page.updateMaxPages(this.inventory);
+        return true;
     }
 }
 

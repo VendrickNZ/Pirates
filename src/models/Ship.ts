@@ -70,8 +70,15 @@ export class Ship {
         this._cargo.update();
     }
 
-    removeCargo() {
+    removeCargo(itemRef: ItemReference) {
+        const index = this.cargo.inventory.indexOf(itemRef);
+        this.cargo.inventory.splice(index, 1);
 
+        const item = GameItems.find(x => x.id === itemRef.id);
+        if (!item) return;
+
+        this.cargo.currentCapacity -= item.weight;
+        this._cargo.update();
     }
 
     addCrew(crewToHire: number, player: Player): CrewOutcome {

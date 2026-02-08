@@ -1,6 +1,6 @@
 import { printAllSellCargoInformation, printAllVendorInformation, printPlayerAtVendorInstructions, printPlayerSellingCargoInstructions, type VendorOptions, type VendorSession } from "../models/Vendor";
 import { type ItemReference } from "../types/Item";
-import { paginate } from "../types/Page";
+import { PAGE_SIZE, paginate } from "../types/Page";
 
 export interface VendorStrategy {
     printPlayerInformation(session: VendorSession): void
@@ -8,6 +8,7 @@ export interface VendorStrategy {
     executeVendorPlayerTrade(itemRef: ItemReference, session: VendorSession): Promise<VendorOptions>;
     nextPage(session: VendorSession): void
     previousPage(session: VendorSession): void
+    selectItem(number: number, session: VendorSession): ItemReference | null
 }
 
 export class BuyStrategy implements VendorStrategy {
@@ -43,6 +44,28 @@ export class BuyStrategy implements VendorStrategy {
         printAllVendorInformation(session);
         printPlayerAtVendorInstructions();
     }
+    
+    selectItem(number: number, session: VendorSession): ItemReference | null {
+        const { vendor } = session;
+        const currentPage = vendor.page.currentPageNumberIndex;
+        const page = vendor.page.pageItems[currentPage];
+
+        if (!page || page.length === 0) {
+            console.log('Thar be no cargo on this page, yarrr');
+            return null;
+        }
+
+        const startIndex = currentPage * PAGE_SIZE + 1;
+        const endIndex = startIndex + page.length - 1;
+
+        if (number < startIndex || number > endIndex) {
+            console.log('yer number is out of bounds, yarrr');
+            return null;
+        }
+
+        const numberIndexInPage = number - startIndex;
+        return page[numberIndexInPage];
+    }
 }
 
 export class SellStrategy implements VendorStrategy {
@@ -58,10 +81,11 @@ export class SellStrategy implements VendorStrategy {
     }
 
     async executeVendorPlayerTrade(itemRef: ItemReference, session: VendorSession): Promise<VendorOptions> {
-        const { player, vendor } = session;
+        const { player } = session;
+        const cargo = player.ship.cargo;
 
-        await vendor.buyItem(itemRef.id, player);
-        paginate(vendor);
+        await cargo.sellItem(itemRef.id, session);
+        paginate(cargo);
         return 'Continue';
     }
 
@@ -77,5 +101,29 @@ export class SellStrategy implements VendorStrategy {
         player.ship.cargo.page.currentPageNumberIndex--;
         printAllSellCargoInformation(player);
         printPlayerSellingCargoInstructions();
+    }
+
+    selectItem(number: number, session: VendorSession): ItemReference | null {
+        const { player } = session;
+        const cargo = player.ship.cargo;
+
+        const currentPage = cargo.page.currentPageNumberIndex;
+        const page = cargo.page.pageItems[currentPage];
+
+        if (!page || page.length === 0) {
+            console.log('Thar be no cargo on this page, yarrr');
+            return null;
+        }
+
+        const startIndex = currentPage * PAGE_SIZE + 1;
+        const endIndex = startIndex + page.length - 1;
+
+        if (number < startIndex || number > endIndex) {
+            console.log('yer number is out of bounds, yarrr');
+            return null;
+        }
+
+        const numberIndexInPage = number - startIndex;
+        return page[numberIndexInPage];
     }
 }

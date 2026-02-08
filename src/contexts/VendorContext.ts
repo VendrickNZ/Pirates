@@ -41,4 +41,8 @@ export class VendorContext {
     previousPage(session: VendorSession) {
         this.vendorStrategy.previousPage(session);
     }
+
+    selectItem(number: number, session: VendorSession) {
+        return this.vendorStrategy.selectItem(number, session);
+    }
 }

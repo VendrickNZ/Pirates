@@ -3,7 +3,7 @@ import { getStartingDock, type Dock } from "../types/Dock";
 import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
-import { cleanInventory, Page, PAGE_SIZE, paginate, printInventoryStock, printPageNumber } from "../types/Page";
+import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber } from "../types/Page";
 import { GameItems, type Item, type Inventory, getItems, type ItemReference } from "../types/Item";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
@@ -47,7 +47,7 @@ export class Vendor {
 
     /** Checks if the Player can purchase item, if so, purchases it. */
     async buyItem(id: number, player: Player) {
-        const itemRef = this._inventory.find(item => item.id === id);
+        const itemRef = this.inventory.find(item => item.id === id);
         if (!itemRef) return false;
 
         const item = GameItems.find(x => x.id === itemRef.id);
@@ -57,8 +57,21 @@ export class Vendor {
         
         player.purchaseItem(itemRef);
         cleanInventory(this);
-        this._page.updateMaxPages(this._inventory);
+        this.page.updateMaxPages(this.inventory);
         return true;
+    }
+
+    /** Adds an item if it doesn't exist, else increments units, and cleans inventory */
+    acquireItem(itemRef: ItemReference) {
+        const existingItem = this.inventory.find(x => x.id == itemRef.id);
+        if (existingItem) {
+            existingItem.units++;
+        } else {
+            const newItem: ItemReference = { id: itemRef.id, units: 1 };
+            this.inventory.push(newItem);
+        }
+
+        cleanInventory(this);
     }
 
     printEmptyInventoryMessage() {
@@ -107,7 +120,7 @@ async function promptPlayer(rl: Interface, session: VendorSession, ctx: VendorCo
 }
 
 async function executeItemSelection(rawAnswer: string, session: VendorSession, ctx: VendorContext): Promise<VendorOptions> {
-    const itemRef = hasSelectedValidItem(rawAnswer, session.vendor);
+    const itemRef = hasSelectedValidItem(rawAnswer, session, ctx);
     if (!itemRef) return 'Continue';
 
     await ctx.executeVendorPlayerTrade(itemRef, session);
@@ -121,11 +134,11 @@ function executeCommandSelection(rawAnswer: string, session: VendorSession, ctx:
     return playerAnswer(formattedAnswer, session, ctx);
 }
 
-function hasSelectedValidItem(rawAnswer: string, vendor: Vendor): ItemReference | null {
+function hasSelectedValidItem(rawAnswer: string, session: VendorSession, ctx: VendorContext): ItemReference | null {
     const playerNumber = parseInt(rawAnswer);
-    const itemReferenceChosen = selectItem(playerNumber, vendor);
+    const itemReferenceChosen = ctx.selectItem(playerNumber, session);
 
-    if (itemReferenceChosen === -1) {
+    if (itemReferenceChosen === null) {
         return null;
     }
 
@@ -142,28 +155,6 @@ export function printSuccessfulItemPurchase(item: Item): VendorOptions {
     return 'Continue';
 }
 
-
-// i think i need to offload this to the strategies
-export function selectItem(number: number, vendor: Vendor): ItemReference | -1 {
-    const currentPage = vendor.page.currentPageNumberIndex;
-    const page = vendor.page.pageItems[currentPage];
-
-    if (!page || page.length === 0) {
-        console.log('Thar be no cargo on this page, yarrr');
-        return -1;
-    }
-
-    const startIndex = currentPage * PAGE_SIZE + 1;
-    const endIndex = startIndex + page.length - 1;
-
-    if (number < startIndex || number > endIndex) {
-        console.log('yer number is out of bounds, yarrr');
-        return -1;
-    }
-
-    const numberIndexInPage = number - startIndex;
-    return page[numberIndexInPage];
-}
 
 export function playerAnswer(answer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
     switch (answer) {

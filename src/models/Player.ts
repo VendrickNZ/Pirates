@@ -2,6 +2,7 @@ import { getStartingDock, type Dock } from "../types/Dock"
 import { GameItems, type ItemReference } from "../types/Item"
 import { printInformationWithDelay } from "../utils/TextUtils"
 import { createShip, type Ship } from "./Ship"
+import type { Vendor } from "./Vendor"
 
 export default class Player {
     private _name: string
@@ -68,5 +69,26 @@ export default class Player {
         this._balance -= chosenItem.baseValue;
         this._ship.currentWeight += chosenItem.weight;
         this._ship.addCargo(itemRef);
+    }
+
+    // check if vendor has enough money
+    async canSell(cost: number, vendor: Vendor) {
+        const vendorHasEnoughMoney = (vendor.balance - cost) >= 0;
+
+        if (!vendorHasEnoughMoney) {
+            await printInformationWithDelay('The vendor be broke!', 1, 2);
+        }
+
+        return vendorHasEnoughMoney;
+    }
+
+    sellItem(itemRef: ItemReference) {
+        const chosenItem = GameItems.find(x => x.id == itemRef.id);
+        if (!chosenItem) return;
+
+        itemRef.units++;
+        this._balance += chosenItem.baseValue;
+        this._ship.currentWeight -= chosenItem.weight;
+        this._ship.removeCargo(itemRef);
     }
 }
