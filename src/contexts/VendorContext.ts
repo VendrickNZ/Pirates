@@ -45,4 +45,8 @@ export class VendorContext {
     selectItem(number: number, session: VendorSession) {
         return this.vendorStrategy.selectItem(number, session);
     }
+
+    playerAnswer(answer: string, session: VendorSession, ctx: VendorContext) {
+        return this.vendorStrategy.playerAnswer(answer, session, ctx);
+    }
 }

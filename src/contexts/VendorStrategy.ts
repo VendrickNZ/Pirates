@@ -1,6 +1,7 @@
-import { printAllSellCargoInformation, printAllVendorInformation, printPlayerAtVendorInstructions, printPlayerSellingCargoInstructions, type VendorOptions, type VendorSession } from "../models/Vendor";
+import { buyItems, nextPage, previousPage, printAllSellCargoInformation, printAllVendorInformation, printPlayerAtVendorInstructions, printPlayerSellingCargoInstructions, returnToMenu, sellCargo, type VendorOptions, type VendorSession } from "../models/Vendor";
 import { type ItemReference } from "../types/Item";
 import { PAGE_SIZE, paginate } from "../types/Page";
+import type { VendorContext } from "./VendorContext";
 
 export interface VendorStrategy {
     printPlayerInformation(session: VendorSession): void
@@ -9,6 +10,7 @@ export interface VendorStrategy {
     nextPage(session: VendorSession): void
     previousPage(session: VendorSession): void
     selectItem(number: number, session: VendorSession): ItemReference | null
+    playerAnswer(answer: string, session: VendorSession, ctx: VendorContext): VendorOptions
 }
 
 export class BuyStrategy implements VendorStrategy {
@@ -65,6 +67,26 @@ export class BuyStrategy implements VendorStrategy {
 
         const numberIndexInPage = number - startIndex;
         return page[numberIndexInPage];
+    }
+
+    playerAnswer(answer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
+        switch (answer) {
+            case 'Next Page': {
+                return nextPage(ctx, session);
+            }
+            case 'Previous Page': {
+                return previousPage(ctx, session);
+            }
+            case 'Sell Cargo': {
+                return sellCargo(ctx, session);
+            }
+            case 'Return': {
+                return returnToMenu();
+            }
+            default: {
+                return returnToMenu();
+            }
+        }
     }
 }
 
@@ -125,5 +147,25 @@ export class SellStrategy implements VendorStrategy {
 
         const numberIndexInPage = number - startIndex;
         return page[numberIndexInPage];
+    }
+
+    playerAnswer(answer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
+        switch (answer) {
+            case 'Next Page': {
+                return nextPage(ctx, session);
+            }
+            case 'Previous Page': {
+                return previousPage(ctx, session);
+            }
+            case 'Buy Items': {
+                return buyItems(ctx, session);
+            }
+            case 'Return': {
+                return returnToMenu();
+            }
+            default: {
+                return returnToMenu();
+            }
+        }
     }
 }

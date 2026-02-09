@@ -131,7 +131,7 @@ async function executeItemSelection(rawAnswer: string, session: VendorSession, c
 
 function executeCommandSelection(rawAnswer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
     const formattedAnswer = formatCommand(rawAnswer);
-    return playerAnswer(formattedAnswer, session, ctx);
+    return ctx.playerAnswer(formattedAnswer, session, ctx);
 }
 
 function hasSelectedValidItem(rawAnswer: string, session: VendorSession, ctx: VendorContext): ItemReference | null {
@@ -155,27 +155,6 @@ export function printSuccessfulItemPurchase(item: Item): VendorOptions {
     return 'Continue';
 }
 
-
-export function playerAnswer(answer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
-    switch (answer) {
-        case 'Next Page': {
-            return nextPage(ctx, session);
-        }
-        case 'Previous Page': {
-            return previousPage(ctx, session);
-        }
-        case 'Sell Cargo': {
-            return sellCargo(ctx, session);
-        }
-        case 'Return': {
-            return returnToMenu();
-        }
-        default: {
-            return returnToMenu();
-        }
-    }
-}
-
 export function nextPage(ctx: VendorContext, session: VendorSession): VendorOptions {
     ctx.nextPage(session)
     return 'Next Page';
@@ -189,9 +168,13 @@ export function previousPage(ctx: VendorContext, session: VendorSession): Vendor
 export function sellCargo(ctx: VendorContext, session: VendorSession): VendorOptions {
     ctx.vendorStrategy = new SellStrategy();
     ctx.printAllPlayerInstructions(session);
-
-    // call get all cargo items
     return 'Continue';
+}
+
+export function buyItems(ctx: VendorContext, session: VendorSession): VendorOptions {
+    ctx.vendorStrategy = new BuyStrategy();
+    ctx.printAllPlayerInstructions(session);
+    return 'Continue'
 }
 
 export function returnToMenu(): VendorOptions {
