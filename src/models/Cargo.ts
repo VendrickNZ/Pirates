@@ -1,7 +1,9 @@
+import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
 import { GameItems, type Inventory } from "../types/Item";
-import { cleanInventory, Page, printInventoryStock } from "../types/Page";
-import { printInformation, timeoutInSeconds } from "../utils/TextUtils";
+import { cleanInventory, Page, printInventoryStock, printPageNumber, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
+import { formatCommand, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
+import type Player from "./Player";
 import type { Ship } from "./Ship";
 import type { VendorSession } from "./Vendor";
 
@@ -43,10 +45,54 @@ export default class Cargo {
         return this._page;
     }
 
-    printCargoStatistics() {
-        this._inventory.length == 0 ?
-            console.log('You have no cargo!') :
-            printInventoryStock(this);
+    async playerCommand(rl: Interface) {
+        let choice;
+        while (choice !== 'Return') {
+            choice = await this.promptPlayer(rl);
+        }
+    }
+
+    async promptPlayer(rl: Interface): Promise<PageCommand | ContinuePrompting> {
+        this.printCargoContent();
+        this.printViewCargoCommands();
+        const rawAnswer = await rl.question('');
+
+        const formattedAnswer = formatCommand(rawAnswer);
+
+
+        return this.executePlayerCommand(formattedAnswer as PageCommand);
+    }
+
+    executePlayerCommand(answer: PageCommand): PageCommand | ContinuePrompting {
+        switch (answer) {
+            case 'Next Page':
+                this.page.nextPage();
+                return 'Next Page';
+            
+            case 'Previous Page':
+                this.page.previousPage();
+                return 'Previous Page';
+
+            case 'Return':
+                return 'Return'
+            default:
+                console.log('Arghhh... try again.');
+                return 'Continue'
+        }
+    }
+
+    printViewCargoCommands() {
+        console.log(`Type 'next page' or 'previous page' to see what other items you have.`);
+        console.log(`Type 'return' if you wish to go back.`);
+    }
+
+    printCargoContent() {
+        if (this._inventory.length === 0) {
+            console.log('You have no cargo!')
+            return;
+        }
+        printInventoryStock(this);
+        printPageNumber(this);
     }
 
     printEmptyInventoryMessage() {
@@ -72,8 +118,29 @@ export default class Cargo {
     }
 }
 
-export async function viewShipCargo(ship: Ship): Promise<GameState> {
-    ship.viewCargo();
+export async function viewCargo(ship: Ship, rl: Interface): Promise<GameState> {
+    await ship.viewCargo(rl);
     await timeoutInSeconds(3);
     return 'At Island'
+}
+
+export function printAllSellCargoInformation(player: Player) {
+    printSellCargoHeader(player);
+
+    const cargo = player.ship.cargo;
+    printInventoryStock(cargo);
+    printPageNumber(cargo);
+}
+
+export function printSellCargoHeader(player: Player) {
+    console.log(newLine(1));
+    console.log(`Current balance: ${player.balance} Doubloons`);
+    console.log(`===== Selling Cargo at ${player.dockedAt.name} =====`);
+}
+
+// need to put my logs into some instruction builder at some point
+export function printSellCargoInstructions() {
+    console.log("Type the number of the item you wish to sell, or type 'next page' or 'previous page' to see what other items you have.")
+    console.log("If you wish to buy an item, type 'buy items'.");
+    console.log("Type 'return' if you wish to go back.");
 }

@@ -5,6 +5,8 @@ import { GameItems, type ItemReference, type Inventory } from "./Item";
 export const PAGE_SIZE = 10;
 
 export type PageOwner = Vendor | Cargo;
+export type PageCommand = 'Next Page' | 'Previous Page' | 'Return'
+export type ContinuePrompting = 'Continue'
 
 export class Page {
     current: number;
@@ -78,6 +80,14 @@ export class Page {
         if (this.current > this.max) {
             this.current = this.max;
         }
+    }
+
+    nextPage() {
+        this.currentPageNumberIndex++;
+    }
+
+    previousPage() {
+        this.currentPageNumberIndex--;
     }
 }
 

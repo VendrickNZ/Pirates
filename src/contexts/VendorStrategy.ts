@@ -1,4 +1,5 @@
-import { buyItems, nextPage, previousPage, printAllSellCargoInformation, printAllVendorInformation, printPlayerAtVendorInstructions, printPlayerSellingCargoInstructions, returnToMenu, sellCargo, type VendorOptions, type VendorSession } from "../models/Vendor";
+import { printAllSellCargoInformation, printSellCargoInstructions } from "../models/Cargo";
+import { buyItems, nextPage, previousPage, printAllVendorInformation, printPlayerAtVendorInstructions, returnToMenu, sellCargo, type VendorOptions, type VendorSession } from "../models/Vendor";
 import { type ItemReference } from "../types/Item";
 import { PAGE_SIZE, paginate } from "../types/Page";
 import type { VendorContext } from "./VendorContext";
@@ -35,14 +36,14 @@ export class BuyStrategy implements VendorStrategy {
 
     nextPage(session: VendorSession) {
         const { vendor } = session;
-        vendor.page.currentPageNumberIndex++;
+        vendor.page.nextPage();
         printAllVendorInformation(session);
         printPlayerAtVendorInstructions();
     }
 
     previousPage(session: VendorSession) {
         const { vendor } = session;
-        vendor.page.currentPageNumberIndex--;
+        vendor.page.previousPage();
         printAllVendorInformation(session);
         printPlayerAtVendorInstructions();
     }
@@ -99,7 +100,7 @@ export class SellStrategy implements VendorStrategy {
     }
 
     printPlayerCommands(): void {
-        printPlayerSellingCargoInstructions();
+        printSellCargoInstructions();
     }
 
     async executeVendorPlayerTrade(itemRef: ItemReference, session: VendorSession): Promise<VendorOptions> {
@@ -113,16 +114,16 @@ export class SellStrategy implements VendorStrategy {
 
     nextPage(session: VendorSession) {
         const { player } = session;
-        player.ship.cargo.page.currentPageNumberIndex++;
+        player.ship.cargo.page.nextPage();
         printAllSellCargoInformation(player);
-        printPlayerSellingCargoInstructions();
+        printSellCargoInstructions();
     }
 
     previousPage(session: VendorSession) {
         const { player } = session;
-        player.ship.cargo.page.currentPageNumberIndex--;
+        player.ship.cargo.page.previousPage();
         printAllSellCargoInformation(player);
-        printPlayerSellingCargoInstructions();
+        printSellCargoInstructions();
     }
 
     selectItem(number: number, session: VendorSession): ItemReference | null {

@@ -1,7 +1,7 @@
 import type Player from "./Player";
 import type { GameState } from "../types/GameState";
 import { formatCommand } from "../utils/TextUtils";
-import { viewShipCargo } from "./Cargo";
+import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { Vendor, visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
@@ -49,7 +49,6 @@ export default class GameManager {
         return formatCommand(playerResponse) as GameState;
     }
 
-
     printCommands() {
         console.log('======================');
         console.log('Days remaining: %d', this.daysRemaining);
@@ -72,7 +71,7 @@ export default class GameManager {
             case 'View Ship':
                 return viewShip(this._player.ship)
             case 'View Cargo':
-                return viewShipCargo(this._player.ship);
+                return viewCargo(this._player.ship, this._rl);
             case 'Visit Docks':
                 return viewShip(this._player.ship)
             case 'Visit Vendor':

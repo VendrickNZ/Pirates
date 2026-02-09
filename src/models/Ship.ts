@@ -56,7 +56,7 @@ export class Ship {
     }
 
     addCargo(itemRef: ItemReference) {
-        const existingItem = this._cargo.inventory.find(x => x.id == itemRef.id);
+        const existingItem = this._cargo.inventory.find(x => x.id === itemRef.id);
         if (existingItem) {
             existingItem.units++;
         } else {
@@ -96,8 +96,8 @@ export class Ship {
         return { kind: "Success", cost, crew: crewToHire }
     }
 
-    viewCargo() {
-        this.cargo.printCargoStatistics();
+    async viewCargo(rl: Interface) {
+        await this.cargo.playerCommand(rl);
     }
 }
 

@@ -186,14 +186,6 @@ export function returnToMenu(): VendorOptions {
     return 'Return';
 }
 
-export function printAllSellCargoInformation(player: Player) {
-    printCargoHeader(player);
-
-    const cargo = player.ship.cargo;
-    printInventoryStock(cargo);
-    printPageNumber(cargo);
-}
-
 export function printAllVendorInformation(session: VendorSession) {
     const { vendor, player } = session;
 
@@ -208,21 +200,8 @@ export function printPlayerAtVendorInstructions() {
     console.log("Type 'return' if you wish to go back.");
 }
 
-// need to put my logs into some instruction builder at some point
-export function printPlayerSellingCargoInstructions() {
-    console.log("Type the number of the item you wish to sell, or type 'next page' or 'previous page' to see what other items you have.")
-    console.log("If you wish to buy an item, type 'buy items'.");
-    console.log("Type 'return' if you wish to go back.");
-}
-
 export function printVendorHeader(player: Player) {
     console.log(newLine(1));
     console.log(`Current balance: ${player.balance} Doubloons`);
     console.log(`===== ${player.dockedAt.name} Vendor Stock =====`);
-}
-
-export function printCargoHeader(player: Player) {
-    console.log(newLine(1));
-    console.log(`Current balance: ${player.balance} Doubloons`);
-    console.log(`===== Selling Cargo at ${player.dockedAt.name} =====`);
 }
