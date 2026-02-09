@@ -57,7 +57,9 @@ export class Vendor {
         
         player.purchaseItem(itemRef);
         cleanInventory(this);
+        const cargo = player.ship.cargo;
         this.page.updateMaxPages(this.inventory);
+        cargo.page.updateMaxPages(cargo.inventory)
         return true;
     }
 
@@ -121,7 +123,10 @@ async function promptPlayer(rl: Interface, session: VendorSession, ctx: VendorCo
 
 async function executeItemSelection(rawAnswer: string, session: VendorSession, ctx: VendorContext): Promise<VendorOptions> {
     const itemRef = hasSelectedValidItem(rawAnswer, session, ctx);
-    if (!itemRef) return 'Continue';
+    if (!itemRef) {
+        ctx.printAllPlayerInstructions(session);
+        return 'Continue'
+    }
 
     await ctx.executeVendorPlayerTrade(itemRef, session);
     ctx.printAllPlayerInstructions(session);

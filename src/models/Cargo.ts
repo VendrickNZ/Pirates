@@ -67,6 +67,7 @@ export default class Cargo {
         vendor.acquireItem(itemRef);
         cleanInventory(this);
         this.page.updateMaxPages(this.inventory);
+        vendor.page.updateMaxPages(vendor.inventory);
         return true;
     }
 }
