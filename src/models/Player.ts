@@ -1,6 +1,6 @@
 import { getStartingDock, type Dock } from "../types/Dock"
 import { GameItems, type ItemReference } from "../types/Item"
-import { printInformationWithDelay } from "../utils/TextUtils"
+import { formatFloat, printInformationWithDelay } from "../utils/TextUtils"
 import { createShip, type Ship } from "./Ship"
 import type { Vendor } from "./Vendor"
 
@@ -24,7 +24,7 @@ export default class Player {
     }
 
     get balance(): number {
-        return this._balance;
+        return formatFloat(this._balance);
     }
 
     get dockedAt(): Dock {

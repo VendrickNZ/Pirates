@@ -217,12 +217,12 @@ export function printPlayerSellingCargoInstructions() {
 
 export function printVendorHeader(player: Player) {
     console.log(newLine(1));
-    console.log(`Current balance: ${player.balance.toFixed(1)} Doubloons`);
+    console.log(`Current balance: ${player.balance} Doubloons`);
     console.log(`===== ${player.dockedAt.name} Vendor Stock =====`);
 }
 
 export function printCargoHeader(player: Player) {
     console.log(newLine(1));
-    console.log(`Current balance: ${player.balance.toFixed(1)} Doubloons`);
+    console.log(`Current balance: ${player.balance} Doubloons`);
     console.log(`===== Selling Cargo at ${player.dockedAt.name} =====`);
 }

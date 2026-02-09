@@ -53,7 +53,7 @@ export default class GameManager {
     printCommands() {
         console.log('======================');
         console.log('Days remaining: %d', this.daysRemaining);
-        console.log('Current balance: %d', this._player.balance.toFixed(1));
+        console.log('Current balance: %d', this._player.balance);
         console.log('Docked at: %s', this._player.dockName);
         console.log('======================');
         console.log('Available Commands:');
