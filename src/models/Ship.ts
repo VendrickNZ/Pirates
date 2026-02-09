@@ -92,6 +92,7 @@ export class Ship {
         }
 
         this.stats.crew += crewToHire;
+        player.removeFunds(cost);
         return { kind: "Success", cost, crew: crewToHire }
     }
 
@@ -150,20 +151,17 @@ export async function hireCrew(player: Player, rl: Interface): Promise<GameState
     }
 
     const crewToHire = parseInt(crewToHirePlayerResponse);
-
     if (crewToHire < 0) {
         console.log(message({ kind: 'NegativeValue' }))
         return hireCrew(player, rl);
     }
 
     outcome = player.ship.addCrew(crewToHire, player);
-
     console.log(message(outcome));
+    
     if (outcome.kind !== 'Success') {
         return hireCrew(player, rl);
     }
-
-    player.removeFunds(outcome.cost);
 
     return 'At Island';
 }
