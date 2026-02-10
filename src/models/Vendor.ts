@@ -86,7 +86,7 @@ export class Vendor {
  * Looks redundant currently, but it aligns more with what I want to do in short term future
  */
 export function restock() {
-    const items = getItems(15);
+    const items = getItems(50);
     return items;
 }
 
