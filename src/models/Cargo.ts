@@ -87,10 +87,6 @@ export default class Cargo {
     }
 
     printCargoContent() {
-        if (this._inventory.length === 0) {
-            console.log('You have no cargo!')
-            return;
-        }
         printInventoryStock(this);
         printPageNumber(this);
     }
@@ -116,10 +112,20 @@ export default class Cargo {
         vendor.page.updateMaxPages(vendor.inventory);
         return true;
     }
+
+    hasCargo() {
+        if (this._inventory.length === 0) {
+            printInformation('You have no cargo!')
+            return false;
+        }
+        return true;
+    }
 }
 
 export async function viewCargo(ship: Ship, rl: Interface): Promise<GameState> {
-    await ship.viewCargo(rl);
+    if (ship.cargo.hasCargo()) {
+        await ship.viewCargo(rl);
+    }
     await timeoutInSeconds(3);
     return 'At Island'
 }

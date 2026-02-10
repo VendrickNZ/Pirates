@@ -1,5 +1,6 @@
 import type Cargo from "../models/Cargo";
 import { type Vendor } from "../models/Vendor";
+import { printInformation } from "../utils/TextUtils";
 import { GameItems, type ItemReference, type Inventory } from "./Item";
 
 export const PAGE_SIZE = 10;
@@ -27,12 +28,12 @@ export class Page {
 
     set currentPageNumberIndex(n: number) {
         if (n > this.max) {
-            console.log('The script is not long enough yar');
+            printInformation('The script is not long enough yar');
             return;
         }
 
         if (n < 0) {
-            console.log('The script cannae be off the map yar');
+            printInformation('The script cannae be off the map yar');
             return;
         }
         this.current = n;

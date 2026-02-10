@@ -2,6 +2,7 @@ import { printAllSellCargoInformation, printSellCargoInstructions } from "../mod
 import { buyItems, nextPage, previousPage, printAllVendorInformation, printPlayerAtVendorInstructions, returnToMenu, sellCargo, type VendorOptions, type VendorSession } from "../models/Vendor";
 import { type ItemReference } from "../types/Item";
 import { PAGE_SIZE, paginate } from "../types/Page";
+import { printInformation } from "../utils/TextUtils";
 import type { VendorContext } from "./VendorContext";
 
 export interface VendorStrategy {
@@ -54,7 +55,7 @@ export class BuyStrategy implements VendorStrategy {
         const page = vendor.page.pageItems[currentPage];
 
         if (!page || page.length === 0) {
-            console.log('Thar be no cargo on this page, yarrr');
+            printInformation('Thar be no cargo on this page, yarrr');
             return null;
         }
 
@@ -62,7 +63,7 @@ export class BuyStrategy implements VendorStrategy {
         const endIndex = startIndex + page.length - 1;
 
         if (number < startIndex || number > endIndex) {
-            console.log('yer number is out of bounds, yarrr');
+            printInformation('yer number is out of bounds, yarrr');
             return null;
         }
 
@@ -134,7 +135,7 @@ export class SellStrategy implements VendorStrategy {
         const page = cargo.page.pageItems[currentPage];
 
         if (!page || page.length === 0) {
-            console.log('Thar be no cargo on this page, yarrr');
+            printInformation('Thar be no cargo on this page, yarrr');
             return null;
         }
 
@@ -142,7 +143,7 @@ export class SellStrategy implements VendorStrategy {
         const endIndex = startIndex + page.length - 1;
 
         if (number < startIndex || number > endIndex) {
-            console.log('yer number is out of bounds, yarrr');
+            printInformation('yer number is out of bounds, yarrr');
             return null;
         }
 
