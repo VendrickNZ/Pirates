@@ -33,8 +33,8 @@ export default class Cargo {
         return this._maxCapacity;
     }
 
-    set currentCapacity(capacityToAdd: number) {
-        this._currentCapacity += capacityToAdd;
+    set currentCapacity(newCapacity: number) {
+        this._currentCapacity = newCapacity;
     }
 
     get currentCapacity(): number {
