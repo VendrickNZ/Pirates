@@ -17,6 +17,7 @@ export function getDocks(): Dock[] {
     return docks;
 }
 
+/** The starting dock of Port Royal */
 export function getStartingDock(): Dock {
     const docks = getDocks()
     return docks.find(d => d.name == 'Port Royal')!;
