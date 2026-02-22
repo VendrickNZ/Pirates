@@ -1,4 +1,4 @@
-import { getStartingDock, type Dock } from "../types/Dock"
+import { getStartingDock, type Dock } from "./Dock"
 import { GameItems, type ItemReference } from "../types/Item"
 import { formatFloat, printInformationWithDelay } from "../utils/TextUtils"
 import { createShip, type Ship } from "./Ship"

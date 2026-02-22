@@ -5,6 +5,7 @@ import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { Vendor, visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
+import { visitDocks } from "./Dock";
 
 export default class GameManager {
     private _duration: number;
@@ -73,7 +74,7 @@ export default class GameManager {
             case 'View Cargo':
                 return viewCargo(this._player.ship, this._rl);
             case 'Visit Docks':
-                return viewShip(this._player.ship)
+                return visitDocks(this._player, this._rl)
             case 'Visit Vendor':
                 return visitVendor(this._vendor, this._player, this._rl);
             case 'Hire Crew':

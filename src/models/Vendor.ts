@@ -1,5 +1,5 @@
 import type { Interface } from "readline/promises";
-import { getStartingDock, type Dock } from "../types/Dock";
+import { getStartingDock, type Dock } from "./Dock";
 import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
