@@ -21,43 +21,50 @@ const docks: Dock[] = [
     }
 ]
 
-export function getDocks(): Dock[] {
-    return docks;
-}
+type DockId = number;
+type DockRegistry = Record<DockId, Dock>;
+type DockRoutes = Record<DockId, Route[]>;
 
-/** The starting dock of Port Royal */
-export function getStartingDock(): Dock {
-    const docks = getDocks()
-    return docks.find(d => d.name == 'Port Royal')!;
-}
-
-export async function visitDocks(player: Player, rl: Interface): Promise<GameState> {
-    printAvailableRoutes()
-    await timeoutInSeconds(3);
-    return 'At Island'
-}
-
-function printAvailableRoutes() {
-    console.log('Available Routes:');
-}
-class WorldGraph {
-    dockById: Record<number, Dock>;
-    routesFrom: Record<number, Route[]>;
-
-    constructor() {
-        this.dockById = { 1: docks[0]}
-        this.routesFrom = { 1: [{
-            to: 2,
-            distanceKm: 1,
-            travelDays: 1,
-            encounterTable: {
-                1: 'Pirates',
-                99: 'Lightning Strikes'
-            }
-        }]}
+function assignDockIds(): DockRegistry {
+    const registry: DockRegistry = {};
+    for (const dockIndex in docks) {
+        const key = Number(dockIndex)
+        registry[key] = docks[key]
     }
 
+    return registry;
 }
+
+function assignRoutes(docksById: DockRegistry): DockRoutes {
+    for (const dock of docksById) {
+
+    }
+}
+
+class WorldGraph {
+    private _docksById: DockRegistry;
+    private _routesFrom: DockRoutes;
+
+    constructor() {
+        this._docksById = assignDockIds();
+        this._routesFrom = {
+            1: [{
+                to: 2,
+                distanceKm: 1,
+                travelDays: 1,
+                encounterTable: {
+                    1: 'Pirates',
+                    99: 'Lightning Strikes'
+                }
+            }]
+        }
+    }
+
+    get docksById() {
+        return this._docksById;
+    }
+}
+
 
 type Route = {
     to: number,
@@ -68,3 +75,26 @@ type Route = {
 
 type Encounters = Record<number, Hazards>
 type Hazards = 'Pirates' | 'Lightning Strikes'
+
+export function getDocks(): Dock[] {
+    return docks;
+}
+
+/** The starting dock of Port Royal */
+export function getStartingDock(): Dock {
+    const docks = getDocks()
+    return docks.find(d => d.name === 'Port Royal')!;
+}
+
+export async function visitDocks(player: Player, rl: Interface): Promise<GameState> {
+    const x = new WorldGraph();
+    x.docksById;
+    printAvailableRoutes()
+    await timeoutInSeconds(3);
+    return 'At Island'
+}
+
+function printAvailableRoutes() {
+    console.log('Available Routes:');
+}
+
