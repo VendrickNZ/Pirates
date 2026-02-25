@@ -5,7 +5,7 @@ import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { Vendor, visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
-import { visitDocks } from "./Dock";
+import { visitDocks } from "./Island";
 
 export default class GameManager {
     private _duration: number;
@@ -54,7 +54,7 @@ export default class GameManager {
         console.log('======================');
         console.log('Days remaining: %d', this.daysRemaining);
         console.log('Current balance: %d', this._player.balance);
-        console.log('Docked at: %s', this._player.dockName);
+        console.log('Islanded at: %s', this._player.islandName);
         console.log('======================');
         console.log('Available Commands:');
         console.log('- View Ship');

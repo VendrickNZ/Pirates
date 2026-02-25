@@ -1,5 +1,4 @@
 import type { Interface } from "readline/promises";
-import { getStartingDock, type Dock } from "./Dock";
 import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
@@ -7,6 +6,7 @@ import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber } 
 import { GameItems, type Item, type Inventory, getItems, type ItemReference } from "../types/Item";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
+import { type Island, getStartingIsland } from "./Island";
 
 
 export type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
@@ -18,13 +18,13 @@ export type VendorSession = {
 export class Vendor {
     private _balance: number;
     private _inventory: Inventory;
-    private _location: Dock;
+    private _location: Island;
     private _page: Page;
 
     constructor() {
         this._balance = 200;
         this._inventory = restock();
-        this._location = getStartingDock();
+        this._location = getStartingIsland();
         this._page = new Page(this.inventory)
         paginate(this);
     }
@@ -203,5 +203,5 @@ export function printPlayerAtVendorInstructions() {
 export function printVendorHeader(player: Player) {
     console.log(newLine(1));
     console.log(`Current balance: ${player.balance} Doubloons`);
-    console.log(`===== ${player.dockedAt.name} Vendor Stock =====`);
+    console.log(`===== ${player.islandedAt.name} Vendor Stock =====`);
 }

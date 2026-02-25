@@ -1,19 +1,20 @@
-import { getStartingDock, type Dock } from "./Dock"
 import { GameItems, type ItemReference } from "../types/Item"
 import { formatFloat, printInformationWithDelay } from "../utils/TextUtils"
 import { createShip, type Ship } from "./Ship"
 import type { Vendor } from "./Vendor"
+import { type Island, getStartingIsland } from "./Island";
+
 
 export default class Player {
     private _name: string
     private _balance: number
-    private _dockedAt: Dock
+    private _islandedAt: Island
     private _ship: Ship
 
     constructor(name: string) {
         this._name = name;
         this._balance = 0;
-        this._dockedAt = getStartingDock();
+        this._islandedAt = getStartingIsland();
         this._ship = createShip('StartingShip')
 
         this.addFunds(750);
@@ -27,12 +28,12 @@ export default class Player {
         return formatFloat(this._balance);
     }
 
-    get dockedAt(): Dock {
-        return this._dockedAt;
+    get islandedAt(): Island {
+        return this._islandedAt;
     }
 
-    get dockName(): string {
-        return this.dockedAt.name;
+    get islandName(): string {
+        return this.islandedAt.name;
     }
 
     get ship(): Ship {
@@ -66,6 +67,8 @@ export default class Player {
         if (!chosenItem) return;
 
         itemRef.units--;
+        chosenItem.units--;
+
         this._balance -= chosenItem.baseValue;
         this._ship.currentWeight += chosenItem.weight;
         this._ship.addCargo(itemRef);
@@ -87,6 +90,8 @@ export default class Player {
         if (!chosenItem) return;
 
         itemRef.units++;
+        chosenItem.units++;
+
         this._balance += chosenItem.baseValue;
         this._ship.currentWeight -= chosenItem.weight;
         this._ship.removeCargo(itemRef);
