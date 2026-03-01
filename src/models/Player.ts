@@ -8,13 +8,13 @@ import { type Island, getStartingIsland } from "./Island";
 export default class Player {
     private _name: string
     private _balance: number
-    private _islandedAt: Island
+    private _island: Island
     private _ship: Ship
 
     constructor(name: string) {
         this._name = name;
         this._balance = 0;
-        this._islandedAt = getStartingIsland();
+        this._island = getStartingIsland();
         this._ship = createShip('StartingShip')
 
         this.addFunds(750);
@@ -28,12 +28,12 @@ export default class Player {
         return formatFloat(this._balance);
     }
 
-    get islandedAt(): Island {
-        return this._islandedAt;
+    get island(): Island {
+        return this._island;
     }
 
     get islandName(): string {
-        return this.islandedAt.name;
+        return this.island.name;
     }
 
     get ship(): Ship {

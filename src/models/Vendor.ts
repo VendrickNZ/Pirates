@@ -203,5 +203,5 @@ export function printPlayerAtVendorInstructions() {
 export function printVendorHeader(player: Player) {
     console.log(newLine(1));
     console.log(`Current balance: ${player.balance} Doubloons`);
-    console.log(`===== ${player.islandedAt.name} Vendor Stock =====`);
+    console.log(`===== ${player.island.name} Vendor Stock =====`);
 }

@@ -54,7 +54,7 @@ export default class GameManager {
         console.log('======================');
         console.log('Days remaining: %d', this.daysRemaining);
         console.log('Current balance: %d', this._player.balance);
-        console.log('Islanded at: %s', this._player.islandName);
+        console.log('Docked at: %s', this._player.islandName);
         console.log('======================');
         console.log('Available Commands:');
         console.log('- View Ship');
