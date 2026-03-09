@@ -121,15 +121,20 @@ function assignRoutes(islandFrom: Island): Route[] {
 
     const islandRoutes: Route[] = [];
     for (const [i, islandTo] of allOtherIslands.entries()) {
+        const distance = computeDistanceBetweenIslands(islandFrom.location, islandTo.location);
         islandRoutes[i] = {
             to: islandTo.id,
-            distanceKm: computeDistanceBetweenIslands(islandFrom.location, islandTo.location),
-            travelDays: 2,
+            distanceKm: distance,
             encounterTable: {}
         }
     }
     return islandRoutes;
 }
+
+/** Add something like this later, don't have it as a property of Route */
+// function computeTravelDays(distance: number, ship: Ship) {
+    
+// }
 
 class WorldGraph {
     private _routesFrom: IslandRoutes;
@@ -157,7 +162,6 @@ class WorldGraph {
 type Route = {
     to: number,
     distanceKm: number,
-    travelDays: number,
     encounterTable: Encounters
 }
 
