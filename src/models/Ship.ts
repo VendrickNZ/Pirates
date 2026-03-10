@@ -15,7 +15,7 @@ export interface ShipStats {
     minimumCrewToSail: number
     wagesPerDay: number
     speed: number
-    armor: number
+    armour: number
     damage: number
     currentWeight: number
     maxWeight: number
@@ -41,7 +41,7 @@ export class Ship {
     get minimumCrewToSail(): number { return this.stats.minimumCrewToSail; }
     get wagesPerDay(): number { return this.stats.wagesPerDay; }
     get speed(): number { return this.stats.speed; }
-    get armor(): number { return this.stats.armor; }
+    get armour(): number { return this.stats.armour; }
     get damage(): number { return this.stats.damage; }
     get currentWeight(): number { return this.stats.currentWeight; }
     get maxWeight(): number { return this.stats.maxWeight; }
@@ -133,7 +133,7 @@ function printShipStatistics(ship: Ship): string {
         `Minimum crew to sail: ${ship.minimumCrewToSail}`,
         `Wages per day: ${ship.wagesPerDay} Doubloons`,
         `Speed: ${ship.speed} km / day`,
-        `Armor: ${ship.armor}, Damage: ${ship.damage}`,
+        `Armor: ${ship.armour}, Damage: ${ship.damage}`,
         `Current weight: ${ship.currentWeight}`,
         `Max weight: ${ship.maxWeight}`,
         `Cargo: ${ship.cargo.currentCapacity} / ${ship.cargo.maxCapacity} slots filled`,
@@ -183,7 +183,7 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         minimumCrewToSail: 3,
         wagesPerDay: 10,
         speed: 5,
-        armor: 10,
+        armour: 10,
         damage: 3,
         currentWeight: 0,
         maxWeight: 150
@@ -197,7 +197,7 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         minimumCrewToSail: 4,
         wagesPerDay: 12,
         speed: 7,
-        armor: 12,
+        armour: 12,
         damage: 3,
         currentWeight: 0,
         maxWeight: 155
