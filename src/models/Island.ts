@@ -3,6 +3,8 @@ import type { GameState } from "../types/GameState";
 import { timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import type { ItemType } from "../types/Item";
+import { allEvents, getRandomEvents, type Encounters } from "../types/Encounters";
+import { getRandomInt } from "../utils/NumberUtils";
 
 const MAX_COORDINATE = 1000;
 const MIN_COORDINATE = -1000;
@@ -19,8 +21,8 @@ export type Island = {
 }
 
 function generateLocation(): IslandLocationVector2 {
-    const x = Math.random() * (MAX_COORDINATE - MIN_COORDINATE) + MIN_COORDINATE;
-    const y = Math.random() * (MAX_COORDINATE - MIN_COORDINATE) + MIN_COORDINATE;
+    const x = getRandomInt(MIN_COORDINATE, MAX_COORDINATE);
+    const y = getRandomInt(MIN_COORDINATE, MAX_COORDINATE);
 
     const roundedX = parseInt(x.toFixed(0));
     const roundedY = parseInt(y.toFixed(0));
@@ -116,6 +118,17 @@ function computeDistanceBetweenIslands(a: IslandLocationVector2, b: IslandLocati
     return parseInt(distance.toFixed(0));
 }
 
+function createEncounterTable(): Encounters {
+    const rawEventsToAdd = getRandomEvents();
+    
+    return { 1: {
+        type: 'Disease',
+        name: 'waa waa wee waa',
+        severity: 2,
+        weight: 3
+    }}
+    
+}
 function assignRoutes(islandFrom: Island): Route[] {
     const allOtherIslands = islands.filter(i => i.id !== islandFrom.id);
 
@@ -125,8 +138,8 @@ function assignRoutes(islandFrom: Island): Route[] {
         islandRoutes[i] = {
             to: islandTo.id,
             distanceKm: distance,
-            encounterTable: {}
-        }
+            encounterTable: createEncounterTable()
+        };
     }
     return islandRoutes;
 }
@@ -140,21 +153,9 @@ class WorldGraph {
     private _routesFrom: IslandRoutes;
 
     constructor() {
-        // this._routesFrom = {
-        //     1: [{
-        //         to: 2,
-        //         distanceKm: 1,
-        //         travelDays: 1,
-        //         encounterTable: {
-        //             1: 'Pirates',
-        //             99: 'Lightning Strikes'
-        //         }
-        //     }]
-        // }
-        this._routesFrom = assignAllRoutes()
+        this._routesFrom = assignAllRoutes();
     }
     get routesFrom() {
-        console.log('I am in the routesFrom getter');
         return this._routesFrom;
     }
 }
@@ -164,9 +165,6 @@ type Route = {
     distanceKm: number,
     encounterTable: Encounters
 }
-
-type Encounters = Record<number, Hazards>
-type Hazards = 'Pirates' | 'Lightning Strikes'
 
 export function getIslands(): Island[] {
     return islands;
@@ -180,7 +178,6 @@ export function getStartingIsland(): Island {
 
 export async function visitDocks(player: Player, rl: Interface): Promise<GameState> {
     const x = new WorldGraph();
-    console.log(x.routesFrom);
     printAvailableRoutes();
     await timeoutInSeconds(3);
     return 'At Island'
