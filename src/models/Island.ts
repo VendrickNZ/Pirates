@@ -1,10 +1,11 @@
 import type { Interface } from "readline";
 import type { GameState } from "../types/GameState";
-import { timeoutInSeconds } from "../utils/TextUtils";
+import { formatFloat, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import type { ItemType } from "../types/Item";
 import { getRandomEvents, type EncounterTable } from "../types/EncounterTable";
 import { getRandomInt } from "../utils/NumberUtils";
+import { test } from "node:test";
 
 const MAX_COORDINATE = 1000;
 const MIN_COORDINATE = -1000;
@@ -13,10 +14,24 @@ type IslandNames = 'Barataria Bay' | 'Port Royal' | 'Tortuga' | 'Prince Edward I
 type IslandCommoditiesTable = Record<ItemType, number>[];
 type IslandLocationVector2 = [number, number];
 
+
+type IslandId = number;
+type Route = {
+    destinationIslandId: IslandId,
+    distanceKm: number,
+    encounterTable: EncounterTable
+}
+type IslandRoutes = Record<IslandId, Route[]>;
+
 export type Island = {
     id: IslandId,
+
     name: IslandNames,
+
+    /** What modifiers to apply to item types */
     commodities: IslandCommoditiesTable,
+
+    /** Coordinates for XY position on world map */
     location: IslandLocationVector2
 }
 
@@ -97,9 +112,6 @@ const islands: Island[] = [
     }
 ]
 
-type IslandId = number;
-type IslandRoutes = Record<IslandId, Route[]>;
-
 function assignAllRoutes(): IslandRoutes {
     const islandRoutes: IslandRoutes = {};
     for (const island of islands) {
@@ -135,7 +147,7 @@ function assignRoutes(islandFrom: Island): Route[] {
     for (const [i, islandTo] of allOtherIslands.entries()) {
         const distance = computeDistanceBetweenIslands(islandFrom.location, islandTo.location);
         islandRoutes[i] = {
-            to: islandTo.id,
+            destinationIslandId: islandTo.id,
             distanceKm: distance,
             encounterTable: createEncounterTable()
         };
@@ -169,13 +181,6 @@ class WorldGraph {
         return this.allRoutes[this.currentIsland.id];
     }
 }
-
-type Route = {
-    to: number,
-    distanceKm: number,
-    encounterTable: EncounterTable
-}
-
 export function getIslands(): Island[] {
     return islands;
 }
@@ -194,6 +199,25 @@ export async function visitDocks(player: Player, rl: Interface): Promise<GameSta
 }
 
 function printAvailableRoutes(graph: WorldGraph) {
-    console.log('Available Routes:', graph.allRoutes);
+    printInformation('Available Routes:', 1);
+
+    const availableRoutes = graph.currentIslandRoutes;
+    for (const [i, route] of availableRoutes.entries()) {
+        const island = getIslands().find(i => i.id === route.destinationIslandId)!;
+        console.log(`[${i+1}] ${island.name} (${route.distanceKm} km)`);
+        formatEncounterTable(route.encounterTable)
+    }
 }
 
+function formatEncounterTable(table: EncounterTable) {
+    const totalWeight = table.reduce((acc, currItem) => acc + currItem.weight, 0);
+    const remainderWeight = 100 - totalWeight;
+
+    console.log(`There is a ${formatFloat(remainderWeight, 0)}% chance of encountering one of the following hazards while travelling to x island`);
+
+    for (const test of table) {
+        console.log(`\t- ${test.name} (${test.weight}%)`);
+    }
+
+    newLine(1);
+}

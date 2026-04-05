@@ -23,7 +23,7 @@ type WeatherEvent = {
 
 type RescueEvent = {
     type: 'Rescue',
-    shipName: string,
+    name: string,
     weight: number,
     numberOfSailors: number
 }
@@ -140,31 +140,31 @@ const WeatherEvents: WeatherEvent[] = [
 const RescueEvents: RescueEvent[] = [
     {
         "type": "Rescue",
-        "shipName": "RMS Titanic",
+        "name": "RMS Titanic",
         "weight": 2,
         "numberOfSailors": 5
     },
     {
         "type": "Rescue",
-        "shipName": "USS Arizona",
+        "name": "USS Arizona",
         "weight": 1,
         "numberOfSailors": 3
     },
     {
         "type": "Rescue",
-        "shipName": "RMS Lusitania",
+        "name": "RMS Lusitania",
         "weight": 3,
         "numberOfSailors": 6
     },
     {
         "type": "Rescue",
-        "shipName": "USS Boaty McBoatface",
+        "name": "USS Boaty McBoatface",
         "weight": 2,
         "numberOfSailors": 2
     },
     {
         "type": "Rescue",
-        "shipName": "USS Maine",
+        "name": "USS Maine",
         "weight": 1,
         "numberOfSailors": 5
     }
@@ -276,7 +276,6 @@ export function normalizeEncounterTable(events: Event[]) {
     if (totalWeight > MAX_ENCOUNTER_TABLE_PERCENTAGE) {
         removeEventsUntilValidEncounterTable(events, totalWeight);
     }
-
 
     return events;
 }
