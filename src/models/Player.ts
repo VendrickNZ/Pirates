@@ -67,7 +67,6 @@ export default class Player {
         if (!chosenItem) return;
 
         itemRef.units--;
-        chosenItem.units--;
 
         this._balance -= chosenItem.baseValue;
         this._ship.currentWeight += chosenItem.weight;
@@ -90,7 +89,6 @@ export default class Player {
         if (!chosenItem) return;
 
         itemRef.units++;
-        chosenItem.units++;
 
         this._balance += chosenItem.baseValue;
         this._ship.currentWeight -= chosenItem.weight;
