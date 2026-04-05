@@ -1,10 +1,12 @@
 import type { ShipStats } from "../models/Ship"
 import { getRandomFloat, getRandomInt } from "../utils/NumberUtils"
+import { formatFloat } from "../utils/TextUtils";
 
+const MAX_ENCOUNTER_TABLE_PERCENTAGE = 100;
 
-export type Encounters = Record<number, Event>
+export type EncounterTable = Event[];
 
-type Event = DiseaseEvent | WeatherEvent | RescueEvent | PirateEvent
+export type Event = DiseaseEvent | WeatherEvent | RescueEvent | PirateEvent
 type DiseaseEvent = {
     type: 'Disease',
     name: string,
@@ -260,15 +262,27 @@ export function getRandomEvents(min = 3, max = 7): Event[] {
         eventsChosen.push(allEvents[randomIndex]);
     }
 
-    console.log(numberOfEventsToGet);
-    return eventsChosen;
+    return normalizeEncounterTable(eventsChosen);
 }
 
-/** current issue is that i need to ensure that the total < 100, i need to do some extra logic/computation */
 export function normalizeEncounterTable(events: Event[]) {
-    const multiplier = getRandomFloat(0.5, 3);
     for (const event of events) {
+        const multiplier = getRandomFloat(0.5, 3);
         event.weight *= multiplier
-        event.weight = parseFloat(event.weight.toFixed(1));
+        event.weight = formatFloat(event.weight);
+    }
+
+    const totalWeight = events.reduce((acc, currEvent) => acc + currEvent.weight, 0);
+    if (totalWeight > MAX_ENCOUNTER_TABLE_PERCENTAGE) {
+        removeEventsUntilValidEncounterTable(events, totalWeight);
+    }
+
+
+    return events;
+}
+
+function removeEventsUntilValidEncounterTable(events: Event[], totalWeight: number) {
+    while (events.reduce((acc, currEvent) => acc + currEvent.weight, 0) < totalWeight) {
+        events.pop();
     }
 }

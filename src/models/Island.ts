@@ -3,7 +3,7 @@ import type { GameState } from "../types/GameState";
 import { timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import type { ItemType } from "../types/Item";
-import { allEvents, getRandomEvents, type Encounters } from "../types/Encounters";
+import { getRandomEvents, type EncounterTable } from "../types/EncounterTable";
 import { getRandomInt } from "../utils/NumberUtils";
 
 const MAX_COORDINATE = 1000;
@@ -118,15 +118,14 @@ function computeDistanceBetweenIslands(a: IslandLocationVector2, b: IslandLocati
     return parseInt(distance.toFixed(0));
 }
 
-function createEncounterTable(): Encounters {
-    const rawEventsToAdd = getRandomEvents();
+function createEncounterTable(): EncounterTable {
+    const events = getRandomEvents();
+    let encounterTable: EncounterTable = [];
+    for (const event of events) {
+        encounterTable.push(event);
+    }
     
-    return { 1: {
-        type: 'Disease',
-        name: 'waa waa wee waa',
-        severity: 2,
-        weight: 3
-    }}
+    return encounterTable;
     
 }
 function assignRoutes(islandFrom: Island): Route[] {
@@ -150,20 +149,31 @@ function assignRoutes(islandFrom: Island): Route[] {
 // }
 
 class WorldGraph {
+    private _currentIsland: Island;
     private _routesFrom: IslandRoutes;
 
     constructor() {
         this._routesFrom = assignAllRoutes();
+        this._currentIsland = getStartingIsland();
     }
+
     get routesFrom() {
         return this._routesFrom;
+    }
+
+    get currentIsland() {
+        return this._currentIsland;
+    }
+
+    get currentIslandRoutes() {
+        return this.routesFrom[this.currentIsland.id];
     }
 }
 
 type Route = {
     to: number,
     distanceKm: number,
-    encounterTable: Encounters
+    encounterTable: EncounterTable
 }
 
 export function getIslands(): Island[] {
@@ -172,18 +182,19 @@ export function getIslands(): Island[] {
 
 /** The starting island of Port Royal */
 export function getStartingIsland(): Island {
-    const islands = getIslands()
+    const islands = getIslands();
     return islands.find(d => d.name === 'Port Royal')!;
 }
 
 export async function visitDocks(player: Player, rl: Interface): Promise<GameState> {
     const x = new WorldGraph();
-    printAvailableRoutes();
+    console.log(x.currentIslandRoutes)
+    //printAvailableRoutes(x);
     await timeoutInSeconds(3);
     return 'At Island'
 }
 
-function printAvailableRoutes() {
-    console.log('Available Routes:');
+function printAvailableRoutes(graph: WorldGraph) {
+    console.log('Available Routes:', graph.routesFrom);
 }
 
