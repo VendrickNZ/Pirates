@@ -150,15 +150,15 @@ function assignRoutes(islandFrom: Island): Route[] {
 
 class WorldGraph {
     private _currentIsland: Island;
-    private _routesFrom: IslandRoutes;
+    private _allRoutes: IslandRoutes;
 
     constructor() {
-        this._routesFrom = assignAllRoutes();
+        this._allRoutes = assignAllRoutes();
         this._currentIsland = getStartingIsland();
     }
 
-    get routesFrom() {
-        return this._routesFrom;
+    get allRoutes() {
+        return this._allRoutes;
     }
 
     get currentIsland() {
@@ -166,7 +166,7 @@ class WorldGraph {
     }
 
     get currentIslandRoutes() {
-        return this.routesFrom[this.currentIsland.id];
+        return this.allRoutes[this.currentIsland.id];
     }
 }
 
@@ -188,13 +188,12 @@ export function getStartingIsland(): Island {
 
 export async function visitDocks(player: Player, rl: Interface): Promise<GameState> {
     const x = new WorldGraph();
-    console.log(x.currentIslandRoutes)
-    //printAvailableRoutes(x);
+    printAvailableRoutes(x);
     await timeoutInSeconds(3);
     return 'At Island'
 }
 
 function printAvailableRoutes(graph: WorldGraph) {
-    console.log('Available Routes:', graph.routesFrom);
+    console.log('Available Routes:', graph.allRoutes);
 }
 
