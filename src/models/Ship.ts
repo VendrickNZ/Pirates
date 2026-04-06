@@ -40,6 +40,7 @@ export class Ship {
     get numberOfBeds(): number { return this.stats.numberOfBeds; }
     get minimumCrewToSail(): number { return this.stats.minimumCrewToSail; }
     get wagesPerDay(): number { return this.stats.wagesPerDay; }
+    /** In knots */
     get speed(): number { return this.stats.speed; }
     get armour(): number { return this.stats.armour; }
     get damage(): number { return this.stats.damage; }
@@ -173,6 +174,13 @@ export function createShip(kind: keyof typeof ShipPresets) {
 
 type ShipsThatExist = 'StartingShip' | 'AnotherShip'
 
+
+/**
+ * When it comes to speed I'm going for generally:
+ * Slow: 4-6 knots
+ * Medium 8-10 knots
+ * Fast 12-14 knots
+ */
 export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
     'StartingShip': {
         name: 'The Black Pearl',
@@ -182,7 +190,7 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         numberOfBeds: 10,
         minimumCrewToSail: 3,
         wagesPerDay: 10,
-        speed: 5,
+        speed: 4,
         armour: 10,
         damage: 3,
         currentWeight: 0,
@@ -196,7 +204,7 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         numberOfBeds: 14,
         minimumCrewToSail: 4,
         wagesPerDay: 12,
-        speed: 7,
+        speed: 6,
         armour: 12,
         damage: 3,
         currentWeight: 0,
