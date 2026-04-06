@@ -252,15 +252,17 @@ const PirateEvents: PirateEvent[] = [
 
 export const allEvents = [...DiseaseEvents, ...WeatherEvents, ...RescueEvents, ...PirateEvents]
 
-/** Get min-max random events, defaults to 3-7 */
+/** Get min-max random events, defaults to 3-7, no duplicates */
 export function getRandomEvents(min = 3, max = 7): EncounterTable {
+    const eventsToChooseFrom = allEvents.slice();
     const numberOfEventsToGet = getRandomInt(min, max);
-    const totalNumberOfEvents = allEvents.length - 1;
 
     const eventsChosen = [];
-    for (let i = 0; i <= numberOfEventsToGet; i++) {
+    for (let i = 0; i < numberOfEventsToGet; i++) {
+        const totalNumberOfEvents = eventsToChooseFrom.length - 1;
         const randomIndex = getRandomInt(0, totalNumberOfEvents);
-        eventsChosen.push(allEvents[randomIndex]);
+        eventsChosen.push(eventsToChooseFrom[randomIndex]);
+        eventsToChooseFrom.splice(randomIndex, 1);
     }
 
     return normalizeEncounterTable(eventsChosen);
