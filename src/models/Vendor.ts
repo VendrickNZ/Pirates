@@ -69,7 +69,7 @@ export class Vendor {
         if (existingItem) {
             existingItem.units++;
         } else {
-            const newItem: ItemReference = { id: itemRef.id, units: 1 };
+            const newItem: ItemReference = { id: itemRef.id, units: 1, currentValue: itemRef.currentValue };
             this.inventory.push(newItem);
         }
 
