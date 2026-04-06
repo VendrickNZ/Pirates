@@ -1,21 +1,22 @@
 export type ItemType = 'Food' | 'Weapon' | 'Luxury' | 'Natural Resource' | 'Alcohol' | 'Common' | 'Medicine'
 
 export type Item = {
-    id: number,
-    name: string,
-    type: ItemType,
-    baseValue: number,
-    weight: number
+    readonly id: number,
+    readonly name: string,
+    readonly type: ItemType,
+    readonly baseValue: number,
+    readonly weight: number,
 }
 
 export type Inventory = ItemReference[]
 
 export interface ItemReference {
-    id: number;
+    readonly id: number;
     units: number;
+    currentValue: number;
 }
 
-export const GameItems: Item[] = [
+export const GameItems: readonly Item[] = [
     { id: 1, name: "Barrel of Rum", type: "Alcohol", baseValue: 30.0, weight: 5 },
     { id: 2, name: "Barrel of Wine", type: "Alcohol", baseValue: 35.0, weight: 5 },
     { id: 3, name: "Barrel of Mead", type: "Alcohol", baseValue: 26.0, weight: 5 },
@@ -81,6 +82,7 @@ export function getItems(n: number = 10): ItemReference[] {
     const itemList: ItemReference[] = [];
     for (let i = 0; i < n; ++i) {
         const item = GameItems[getRandomInt(GameItems)];
+
         const itemInStack = itemList.find(x => x.id == item.id);
 
         if (itemInStack) {
@@ -88,12 +90,13 @@ export function getItems(n: number = 10): ItemReference[] {
             continue;
         }
 
-        const newStackItem: ItemReference = { id: item.id, units: 1 };
+        const newStackItem: ItemReference = { id: item.id, units: 1, currentValue: item.baseValue };
         itemList.push(newStackItem);
     }
     return itemList;
 }
-function getRandomInt(items: Item[]) {
+
+function getRandomInt(items: readonly Item[]) {
     const minCeiled = Math.ceil(0);
     const maxFloored = Math.floor(items.length - 1);
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled)

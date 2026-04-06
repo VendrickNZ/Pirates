@@ -141,7 +141,7 @@ export function printAllSellCargoInformation(player: Player) {
 export function printSellCargoHeader(player: Player) {
     console.log(newLine(1));
     console.log(`Current balance: ${player.balance} Doubloons`);
-    console.log(`===== Selling Cargo at ${player.dockedAt.name} =====`);
+    console.log(`===== Selling Cargo at ${player.island.name} =====`);
 }
 
 // need to put my logs into some instruction builder at some point

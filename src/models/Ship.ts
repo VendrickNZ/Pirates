@@ -15,7 +15,7 @@ export interface ShipStats {
     minimumCrewToSail: number
     wagesPerDay: number
     speed: number
-    armor: number
+    armour: number
     damage: number
     currentWeight: number
     maxWeight: number
@@ -40,8 +40,9 @@ export class Ship {
     get numberOfBeds(): number { return this.stats.numberOfBeds; }
     get minimumCrewToSail(): number { return this.stats.minimumCrewToSail; }
     get wagesPerDay(): number { return this.stats.wagesPerDay; }
+    /** In knots */
     get speed(): number { return this.stats.speed; }
-    get armor(): number { return this.stats.armor; }
+    get armour(): number { return this.stats.armour; }
     get damage(): number { return this.stats.damage; }
     get currentWeight(): number { return this.stats.currentWeight; }
     get maxWeight(): number { return this.stats.maxWeight; }
@@ -60,7 +61,7 @@ export class Ship {
         if (existingItem) {
             existingItem.units++;
         } else {
-            const newItem: ItemReference = { id: itemRef.id, units: 1 };
+            const newItem: ItemReference = { id: itemRef.id, units: 1, currentValue: itemRef.currentValue };
             this._cargo.inventory.push(newItem);
         }
 
@@ -133,7 +134,7 @@ function printShipStatistics(ship: Ship): string {
         `Minimum crew to sail: ${ship.minimumCrewToSail}`,
         `Wages per day: ${ship.wagesPerDay} Doubloons`,
         `Speed: ${ship.speed} km / day`,
-        `Armor: ${ship.armor}, Damage: ${ship.damage}`,
+        `Armor: ${ship.armour}, Damage: ${ship.damage}`,
         `Current weight: ${ship.currentWeight}`,
         `Max weight: ${ship.maxWeight}`,
         `Cargo: ${ship.cargo.currentCapacity} / ${ship.cargo.maxCapacity} slots filled`,
@@ -173,6 +174,13 @@ export function createShip(kind: keyof typeof ShipPresets) {
 
 type ShipsThatExist = 'StartingShip' | 'AnotherShip'
 
+
+/**
+ * When it comes to speed I'm going for generally:
+ * Slow: 4-6 knots
+ * Medium 8-10 knots
+ * Fast 12-14 knots
+ */
 export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
     'StartingShip': {
         name: 'The Black Pearl',
@@ -182,8 +190,8 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         numberOfBeds: 10,
         minimumCrewToSail: 3,
         wagesPerDay: 10,
-        speed: 5,
-        armor: 10,
+        speed: 4,
+        armour: 10,
         damage: 3,
         currentWeight: 0,
         maxWeight: 150
@@ -196,8 +204,8 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         numberOfBeds: 14,
         minimumCrewToSail: 4,
         wagesPerDay: 12,
-        speed: 7,
-        armor: 12,
+        speed: 6,
+        armour: 12,
         damage: 3,
         currentWeight: 0,
         maxWeight: 155
