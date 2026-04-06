@@ -1,3 +1,4 @@
+import { format } from "node:url";
 import type { ShipStats } from "../models/Ship"
 import { getRandomFloat, getRandomInt } from "../utils/NumberUtils"
 import { formatFloat } from "../utils/TextUtils";
@@ -6,7 +7,7 @@ const MAX_ENCOUNTER_TABLE_PERCENTAGE = 100;
 
 export type EncounterTable = Event[];
 
-export type Event = DiseaseEvent | WeatherEvent | RescueEvent | PirateEvent
+export type Event = Readonly<DiseaseEvent> | Readonly<WeatherEvent> | Readonly<RescueEvent> | Readonly<PirateEvent>
 type DiseaseEvent = {
     type: 'Disease',
     name: string,
@@ -252,7 +253,7 @@ const PirateEvents: PirateEvent[] = [
 export const allEvents = [...DiseaseEvents, ...WeatherEvents, ...RescueEvents, ...PirateEvents]
 
 /** Get min-max random events, defaults to 3-7 */
-export function getRandomEvents(min = 3, max = 7): Event[] {
+export function getRandomEvents(min = 3, max = 7): EncounterTable {
     const numberOfEventsToGet = getRandomInt(min, max);
     const totalNumberOfEvents = allEvents.length - 1;
 
@@ -265,23 +266,24 @@ export function getRandomEvents(min = 3, max = 7): Event[] {
     return normalizeEncounterTable(eventsChosen);
 }
 
-export function normalizeEncounterTable(events: Event[]) {
-    for (const event of events) {
-        const multiplier = getRandomFloat(0.5, 3);
-        event.weight *= multiplier
-        event.weight = formatFloat(event.weight);
-    }
+export function normalizeEncounterTable(events: EncounterTable) {
+    const normalizedTable: EncounterTable = events.map(
+        x => ({
+            ...x,
+            weight: formatFloat(x.weight * getRandomFloat(0.5, 3))
+        })
+    )
 
-    const totalWeight = events.reduce((acc, currEvent) => acc + currEvent.weight, 0);
+    const totalWeight = normalizedTable.reduce((acc, currEvent) => acc + currEvent.weight, 0);
     if (totalWeight > MAX_ENCOUNTER_TABLE_PERCENTAGE) {
-        removeEventsUntilValidEncounterTable(events, totalWeight);
+        pruneEncounterTable(normalizedTable);
     }
 
-    return events;
+    return normalizedTable;
 }
 
-function removeEventsUntilValidEncounterTable(events: Event[], totalWeight: number) {
-    while (events.reduce((acc, currEvent) => acc + currEvent.weight, 0) < totalWeight) {
+function pruneEncounterTable(events: EncounterTable) {
+    while (events.reduce((acc, currEvent) => acc + currEvent.weight, 0) > MAX_ENCOUNTER_TABLE_PERCENTAGE) {
         events.pop();
     }
 }

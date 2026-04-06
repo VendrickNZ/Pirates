@@ -209,14 +209,14 @@ function printAvailableRoutes(graph: WorldGraph) {
     }
 }
 
-function formatEncounterTable(table: EncounterTable) {
-    const totalWeight = table.reduce((acc, currItem) => acc + currItem.weight, 0);
+function formatEncounterTable(encounterTable: EncounterTable) {
+    const totalWeight = encounterTable.reduce((acc, currItem) => acc + currItem.weight, 0);
     const remainderWeight = 100 - totalWeight;
 
     console.log(`There is a ${formatFloat(remainderWeight, 0)}% chance of encountering one of the following hazards while travelling to x island`);
 
-    for (const test of table) {
-        console.log(`\t- ${test.name} (${test.weight}%)`);
+    for (const event of encounterTable) {
+        console.log(`\t- ${event.name} (${event.weight}%)`);
     }
 
     newLine(1);
