@@ -1,9 +1,8 @@
-import { format } from "node:url";
 import type { ShipStats } from "../models/Ship"
 import { getRandomFloat, getRandomInt } from "../utils/NumberUtils"
 import { formatFloat } from "../utils/TextUtils";
 
-const MAX_ENCOUNTER_TABLE_PERCENTAGE = 100;
+export const MAX_ENCOUNTER_TABLE_PERCENTAGE = 100;
 
 export type EncounterTable = Event[];
 

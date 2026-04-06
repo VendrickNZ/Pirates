@@ -5,7 +5,6 @@ import type Player from "./Player";
 import type { ItemType } from "../types/Item";
 import { getRandomEvents, type EncounterTable } from "../types/EncounterTable";
 import { getRandomInt } from "../utils/NumberUtils";
-import { test } from "node:test";
 
 const MAX_COORDINATE = 1000;
 const MIN_COORDINATE = -1000;
@@ -211,9 +210,8 @@ function printAvailableRoutes(graph: WorldGraph) {
 
 function formatEncounterTable(encounterTable: EncounterTable) {
     const totalWeight = encounterTable.reduce((acc, currItem) => acc + currItem.weight, 0);
-    const remainderWeight = 100 - totalWeight;
 
-    console.log(`There is a ${formatFloat(remainderWeight, 0)}% chance of encountering one of the following hazards while travelling to x island`);
+    console.log(`There is a ${formatFloat(totalWeight, 0)}% chance of encountering one of the following hazards while travelling to x island`);
 
     for (const event of encounterTable) {
         console.log(`\t- ${event.name} (${event.weight}%)`);
