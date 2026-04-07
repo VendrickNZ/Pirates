@@ -99,7 +99,7 @@ export function paginate(pageOwner: PageOwner) {
     let page: Inventory = [];
 
     for (let i = 0; i < inventory.length; i++) {
-        const reference = { id: inventory[i].id, units: inventory[i].units }
+        const reference = { id: inventory[i].id, units: inventory[i].units, currentValue: inventory[i].currentValue }
         page.push(reference);
 
         if (page.length === pageSize) {
