@@ -3,7 +3,7 @@ import type { GameState } from "../types/GameState";
 import { formatCommand } from "../utils/TextUtils";
 import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
-import { Vendor, visitVendor } from "./Vendor";
+import { visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
 import { visitDocks } from "./Island";
 
@@ -13,7 +13,6 @@ export default class GameManager {
     private _player: Player;
     private _exitGame: boolean;
     private _state: GameState;
-    private _vendor: Vendor;
     private _rl: Interface;
 
     constructor(duration: number, seed: number, player: Player, rl: Interface) {
@@ -22,7 +21,6 @@ export default class GameManager {
         this._player = player;
         this._exitGame = false;
         this._state = 'At Island';
-        this._vendor = new Vendor(); // not final lol - this will need to be a list of Vendors I would guess?
         this._rl = rl;
     }
 
@@ -76,7 +74,7 @@ export default class GameManager {
             case 'Visit Docks':
                 return visitDocks(this._player, this._rl)
             case 'Visit Vendor':
-                return visitVendor(this._vendor, this._player, this._rl);
+                return visitVendor(this._player, this._rl);
             case 'Hire Crew':
                 return hireCrew(this._player, this._rl);
             case 'Exit':

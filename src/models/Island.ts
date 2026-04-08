@@ -6,6 +6,7 @@ import type { ItemType } from "../types/Item";
 import { getRandomEvents, type EncounterTable } from "../types/EncounterTable";
 import { getRandomInt } from "../utils/NumberUtils";
 import type { Ship } from "./Ship";
+import { Vendor } from "./Vendor";
 
 const MAX_COORDINATE = 1000;
 const MIN_COORDINATE = -1000;
@@ -29,15 +30,18 @@ type Route = {
 type IslandRoutes = Record<IslandId, Route[]>;
 
 export type Island = {
-    id: IslandId,
+    id: IslandId;
 
-    name: IslandNames,
+    name: IslandNames;
 
     /** What modifiers to apply to item types */
-    commodities: IslandCommoditiesTable,
+    commodities: IslandCommoditiesTable;
 
     /** Coordinates for XY position on world map */
-    location: IslandLocationVector2
+    location: IslandLocationVector2;
+
+    /** The given Islands vendor */
+    vendor: Vendor;
 }
 
 type RouteSelection =
@@ -69,7 +73,8 @@ const islands: Island[] = [
                 "Medicine": 1.00
             }
         ],
-        location: generateLocation()
+        location: generateLocation(),
+        vendor: new Vendor()
     },
     {
         id: 2,
@@ -85,7 +90,8 @@ const islands: Island[] = [
                 "Medicine": 1.00
             }
         ],
-        location: generateLocation()
+        location: generateLocation(),
+        vendor: new Vendor()
     },
     {
         id: 3,
@@ -101,7 +107,8 @@ const islands: Island[] = [
                 "Medicine": 1.00
             }
         ],
-        location: generateLocation()
+        location: generateLocation(),
+        vendor: new Vendor()
     },
     {
         id: 4,
@@ -117,7 +124,8 @@ const islands: Island[] = [
                 "Medicine": 1.00
             }
         ],
-        location: generateLocation()
+        location: generateLocation(),
+        vendor: new Vendor()
     }
 ]
 
@@ -206,7 +214,7 @@ export async function visitDocks(player: Player, rl: Interface): Promise<GameSta
     }
 
 
-    
+    await travelToIsland(selectedOption.routeIndex, player, rl);
     await timeoutInSeconds(2);
     return 'At Island'
 }
@@ -278,10 +286,7 @@ function isValidRoute(rawAnswer: string, numberOfRoutes: number) {
 
 function travelToIsland(selectedRoute: number, player: Player, rl: Interface) {
     const nonPlayerIslands = islands.filter(x => x.id !== player.island.id);
-    const islandToTravelTo = nonPlayerIslands.find(x => x.id === selectedRoute)!;
+    const islandToTravelTo = nonPlayerIslands[selectedRoute - 1];
 
     player.island = islandToTravelTo;
-    
-
-    // update vendor and routes on worldgraph
 }

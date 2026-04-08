@@ -6,7 +6,6 @@ import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber } 
 import { GameItems, type Item, type Inventory, getItems, type ItemReference } from "../types/Item";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
-import { type Island, getStartingIsland } from "./Island";
 
 
 export type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
@@ -18,13 +17,11 @@ export type VendorSession = {
 export class Vendor {
     private _balance: number;
     private _inventory: Inventory;
-    private _location: Island;
     private _page: Page;
 
     constructor() {
         this._balance = 200;
         this._inventory = restock();
-        this._location = getStartingIsland();
         this._page = new Page(this.inventory)
         paginate(this);
     }
@@ -35,10 +32,6 @@ export class Vendor {
 
     get inventory() {
         return this._inventory;
-    }
-
-    get location() {
-        return this._location; 
     }
 
     get page() {
@@ -96,7 +89,8 @@ function setupInitialVendorPages(vendor: Vendor) {
     vendor.page.maxPageNumber = vendor.page.calculateMaxPages(vendor.inventory);
 }
 
-export async function visitVendor(vendor: Vendor, player: Player, rl: Interface): Promise<GameState> {
+export async function visitVendor(player: Player, rl: Interface): Promise<GameState> {
+    const vendor = player.island.vendor;
     const session: VendorSession = { vendor, player };
     const vendorContext = new VendorContext(new BuyStrategy());
     setupInitialVendorPages(vendor);
