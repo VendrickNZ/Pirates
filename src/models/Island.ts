@@ -1,6 +1,6 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
-import { formatFloat, printInformation, timeoutInSeconds } from "../utils/TextUtils";
+import { formatCommand, formatFloat, isNumber, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import type { ItemType } from "../types/Item";
 import { getRandomEvents, type EncounterTable } from "../types/EncounterTable";
@@ -39,6 +39,10 @@ export type Island = {
     /** Coordinates for XY position on world map */
     location: IslandLocationVector2
 }
+
+type RouteSelection =
+    | { kind: 'selected'; routeIndex: number }
+    | { kind: 'back'; }
 
 function generateLocation(): IslandLocationVector2 {
     const x = getRandomInt(MIN_COORDINATE, MAX_COORDINATE);
@@ -160,11 +164,6 @@ function assignRoutes(islandFrom: Island): Route[] {
     return islandRoutes;
 }
 
-/** Add something like this later, don't have it as a property of Route */
-// function computeTravelDays(distance: number, ship: Ship) {
-    
-// }
-
 class WorldGraph {
     private _currentIsland: Island;
     private _allRoutes: IslandRoutes;
@@ -199,8 +198,16 @@ export function getStartingIsland(): Island {
 export async function visitDocks(player: Player, rl: Interface): Promise<GameState> {
     const x = new WorldGraph();
     printAvailableRoutes(x, player.ship);
-    await promptPlayerForRoute(player, rl);
-    await timeoutInSeconds(3);
+    const selectedOption = await promptPlayerForRoute(rl);
+
+    if (selectedOption.kind === 'back') {
+        await timeoutInSeconds(2);
+        return 'At Island'
+    }
+
+
+    
+    await timeoutInSeconds(2);
     return 'At Island'
 }
 
@@ -246,7 +253,35 @@ function printIslandRouteItemModifiers(island: Island) {
     }
 }
 
-async function promptPlayerForRoute(player: Player, rl: Interface) {
-    console.log(`Select a route (1-${islands.length - 1})`);
-    const rawAnswer = await rl.question('');
+async function promptPlayerForRoute(rl: Interface): Promise<RouteSelection> {
+    const numberOfRoutes = islands.length - 1;
+    while (true) {
+        console.log(`Select a route (1-${numberOfRoutes})`);
+
+        const rawAnswer = await rl.question('');
+
+        if (formatCommand(rawAnswer) === 'Exit') {
+            return { kind: 'back' }
+        }
+        if (isValidRoute(rawAnswer, numberOfRoutes)) {
+            return { kind: 'selected', routeIndex: parseInt(rawAnswer) };
+        }
+    }
+}
+
+function isValidRoute(rawAnswer: string, numberOfRoutes: number) {
+    if (!isNumber(rawAnswer)) return false;
+    const convertedAnswer = parseInt(rawAnswer);
+    if (convertedAnswer <= 0 || convertedAnswer > numberOfRoutes) return false;
+    return true;
+}
+
+function travelToIsland(selectedRoute: number, player: Player, rl: Interface) {
+    const nonPlayerIslands = islands.filter(x => x.id !== player.island.id);
+    const islandToTravelTo = nonPlayerIslands.find(x => x.id === selectedRoute)!;
+
+    player.island = islandToTravelTo;
+    
+
+    // update vendor and routes on worldgraph
 }
