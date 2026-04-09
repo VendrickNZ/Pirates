@@ -5,7 +5,7 @@ import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
-import { visitDocks } from "./WorldGraph";
+import { visitDocks, WorldGraph } from "./WorldGraph";
 
 export default class GameManager {
     private _duration: number;
@@ -14,6 +14,7 @@ export default class GameManager {
     private _exitGame: boolean;
     private _state: GameState;
     private _rl: Interface;
+    private _worldGraph: WorldGraph;
 
     constructor(duration: number, seed: number, player: Player, rl: Interface) {
         this._duration = duration;
@@ -22,6 +23,7 @@ export default class GameManager {
         this._exitGame = false;
         this._state = 'At Island';
         this._rl = rl;
+        this._worldGraph = new WorldGraph();
     }
 
     get daysRemaining(): number {
@@ -72,7 +74,7 @@ export default class GameManager {
             case 'View Cargo':
                 return viewCargo(this._player.ship, this._rl);
             case 'Visit Docks':
-                return visitDocks(this._player, this._rl)
+                return visitDocks(this._player, this._rl, this._worldGraph)
             case 'Visit Vendor':
                 return visitVendor(this._player, this._rl);
             case 'Hire Crew':

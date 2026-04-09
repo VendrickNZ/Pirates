@@ -3,7 +3,7 @@ import type { GameState } from "../types/GameState";
 import { formatCommand, formatFloat, isNumber, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { getRandomEvents, type EncounterTable } from "../types/EncounterTable";
-import { getIslands, getStartingIsland } from "./Island";
+import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
 import type { Ship } from "./Ship";
 
@@ -68,30 +68,23 @@ function assignRoutes(islandFrom: Island): Route[] {
 }
 
 export class WorldGraph {
-    private _currentIsland: Island;
     private _allRoutes: IslandRoutes;
 
     constructor() {
         this._allRoutes = assignAllRoutes();
-        this._currentIsland = getStartingIsland();
     }
 
     get allRoutes() {
         return this._allRoutes;
     }
 
-    get currentIsland() {
-        return this._currentIsland;
-    }
-
-    get currentIslandRoutes() {
-        return this.allRoutes[this.currentIsland.id];
+    getRoutesFor(islandId: IslandId) {
+        return this.allRoutes[islandId];
     }
 }
 
-export async function visitDocks(player: Player, rl: Interface): Promise<GameState> {
-    const graph = new WorldGraph();
-    printAvailableRoutes(graph, player.ship);
+export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<GameState> {
+    printAvailableRoutes(worldGraph, player);
     const selectedOption = await promptPlayerForRoute(rl);
 
     if (selectedOption.kind === 'back') {
@@ -99,18 +92,18 @@ export async function visitDocks(player: Player, rl: Interface): Promise<GameSta
         return 'At Island'
     }
 
-    await travelToIsland(selectedOption.routeIndex, player);
+    travelToIsland(selectedOption.routeIndex, player);
     await timeoutInSeconds(2);
     return 'At Island'
 }
 
-function printAvailableRoutes(graph: WorldGraph, playerShip: Ship) {
+function printAvailableRoutes(graph: WorldGraph, player: Player) {
     printInformation('Available Routes:', 0);
 
-    const availableRoutes = graph.currentIslandRoutes;
+    const availableRoutes = graph.getRoutesFor(player.island.id);
     for (const [i, route] of availableRoutes.entries()) {
         const island = getIslands().find(i => i.id === route.destinationIslandId)!;
-        printIslandRouteTitle(i, island.name, route.distanceKm, playerShip);
+        printIslandRouteTitle(i, island.name, route.distanceKm, player.ship);
         printIslandRouteInformation(route.encounterTable, island);
         printIslandRouteItemModifiers(island);
         printInformation('---', 0)
