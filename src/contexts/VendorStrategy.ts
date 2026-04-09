@@ -15,6 +15,7 @@ export interface VendorStrategy {
     playerAnswer(answer: string, session: VendorSession, ctx: VendorContext): VendorOptions
 }
 
+/** Look into making these templated? */
 export class BuyStrategy implements VendorStrategy {
 
     constructor() { }

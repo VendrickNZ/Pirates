@@ -5,7 +5,7 @@ import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
-import { visitDocks } from "./Island";
+import { visitDocks } from "./WorldGraph";
 
 export default class GameManager {
     private _duration: number;
