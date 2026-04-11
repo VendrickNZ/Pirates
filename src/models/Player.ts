@@ -32,6 +32,10 @@ export default class Player {
         return this._island;
     }
 
+    set island(island: Island) {
+        this._island = island;
+    }
+
     get islandName(): string {
         return this.island.name;
     }

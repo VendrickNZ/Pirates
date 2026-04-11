@@ -3,9 +3,9 @@ import type { GameState } from "../types/GameState";
 import { formatCommand } from "../utils/TextUtils";
 import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
-import { Vendor, visitVendor } from "./Vendor";
+import { visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
-import { visitDocks } from "./Island";
+import { visitDocks, WorldGraph } from "./WorldGraph";
 
 export default class GameManager {
     private _duration: number;
@@ -13,8 +13,8 @@ export default class GameManager {
     private _player: Player;
     private _exitGame: boolean;
     private _state: GameState;
-    private _vendor: Vendor;
     private _rl: Interface;
+    private _worldGraph: WorldGraph;
 
     constructor(duration: number, seed: number, player: Player, rl: Interface) {
         this._duration = duration;
@@ -22,8 +22,8 @@ export default class GameManager {
         this._player = player;
         this._exitGame = false;
         this._state = 'At Island';
-        this._vendor = new Vendor(); // not final lol - this will need to be a list of Vendors I would guess?
         this._rl = rl;
+        this._worldGraph = new WorldGraph();
     }
 
     get daysRemaining(): number {
@@ -74,9 +74,9 @@ export default class GameManager {
             case 'View Cargo':
                 return viewCargo(this._player.ship, this._rl);
             case 'Visit Docks':
-                return visitDocks(this._player, this._rl)
+                return visitDocks(this._player, this._rl, this._worldGraph)
             case 'Visit Vendor':
-                return visitVendor(this._vendor, this._player, this._rl);
+                return visitVendor(this._player, this._rl);
             case 'Hire Crew':
                 return hireCrew(this._player, this._rl);
             case 'Exit':
