@@ -8,6 +8,7 @@ import { type Island, getStartingIsland } from "./Island";
 export default class Player {
     private _name: string
     private _balance: number
+    /** Minor note 4fun here, this is an extrinsic attribute and should be on another object - not worth to change now */
     private _island: Island
     private _ship: Ship
 

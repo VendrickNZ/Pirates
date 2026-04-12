@@ -132,11 +132,9 @@ function printIslandRouteTitle(index: number, name: string, distance: number, pl
 }
 
 function printIslandRouteItemModifiers(island: Island) {
-    for (const commodity of island.commodities) {
-        Object.entries(commodity).forEach(([itemType, value]) => {
-            console.log(`${itemType}: ${value}`);
-        })
-    }
+    Object.entries(island.commodityMultipliers).forEach(([itemType, value]) => {
+        console.log(`${itemType}: ${value}`);
+    })
 }
 
 async function promptPlayerForRoute(rl: Interface): Promise<RouteSelection> {

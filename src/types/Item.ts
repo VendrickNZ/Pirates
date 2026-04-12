@@ -1,4 +1,5 @@
-export type ItemType = 'Food' | 'Weapon' | 'Luxury' | 'Natural Resource' | 'Alcohol' | 'Common' | 'Medicine'
+export const ItemTypes = ['Food', 'Weapon', 'Luxury', 'Natural Resource', 'Alcohol', 'Common', 'Medicine']
+export type ItemType = typeof ItemTypes[number];
 
 export type Item = {
     readonly id: number,

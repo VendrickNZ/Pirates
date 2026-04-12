@@ -6,7 +6,9 @@ import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber } 
 import { GameItems, type Item, type Inventory, getItems, type ItemReference } from "../types/Item";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
+import type { IslandCommoditiesTable } from "./Island";
 
+const STARTING_VENDOR_BALANCE = 250;
 
 export type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
 export type VendorSession = {
@@ -19,10 +21,10 @@ export class Vendor {
     private _inventory: Inventory;
     private _page: Page;
 
-    constructor() {
-        this._balance = 200;
-        this._inventory = restock();
-        this._page = new Page(this.inventory)
+    constructor(commodityMultipliers: IslandCommoditiesTable) {
+        this._balance = STARTING_VENDOR_BALANCE;
+        this._inventory = restock(commodityMultipliers);
+        this._page = new Page(this.inventory);
         paginate(this);
     }
 
@@ -78,7 +80,7 @@ export class Vendor {
  * I am going to make this a lot more complex - or at least a bit more complex
  * Looks redundant currently, but it aligns more with what I want to do in short term future
  */
-export function restock() {
+export function restock(commodityMultipliers: IslandCommoditiesTable) {
     const items = getItems(50);
     return items;
 }
