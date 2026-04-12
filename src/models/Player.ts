@@ -72,7 +72,7 @@ export default class Player {
 
         itemRef.units--;
 
-        this._balance -= chosenItem.baseValue;
+        this._balance -= itemRef.currentValue;
         this._ship.currentWeight += chosenItem.weight;
         this._ship.addCargo(itemRef);
     }
