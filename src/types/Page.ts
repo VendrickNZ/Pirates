@@ -135,7 +135,7 @@ export function printInventoryStock(pageOwner: PageOwner) {
         if (!item) continue;
 
         const itemIndex = i + 1 + pageNumberIndexShift;
-        console.log(`${itemIndex} - ${item.name} (${item.type}) x${itemRef.units} ${inventoryFormatter(itemRef, i + 1)} ${item.baseValue} Doubloons`);
+        console.log(`${itemIndex} - ${item.name} (${item.type}) x${itemRef.units} ${inventoryFormatter(itemRef, i + 1)} ${itemRef.currentValue} Doubloons`);
     }
 }
 

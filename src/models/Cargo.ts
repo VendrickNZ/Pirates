@@ -103,7 +103,7 @@ export default class Cargo {
         const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return false;
 
-        if (!(await player.canSell(item.baseValue, vendor))) return false;
+        if (!(await player.canSell(itemRef.currentValue, vendor))) return false;
 
         player.sellItem(itemRef);
         vendor.acquireItem(itemRef);

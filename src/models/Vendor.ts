@@ -1,9 +1,9 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
-import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
+import { formatCommand, formatFloat, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber } from "../types/Page";
-import { GameItems, type Item, type Inventory, getItems, type ItemReference } from "../types/Item";
+import { GameItems, type Inventory, getItems, type ItemReference } from "../types/Item";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
 import type { IslandCommoditiesTable } from "./Island";
@@ -48,7 +48,7 @@ export class Vendor {
         const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return false;
         
-        if (!(await player.canPurchase(item.baseValue, item.weight))) return false;
+        if (!(await player.canPurchase(itemRef.currentValue, item.weight))) return false;
         
         player.purchaseItem(itemRef);
         cleanInventory(this);
@@ -82,6 +82,11 @@ export class Vendor {
  */
 export function restock(commodityMultipliers: IslandCommoditiesTable) {
     const items = getItems(50);
+    for (const itemReference of items) {
+        const actualItem = GameItems.find(x => x.id === itemReference.id);
+        itemReference.currentValue *= commodityMultipliers[actualItem!.type]
+        itemReference.currentValue = formatFloat(itemReference.currentValue, 1);
+    }
     return items;
 }
 
@@ -149,11 +154,6 @@ function hasSelectedValidItem(rawAnswer: string, session: VendorSession, ctx: Ve
     }
 
     return itemReferenceChosen;
-}
-
-export function printSuccessfulItemPurchase(item: Item): VendorOptions {
-    console.log(`Ye purchased ${item.name} for ${item.baseValue} Doubloons!`);
-    return 'Continue';
 }
 
 export function nextPage(ctx: VendorContext, session: VendorSession): VendorOptions {
