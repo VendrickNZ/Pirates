@@ -66,7 +66,7 @@ export default class Player {
         return hasEnoughMoney && shipHasEnoughSpace;
     }
 
-    // assumes Player can purchase
+    /** assumes Player can purchase */
     purchaseItem(itemRef: ItemReference) {
         const chosenItem = GameItems.find(x => x.id == itemRef.id);
         if (!chosenItem) return;
