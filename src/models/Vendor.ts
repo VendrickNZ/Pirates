@@ -4,6 +4,7 @@ import { formatCommand, formatFloat, isNumber, newLine, printInformation, timeou
 import type Player from "./Player";
 import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber } from "../types/Page";
 import { GameItems, type Inventory, getItems, type ItemReference } from "../types/Item";
+import { updateGlobalItemPrice } from "./Market";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
 import type { IslandCommoditiesTable } from "./Island";
@@ -47,10 +48,14 @@ export class Vendor {
 
         const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return false;
+
+        const itemPrice = formatFloat(itemRef.currentValue * updateGlobalItemPrice(itemRef.id, player), 1);
+
+        console.log(`${item.baseValue} ${itemRef.currentValue} ${itemPrice}`);
         
-        if (!(await player.canPurchase(itemRef.currentValue, item.weight))) return false;
+        if (!(await player.canPurchase(itemPrice, item.weight))) return false;
         
-        player.purchaseItem(itemRef);
+        player.purchaseItem(itemRef, itemPrice);
         cleanInventory(this);
         const cargo = player.ship.cargo;
         this.page.updateMaxPages(this.inventory);
@@ -83,9 +88,9 @@ export class Vendor {
 export function restock(commodityMultipliers: IslandCommoditiesTable) {
     const items = getItems(50);
     for (const itemReference of items) {
-        const actualItem = GameItems.find(x => x.id === itemReference.id);
-        itemReference.currentValue *= commodityMultipliers[actualItem!.type]
-        itemReference.currentValue = formatFloat(itemReference.currentValue, 1);
+        const actualItem = GameItems.find(x => x.id === itemReference.id)!;
+        const multiplier = commodityMultipliers[actualItem.type];
+        itemReference.currentValue = formatFloat(actualItem?.baseValue * multiplier, 1);
     }
     return items;
 }

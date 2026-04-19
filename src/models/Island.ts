@@ -46,12 +46,7 @@ function createIsland(id: IslandId, name: IslandNames): Island {
     }
 }
 
-const islands: Island[] = [
-    createIsland(1, 'Barataria Bay'),
-    createIsland(2, 'Port Royal'),
-    createIsland(3, 'Tortuga'),
-    createIsland(4, 'Prince Edward Island')
-];
+let islands: Island[] | null = null;
 
 function generateCommodityMultipliers() {
     const commodityMultiplier: IslandCommoditiesTable = {};
@@ -62,6 +57,14 @@ function generateCommodityMultipliers() {
 }
 
 export function getIslands(): Island[] {
+    if (!islands) {
+        islands = [
+            createIsland(1, 'Barataria Bay'),
+            createIsland(2, 'Port Royal'),
+            createIsland(3, 'Tortuga'),
+            createIsland(4, 'Prince Edward Island')
+        ];
+    }
     return islands;
 }
 

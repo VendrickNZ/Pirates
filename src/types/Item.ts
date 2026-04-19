@@ -1,6 +1,3 @@
-import { getIslands } from "../models/Island";
-import type Player from "../models/Player";
-import { formatFloat } from "../utils/TextUtils";
 
 export const ItemTypes = ['Food', 'Weapon', 'Luxury', 'Natural Resource', 'Alcohol', 'Common', 'Medicine']
 export type ItemType = typeof ItemTypes[number];
@@ -105,33 +102,4 @@ function getRandomInt(items: readonly Item[]) {
     const minCeiled = Math.ceil(0);
     const maxFloored = Math.floor(items.length - 1);
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled)
-}
-
-/** still need to handle selling (price reduces), and i actually need to set them */
-export function updateGlobalItemPrice(itemId: number, player: Player) {
-    const islands = getIslands();
-    const vendorTotal = islands.reduce((total, island) => {
-        const item = island.vendor.inventory.find(x => x.id === itemId);
-        return total + (item?.units ?? 0);
-    }, 0)
-
-    const playerTotal = player.ship.cargo.inventory.find(x => x.id === itemId)?.units ?? 0;
-
-    const worldTotal = vendorTotal + playerTotal;
-
-    const playerOwnPercentage = formatFloat(playerTotal / worldTotal, 0);
-    const monopolyMultiplier = itemMonopolyMultiplier(playerOwnPercentage)
-
-    const item = GameItems.find(x => x.id === itemId);
-    const newPrice = (item?.baseValue ?? 0) * monopolyMultiplier;
-
-
-}
-
-function itemMonopolyMultiplier(marketShare: number) {
-    return (1 + 2*marketShare) ** 1.5;
-}
-
-function setNewPrices() {
-
 }

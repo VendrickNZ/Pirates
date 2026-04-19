@@ -67,13 +67,14 @@ export default class Player {
     }
 
     /** assumes Player can purchase */
-    purchaseItem(itemRef: ItemReference) {
+    purchaseItem(itemRef: ItemReference, itemPrice: number) {
         const chosenItem = GameItems.find(x => x.id == itemRef.id);
         if (!chosenItem) return;
 
         itemRef.units--;
 
-        this._balance -= itemRef.currentValue;
+        console.log(`I am purchasing for ${itemPrice}`);
+        this._balance -= itemPrice;
         this._ship.currentWeight += chosenItem.weight;
         this._ship.addCargo(itemRef);
     }
