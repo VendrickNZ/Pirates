@@ -1,7 +1,7 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
 import { GameItems, type Inventory } from "../types/Item";
-import { cleanInventory, Page, printInventoryStock, printPageNumber, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
+import { cleanInventory, Page, printInventoryStock, printPageNumber, updateInventoryPrices, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
 import { formatCommand, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import type { Ship } from "./Ship";
@@ -108,6 +108,8 @@ export default class Cargo {
         player.sellItem(itemRef);
         vendor.acquireItem(itemRef);
         cleanInventory(this);
+        updateInventoryPrices(vendor, player);
+
         this.page.updateMaxPages(this.inventory);
         vendor.page.updateMaxPages(vendor.inventory);
         return true;

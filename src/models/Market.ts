@@ -1,9 +1,9 @@
 import Player from "./Player";
 import { getIslands, type IslandCommoditiesTable } from "./Island";
 import { formatFloat } from "../utils/TextUtils";
-import { Vendor } from "./Vendor";
+import type { Item } from "../types/Item";
 
-export function updateGlobalItemPrice(itemId: number, player: Player) {
+export function getMonopolyMultiplier(itemId: number, player: Player) {
     const islands = getIslands();
     const vendorTotal = islands.reduce((total, island) => {
         const item = island.vendor.inventory.find(x => x.id === itemId);
@@ -14,17 +14,20 @@ export function updateGlobalItemPrice(itemId: number, player: Player) {
 
     const worldTotal = vendorTotal + playerTotal;
 
+    if (worldTotal === 0) return 1;
+
     const playerOwnPercentage = formatFloat(playerTotal / worldTotal, 6);
-    const monopolyMultiplier = itemMonopolyMultiplier(playerOwnPercentage);
+    const monopolyMultiplier = applyItemMonopolyMultiplierFunction(playerOwnPercentage);
     
     return monopolyMultiplier;
 }
 
-function itemMonopolyMultiplier(marketShare: number) {
+function applyItemMonopolyMultiplierFunction(marketShare: number) {
     console.log(`Share: ${marketShare}, calc: ${(1 + 2*marketShare)**1.5}`);
     return (1 + 2*marketShare) ** 1.5;
 }
 
-export function recomputePrices(vendor: Vendor, multipliers: IslandCommoditiesTable, player: Player) {
-    return 
+export function recomputePrices(item: Item, multipliers: IslandCommoditiesTable, player: Player) {
+    const commodityMultiplier = multipliers[item.type];
+    return item.baseValue * commodityMultiplier * getMonopolyMultiplier(item.id, player);
 }

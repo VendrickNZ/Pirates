@@ -1,6 +1,8 @@
 import type Cargo from "../models/Cargo";
+import { recomputePrices } from "../models/Market";
+import type Player from "../models/Player";
 import { type Vendor } from "../models/Vendor";
-import { printInformation } from "../utils/TextUtils";
+import { formatFloat, printInformation } from "../utils/TextUtils";
 import { GameItems, type ItemReference, type Inventory } from "./Item";
 
 export const PAGE_SIZE = 10;
@@ -155,4 +157,12 @@ export function cleanInventory(pageOwner: PageOwner) {
         }
     }
     paginate(pageOwner);
+}
+
+/** maybe make this page owner? */
+export function updateInventoryPrices(vendor: Vendor, player: Player) {
+    for (const itemReference of vendor.inventory) {
+        const item = GameItems.find(x => x.id === itemReference.id)!;
+        itemReference.currentValue = formatFloat(recomputePrices(item, vendor.commodities, player), 1);
+    }
 }

@@ -1,10 +1,10 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
-import { formatCommand, formatFloat, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
+import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
-import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber } from "../types/Page";
+import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber, updateInventoryPrices } from "../types/Page";
 import { GameItems, type Inventory, getItems, type ItemReference } from "../types/Item";
-import { updateGlobalItemPrice } from "./Market";
+import { recomputePrices } from "./Market";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
 import type { IslandCommoditiesTable } from "./Island";
@@ -21,11 +21,13 @@ export class Vendor {
     private _balance: number;
     private _inventory: Inventory;
     private _page: Page;
+    private _commodities: IslandCommoditiesTable;
 
     constructor(commodityMultipliers: IslandCommoditiesTable) {
         this._balance = STARTING_VENDOR_BALANCE;
-        this._inventory = restock(commodityMultipliers);
+        this._inventory = restock();
         this._page = new Page(this.inventory);
+        this._commodities = commodityMultipliers;
         paginate(this);
     }
 
@@ -41,6 +43,10 @@ export class Vendor {
         return this._page;
     }
 
+    get commodities() {
+        return this._commodities;
+    }
+
     /** Checks if the Player can purchase item, if so, purchases it. */
     async buyItem(id: number, player: Player) {
         const itemRef = this.inventory.find(item => item.id === id);
@@ -49,14 +55,14 @@ export class Vendor {
         const item = GameItems.find(x => x.id === itemRef.id);
         if (!item) return false;
 
-        const itemPrice = formatFloat(itemRef.currentValue * updateGlobalItemPrice(itemRef.id, player), 1);
-
-        console.log(`${item.baseValue} ${itemRef.currentValue} ${itemPrice}`);
+        const itemPrice = recomputePrices(item, this._commodities, player)
         
         if (!(await player.canPurchase(itemPrice, item.weight))) return false;
         
         player.purchaseItem(itemRef, itemPrice);
         cleanInventory(this);
+        updateInventoryPrices(this, player);
+
         const cargo = player.ship.cargo;
         this.page.updateMaxPages(this.inventory);
         cargo.page.updateMaxPages(cargo.inventory)
@@ -85,13 +91,8 @@ export class Vendor {
  * I am going to make this a lot more complex - or at least a bit more complex
  * Looks redundant currently, but it aligns more with what I want to do in short term future
  */
-export function restock(commodityMultipliers: IslandCommoditiesTable) {
+export function restock() {
     const items = getItems(50);
-    for (const itemReference of items) {
-        const actualItem = GameItems.find(x => x.id === itemReference.id)!;
-        const multiplier = commodityMultipliers[actualItem.type];
-        itemReference.currentValue = formatFloat(actualItem?.baseValue * multiplier, 1);
-    }
     return items;
 }
 
@@ -105,6 +106,7 @@ export async function visitVendor(player: Player, rl: Interface): Promise<GameSt
     const vendor = player.island.vendor;
     const session: VendorSession = { vendor, player };
     const vendorContext = new VendorContext(new BuyStrategy());
+    updateInventoryPrices(vendor, player);
     setupInitialVendorPages(vendor);
     vendorContext.printAllPlayerInstructions(session);
 
