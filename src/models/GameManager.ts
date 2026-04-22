@@ -30,6 +30,14 @@ export default class GameManager {
         return this._duration;
     }
 
+    set daysRemaining(daysRemaining: number) {
+        if (daysRemaining < 0) {
+            console.log('ye game is finished!');
+            this.endGame();
+        }
+        this._duration = daysRemaining;
+    }
+
     async run() {
         while (!this._exitGame) {
             this._state = await this.handleState(this._state);
@@ -89,7 +97,7 @@ export default class GameManager {
 
     async handleVisitDocks(): Promise<GameState> {
         const result = await visitDocks(this._player, this._rl, this._worldGraph);
-        this._duration -= result.daysPassed;
+        this.daysRemaining -= result.daysPassed;
         return result.nextState;
     }
 
