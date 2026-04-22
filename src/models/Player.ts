@@ -45,6 +45,10 @@ export default class Player {
         return this._ship;
     }
 
+    deductWages(daysPassed: number) {
+        this._balance -= (this.ship.crew * 2) * daysPassed;
+    }
+
     addFunds(funds: number) {
         this._balance += funds;
     }

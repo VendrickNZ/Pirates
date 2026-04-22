@@ -171,5 +171,6 @@ function travelToIsland(selectedRoute: number, player: Player, worldGraph: World
     const daysPassed = computeTravelDays(route.distanceKm, player.ship);
 
     player.island = islandToTravelTo;
+    player.deductWages(daysPassed);
     return daysPassed;
 }
