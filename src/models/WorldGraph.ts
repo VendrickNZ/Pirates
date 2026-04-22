@@ -141,7 +141,7 @@ async function promptPlayerForRoute(rl: Interface): Promise<RouteSelection> {
     const islands = getIslands();
     const numberOfRoutes = islands.length - 1;
     while (true) {
-        console.log(`Select a route (1-${numberOfRoutes})`);
+        console.log(`Select a route (1-${numberOfRoutes}) or exit`);
 
         const rawAnswer = await rl.question('');
 
