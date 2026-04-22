@@ -83,18 +83,20 @@ export class WorldGraph {
     }
 }
 
-export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<GameState> {
+export type DocksResult = { nextState: GameState, daysPassed: number };
+
+export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<DocksResult> {
     printAvailableRoutes(worldGraph, player);
     const selectedOption = await promptPlayerForRoute(rl);
 
     if (selectedOption.kind === 'back') {
         await timeoutInSeconds(2);
-        return 'At Island'
+        return { nextState: 'At Island', daysPassed: 0 };
     }
 
-    travelToIsland(selectedOption.routeIndex, player);
+    const daysPassed = travelToIsland(selectedOption.routeIndex, player, worldGraph);
     await timeoutInSeconds(2);
-    return 'At Island'
+    return { nextState: 'At Island', daysPassed };
 }
 
 function printAvailableRoutes(graph: WorldGraph, player: Player) {
@@ -161,9 +163,13 @@ function isValidRoute(rawAnswer: string, numberOfRoutes: number) {
     return true;
 }
 
-function travelToIsland(selectedRoute: number, player: Player) {
+function travelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph): number {
     const nonPlayerIslands = getIslands().filter(x => x.id !== player.island.id);
     const islandToTravelTo = nonPlayerIslands[selectedRoute - 1];
 
+    const route = worldGraph.getRoutesFor(player.island.id)[selectedRoute - 1];
+    const daysPassed = computeTravelDays(route.distanceKm, player.ship);
+
     player.island = islandToTravelTo;
+    return daysPassed;
 }

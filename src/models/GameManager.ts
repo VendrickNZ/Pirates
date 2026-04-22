@@ -74,7 +74,7 @@ export default class GameManager {
             case 'View Cargo':
                 return viewCargo(this._player.ship, this._rl);
             case 'Visit Docks':
-                return visitDocks(this._player, this._rl, this._worldGraph)
+                return this.handleVisitDocks();
             case 'Visit Vendor':
                 return visitVendor(this._player, this._rl);
             case 'Hire Crew':
@@ -85,6 +85,12 @@ export default class GameManager {
                 console.log(`Invalid command ${state}. Please try again`);
                 return this.promptPlayer();
         }
+    }
+
+    async handleVisitDocks(): Promise<GameState> {
+        const result = await visitDocks(this._player, this._rl, this._worldGraph);
+        this._duration -= result.daysPassed;
+        return result.nextState;
     }
 
     async endGame(): Promise<GameState> {
