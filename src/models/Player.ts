@@ -4,7 +4,6 @@ import { createShip, type Ship } from "./Ship"
 import type { Vendor } from "./Vendor"
 import { type Island, getStartingIsland } from "./Island";
 
-
 export default class Player {
     private _name: string
     private _balance: number
@@ -45,8 +44,23 @@ export default class Player {
         return this._ship;
     }
 
-    deductWages(daysPassed: number) {
-        this._balance -= (this.ship.crew * 2) * daysPassed;
+    calculateCrewWageCost(daysPassed: number) {
+        return formatFloat((this.ship.crew * 10) * daysPassed);
+    }
+
+    canAffordToPayWages(daysPassed: number) {
+        const cost = this.calculateCrewWageCost(daysPassed);
+        if (this._balance - cost >= 0) {
+            this.deductWages(cost);
+            return true;
+        }
+        console.log('ye cannot afford ye ship mates yarrrr');
+        console.log(`ye shipmates are costin ya ${cost} doubloons but ye only have ${this.balance}`);
+        return false;
+    }
+
+    deductWages(cost: number) {
+        this._balance -= cost;
     }
 
     addFunds(funds: number) {

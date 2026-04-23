@@ -170,7 +170,9 @@ function travelToIsland(selectedRoute: number, player: Player, worldGraph: World
     const route = worldGraph.getRoutesFor(player.island.id)[selectedRoute - 1];
     const daysPassed = computeTravelDays(route.distanceKm, player.ship);
 
+    if (!player.canAffordToPayWages(daysPassed)) {
+        return 0;
+    }
     player.island = islandToTravelTo;
-    player.deductWages(daysPassed);
     return daysPassed;
 }
