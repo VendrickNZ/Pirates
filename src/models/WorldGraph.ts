@@ -94,7 +94,7 @@ export async function visitDocks(player: Player, rl: Interface, worldGraph: Worl
         return { nextState: 'At Island', daysPassed: 0 };
     }
 
-    const daysPassed = travelToIsland(selectedOption.routeIndex, player, worldGraph);
+    const daysPassed = attemptTravelToIsland(selectedOption.routeIndex, player, worldGraph);
     await timeoutInSeconds(2);
     return { nextState: 'At Island', daysPassed };
 }
@@ -163,7 +163,7 @@ function isValidRoute(rawAnswer: string, numberOfRoutes: number) {
     return true;
 }
 
-function travelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph): number {
+function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph): number {
     const nonPlayerIslands = getIslands().filter(x => x.id !== player.island.id);
     const islandToTravelTo = nonPlayerIslands[selectedRoute - 1];
 
