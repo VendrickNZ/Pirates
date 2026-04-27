@@ -2,7 +2,7 @@ import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
 import { formatCommand, formatFloat, isNumber, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
-import { getRandomEvents, type EncounterTable } from "../types/EncounterTable";
+import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, type PirateEvent, type RescueEvent, type WeatherEvent } from "../types/EncounterTable";
 import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
 import type { Ship } from "./Ship";
@@ -170,9 +170,68 @@ function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph
     const route = worldGraph.getRoutesFor(player.island.id)[selectedRoute - 1];
     const daysPassed = computeTravelDays(route.distanceKm, player.ship);
 
+    const selectedEvent = selectEvent(route.encounterTable);
+
+    if (selectedEvent.result) {
+        playEvent(selectedEvent.event, player.ship);
+    }
+
     if (!player.canAffordToPayWages(daysPassed)) {
         return 0;
     }
     player.island = islandToTravelTo;
     return daysPassed;
+}
+
+type ReceivedEvent = 
+ | { result: true, event: Event }
+ | { result: false }
+
+function selectEvent(encounterTable: EncounterTable): ReceivedEvent {
+    let roll = Math.random() * 100;
+    for (const event of encounterTable) {
+        roll -= event.weight;
+        if (roll < 0) return { result: true, event: event };
+    }
+
+    return { result: false }
+}
+
+function playEvent(event: Event, ship: Ship) {
+    switch (event.type) {
+        case 'Disease':
+            return playDiseaseEvent(event, ship);
+        case 'Weather':
+            return playWeatherEvent(event, ship);
+        case 'Rescue':
+            return playRescueEvent(event, ship);
+        case 'Pirate':
+            return playPirateEvent(event, ship);
+        default:
+            return;
+    }
+}
+
+function playDiseaseEvent(event: DiseaseEvent, ship: Ship) {
+    const crewToRemove = Math.ceil(ship.crew * event.severity);
+    const crewRemoved = Math.min(crewToRemove, ship.crew)
+    ship.removeCrew(crewRemoved);
+    
+    console.log(`ye caught ${event.name} and ${crewRemoved} crew mates were slain`);
+    console.log(`ye only have ${ship.crew} mateys left`);
+}
+
+function playWeatherEvent(event: WeatherEvent, ship: Ship) {
+    console.log('the weather not lookin too good');
+    // needs access to ship, ship: Ship
+}
+
+function playRescueEvent(event: RescueEvent, ship: Ship) {
+    console.log('some people to rescue!');
+    // needs access to ship/crew
+}
+
+function playPirateEvent(event: PirateEvent, ship: Ship) {
+    console.log('oh no some pirates');
+    // ship.
 }

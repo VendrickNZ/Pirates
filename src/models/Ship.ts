@@ -99,7 +99,10 @@ export class Ship {
     }
 
     removeCrew(crewToRemove: number) {
-
+        this.stats.crew -= crewToRemove;
+        if (this.stats.crew < 0) {
+            this.stats.crew = 0;
+        }
     }
 
     async viewCargo(rl: Interface) {
