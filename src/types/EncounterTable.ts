@@ -4,31 +4,32 @@ import { formatFloat } from "../utils/TextUtils";
 
 export const MAX_ENCOUNTER_TABLE_PERCENTAGE = 100;
 
+/** List of Events */
 export type EncounterTable = Event[];
 
 export type Event = Readonly<DiseaseEvent> | Readonly<WeatherEvent> | Readonly<RescueEvent> | Readonly<PirateEvent>
-type DiseaseEvent = {
+export type DiseaseEvent = {
     type: 'Disease',
     name: string,
     weight: number,
     severity: number
 }
 
-type WeatherEvent = {
+export type WeatherEvent = {
     type: 'Weather',
     name: string,
     weight: number,
     severity: number
 }
 
-type RescueEvent = {
+export type RescueEvent = {
     type: 'Rescue',
     name: string,
     weight: number,
     numberOfSailors: number
 }
 
-type PirateEvent = {
+export type PirateEvent = {
     type: 'Pirate',
     name: string,
     weight: number,

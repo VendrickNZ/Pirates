@@ -6,6 +6,8 @@ import type Player from "./Player"
 import Upgrades from "./Upgrades"
 import { GameItems, type ItemReference } from "../types/Item"
 
+export const COST_TO_HIRE_CREW = 50;
+export const CALCULATE_COST_TO_HIRE_CREW = (numberOfCrew: number) => (numberOfCrew * COST_TO_HIRE_CREW);
 export interface ShipStats {
     name: string
     currentHealth: number
@@ -23,37 +25,38 @@ export interface ShipStats {
 
 
 export class Ship {
-    private stats: ShipStats;
+    private _stats: ShipStats;
     private _cargo: Cargo;
     private _upgrades: Upgrades;
 
     constructor(stats: ShipStats) {
-        this.stats = stats;
+        this._stats = stats;
         this._cargo = new Cargo(this.maxWeight);
         this._upgrades = new Upgrades();
     }
 
-    get name(): string { return this.stats.name; }
-    get currentHealth(): number { return this.stats.currentHealth; }
-    get maxHealth(): number { return this.stats.maxHealth; }
-    get crew(): number { return this.stats.crew; }
-    get numberOfBeds(): number { return this.stats.numberOfBeds; }
-    get minimumCrewToSail(): number { return this.stats.minimumCrewToSail; }
-    get wagesPerDay(): number { return this.stats.wagesPerDay; }
+    get name(): string { return this._stats.name; }
+    get currentHealth(): number { return this._stats.currentHealth; }
+    get maxHealth(): number { return this._stats.maxHealth; }
+    get crew(): number { return this._stats.crew; }
+    get numberOfBeds(): number { return this._stats.numberOfBeds; }
+    get minimumCrewToSail(): number { return this._stats.minimumCrewToSail; }
+    get wagesPerDay(): number { return this._stats.wagesPerDay; }
     /** In knots */
-    get speed(): number { return this.stats.speed; }
-    get armour(): number { return this.stats.armour; }
-    get damage(): number { return this.stats.damage; }
-    get currentWeight(): number { return this.stats.currentWeight; }
-    get maxWeight(): number { return this.stats.maxWeight; }
+    get speed(): number { return this._stats.speed; }
+    get armour(): number { return this._stats.armour; }
+    get damage(): number { return this._stats.damage; }
+    get currentWeight(): number { return this._stats.currentWeight; }
+    get maxWeight(): number { return this._stats.maxWeight; }
     get cargo(): Cargo { return this._cargo; }
     get upgrades(): Upgrades { return this._upgrades; }
     get cargoMax(): number { return this.cargo.maxCapacity; }
     get upgradeCount(): number { return this.upgrades.currentNumber; }
     get upgradeMax(): number { return this.upgrades.maxNumber; }
+    get stats(): ShipStats { return this._stats; }
 
     set currentWeight(weight: number) {
-        this.stats.currentWeight = weight;
+        this._stats.currentWeight = weight;
     }
 
     addCargo(itemRef: ItemReference) {
@@ -82,19 +85,21 @@ export class Ship {
         this._cargo.update();
     }
 
-    addCrew(crewToHire: number, player: Player): CrewOutcome {
+    haveEnoughSpaceForCrew(crewToHire: number): CrewOutcome {
         if (this.stats.crew + crewToHire > this.numberOfBeds) {
             return { kind: 'NotEnoughBeds', beds: this.stats.numberOfBeds, currentCrew: this.stats.crew, attempted: crewToHire }
         }
 
-        const cost = crewToHire * 200;
-        if (cost > player.balance) {
-            return { kind: 'NotEnoughMoney', cost, balance: player.balance }
-        }
+        return { kind: 'Success' }
+    }
 
+    addCrew(crewToHire: number): CrewOutcome {
         this.stats.crew += crewToHire;
-        player.removeFunds(cost);
-        return { kind: "Success", cost, crew: crewToHire }
+        return { kind: "Success" }
+    }
+
+    removeCrew(crewToRemove: number) {
+
     }
 
     async viewCargo(rl: Interface) {
@@ -102,8 +107,8 @@ export class Ship {
     }
 }
 
-type CrewOutcome =
-    | { kind: 'Success'; cost: number; crew: number }
+export type CrewOutcome =
+    | { kind: 'Success' }
     | { kind: 'NotEnoughBeds'; beds: number; attempted: number; currentCrew: number }
     | { kind: 'NotEnoughMoney'; cost: number; balance: number }
     | { kind: 'NotANumber'; input: string }
@@ -111,7 +116,6 @@ type CrewOutcome =
 
 function message(outcome: CrewOutcome) {
     switch (outcome.kind) {
-        case 'Success': return `Ye hired ${outcome.crew} crewmate fer ${outcome.cost} Doubloons!\n`
         case 'NotEnoughBeds': return `Thar be nah enough cots on yer ship. Ye only 'ave ${outcome.beds} cots 'n ${outcome.currentCrew} crew but be wantin' t' add ${outcome.attempted} more.\n`
         case 'NotEnoughMoney': return `Ye be tryin' t' spend ${outcome.cost} Doubloons, but ye only 'ave ${outcome.balance}. Ye be broke.\n`
         case 'NotANumber': return `Blast ye! ${outcome.input} ain't a number. Give it another go.\n`
@@ -145,7 +149,6 @@ function printShipStatistics(ship: Ship): string {
 export async function hireCrew(player: Player, rl: Interface): Promise<GameState> {
     const crewToHirePlayerResponse = await rl.question("Enter the number of crew you'd like to hire: ");
 
-    let outcome: CrewOutcome;
     if (!isNumber(crewToHirePlayerResponse)) {
         console.log(message({ kind: 'NotANumber', input: crewToHirePlayerResponse }));
         return hireCrew(player, rl);
@@ -153,16 +156,26 @@ export async function hireCrew(player: Player, rl: Interface): Promise<GameState
 
     const crewToHire = parseInt(crewToHirePlayerResponse);
     if (crewToHire < 0) {
-        console.log(message({ kind: 'NegativeValue' }))
+        console.log(message({ kind: 'NegativeValue' }));
         return hireCrew(player, rl);
     }
 
-    outcome = player.ship.addCrew(crewToHire, player);
-    console.log(message(outcome));
-    
-    if (outcome.kind !== 'Success') {
+    const cost = CALCULATE_COST_TO_HIRE_CREW(crewToHire);
+
+    const spaceOutcome = player.ship.haveEnoughSpaceForCrew(crewToHire);
+    if (spaceOutcome.kind !== 'Success') {
+        console.log(message(spaceOutcome));
         return hireCrew(player, rl);
     }
+
+    if (player.balance < cost) {
+        console.log(message({ kind: 'NotEnoughMoney', cost, balance: player.balance }));
+        return hireCrew(player, rl);
+    }
+
+    player.ship.addCrew(crewToHire);
+    player.removeFunds(cost);
+    console.log(`Ye hired ${crewToHire} crewmates fer ${cost} Doubloons!\n`);
 
     return 'At Island';
 }
