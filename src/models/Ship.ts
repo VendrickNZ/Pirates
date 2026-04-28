@@ -23,7 +23,6 @@ export interface ShipStats {
     maxWeight: number
 }
 
-
 export class Ship {
     private _stats: ShipStats;
     private _cargo: Cargo;
@@ -213,7 +212,7 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         crew: 0,
         numberOfBeds: 10,
         minimumCrewToSail: 3,
-        wagesPerDay: 10,
+        wagesPerDay: 2,
         speed: 4,
         armour: 10,
         damage: 3,
@@ -227,7 +226,7 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         crew: 0,
         numberOfBeds: 14,
         minimumCrewToSail: 4,
-        wagesPerDay: 12,
+        wagesPerDay: 3,
         speed: 6,
         armour: 12,
         damage: 3,
