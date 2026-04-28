@@ -55,8 +55,12 @@ export class Ship {
     get upgradeMax(): number { return this.upgrades.maxNumber; }
     get stats(): ShipStats { return this._stats; }
 
+    set currentHealth(health: number) {
+        this.stats.currentHealth = health;
+    }
+
     set currentWeight(weight: number) {
-        this._stats.currentWeight = weight;
+        this.stats.currentWeight = weight;
     }
 
     addCargo(itemRef: ItemReference) {
@@ -103,6 +107,10 @@ export class Ship {
         if (this.stats.crew < 0) {
             this.stats.crew = 0;
         }
+    }
+
+    takeDamage(damageToTake: number) {
+        this.currentHealth -= damageToTake;
     }
 
     async viewCargo(rl: Interface) {

@@ -211,27 +211,38 @@ function playEvent(event: Event, ship: Ship) {
             return;
     }
 }
-
-function playDiseaseEvent(event: DiseaseEvent, ship: Ship) {
+type EventResult = { survived: boolean }
+function playDiseaseEvent(event: DiseaseEvent, ship: Ship): EventResult {
     const crewToRemove = Math.ceil(ship.crew * event.severity);
     const crewRemoved = Math.min(crewToRemove, ship.crew)
     ship.removeCrew(crewRemoved);
     
     console.log(`ye caught ${event.name} and ${crewRemoved} crew mates were slain`);
     console.log(`ye only have ${ship.crew} mateys left`);
+    return { 'survived': true };
 }
 
-function playWeatherEvent(event: WeatherEvent, ship: Ship) {
-    console.log('the weather not lookin too good');
-    // needs access to ship, ship: Ship
+function playWeatherEvent(event: WeatherEvent, ship: Ship): EventResult {
+    const damageToDeal = (event.severity * ship.maxHealth);
+    ship.takeDamage(damageToDeal);
+
+    if (ship.currentHealth <= 0) {
+        console.log(`ye sailed into a ${event.name}`);
+        console.log(`ye ship took ${damageToDeal} damage, ye 'n all o' yer crewmates died`);
+        return { 'survived': false };
+    }
+
+    console.log(`ye sailed into a ${event.name}`);
+    console.log(`ye ship took ${damageToDeal} damage, ye only have ${ship.currentHealth} health left`);
+    return { 'survived': true };
 }
 
-function playRescueEvent(event: RescueEvent, ship: Ship) {
+function playRescueEvent(event: RescueEvent, ship: Ship): EventResult {
     console.log('some people to rescue!');
     // needs access to ship/crew
 }
 
-function playPirateEvent(event: PirateEvent, ship: Ship) {
+function playPirateEvent(event: PirateEvent, ship: Ship): EventResult {
     console.log('oh no some pirates');
     // ship.
 }
