@@ -6,6 +6,7 @@ import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, ty
 import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
 import type { Ship } from "./Ship";
+import { constructReadline } from "../utils/ReadlineUtils";
 
 const HOURS_IN_DAY = 24;
 
@@ -94,7 +95,7 @@ export async function visitDocks(player: Player, rl: Interface, worldGraph: Worl
         return { nextState: 'At Island', daysPassed: 0 };
     }
 
-    const daysPassed = attemptTravelToIsland(selectedOption.routeIndex, player, worldGraph);
+    const daysPassed = await attemptTravelToIsland(selectedOption.routeIndex, player, worldGraph);
     await timeoutInSeconds(2);
     return { nextState: 'At Island', daysPassed };
 }
@@ -163,7 +164,7 @@ function isValidRoute(rawAnswer: string, numberOfRoutes: number) {
     return true;
 }
 
-function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph): number {
+async function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph): Promise<number> {
     const nonPlayerIslands = getIslands().filter(x => x.id !== player.island.id);
     const islandToTravelTo = nonPlayerIslands[selectedRoute - 1];
 
@@ -173,7 +174,7 @@ function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph
     const selectedEvent = selectEvent(route.encounterTable);
 
     if (selectedEvent.result) {
-        playEvent(selectedEvent.event, player.ship);
+        await playEvent(selectedEvent.event, player.ship);
     }
 
     if (!player.canAffordToPayWages(daysPassed)) {
@@ -197,7 +198,7 @@ function selectEvent(encounterTable: EncounterTable): ReceivedEvent {
     return { result: false }
 }
 
-function playEvent(event: Event, ship: Ship) {
+async function playEvent(event: Event, ship: Ship) {
     switch (event.type) {
         case 'Disease':
             return playDiseaseEvent(event, ship);
@@ -237,9 +238,29 @@ function playWeatherEvent(event: WeatherEvent, ship: Ship): EventResult {
     return { 'survived': true };
 }
 
-function playRescueEvent(event: RescueEvent, ship: Ship): EventResult {
+async function playRescueEvent(event: RescueEvent, ship: Ship): Promise<EventResult> {
     console.log('some people to rescue!');
-    // needs access to ship/crew
+    console.log(`ye found ${event.numberOfSailors} marooned sailors`);
+    console.log(`ye 'ave ${ship.numberOfBeds} cots available on yer ship`);
+    const rl = constructReadline();
+    while (true) {
+        console.log(`how many do ye wants t' save?`);
+        const answer = await rl.question('');
+        if (!isNumber(answer)) {
+            console.log(`yar choose a number of sailors`);
+            continue;
+        };
+        const convertedAnswer = parseInt(answer);
+
+        const largestNumberAllowed = Math.min(event.numberOfSailors, ship.numberOfBeds - ship.crew);
+        if (convertedAnswer >= 0 && convertedAnswer <= largestNumberAllowed) {
+            console.log(`ye obtained ${convertedAnswer} sailors`);
+            ship.addCrew(convertedAnswer);
+            break;
+        }
+    }
+
+    return { 'survived': true };
 }
 
 function playPirateEvent(event: PirateEvent, ship: Ship): EventResult {
