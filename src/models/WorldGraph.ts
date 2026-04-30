@@ -5,7 +5,7 @@ import type Player from "./Player";
 import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, type PirateEvent, type RescueEvent, type WeatherEvent } from "../types/EncounterTable";
 import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
-import type { Ship } from "./Ship";
+import type { Ship, ShipStats } from "./Ship";
 
 const HOURS_IN_DAY = 24;
 
@@ -264,5 +264,40 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface): P
 
 function playPirateEvent(event: PirateEvent, ship: Ship): EventResult {
     console.log('oh no some pirates');
-    // ship.
+    return initiateCombat(ship.stats, event.ship)
+}
+
+function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats): EventResult {
+    let playersTurn = playerShip.speed > enemyShip.speed;
+    while (!eitherShipHasBeenDestroyed(playerShip.currentHealth, enemyShip.currentHealth)) {
+        if (playersTurn) {
+            shipAttack(playerShip, enemyShip);
+        } else {
+            shipAttack(enemyShip, playerShip)
+        }
+        playersTurn = !playersTurn;
+    }
+
+    const survived = playerShip.currentHealth === 0 ? false : true;
+    return { 'survived': survived };
+
+}
+
+function eitherShipHasBeenDestroyed(playerHealth: number, enemyHealth: number) {
+    return playerHealth <= 0 || enemyHealth <= 0;
+}
+
+function shipAttack(attackingShip: ShipStats, defendingShip: ShipStats) {
+    const attackRoll = rollCombatDice();
+    const defenceRoll = rollCombatDice();
+
+    const damage = (100 / (100 + defenceRoll * defendingShip.armour)) * attackRoll * attackingShip.damage;
+    defendingShip.currentHealth -= damage;
+
+    console.log(`${attackingShip.name} attacked ${defendingShip.name} for ${damage} damage`);
+    console.log(`${defendingShip.name} has ${defendingShip.currentHealth}/${defendingShip.maxHealth} health remaining`);
+}
+
+function rollCombatDice(): number {
+    return Math.floor(Math.random() * 6) + 1;
 }
