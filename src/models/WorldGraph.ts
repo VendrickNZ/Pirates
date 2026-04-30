@@ -298,6 +298,7 @@ function shipAttack(attackingShip: ShipStats, defendingShip: ShipStats) {
     console.log(`${defendingShip.name} has ${defendingShip.currentHealth}/${defendingShip.maxHealth} health remaining`);
 }
 
+/** D6 dice roll */
 function rollCombatDice(): number {
     return Math.floor(Math.random() * 6) + 1;
 }
