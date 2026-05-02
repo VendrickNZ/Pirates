@@ -291,7 +291,10 @@ function shipAttack(attackingShip: ShipStats, defendingShip: ShipStats) {
     const attackRoll = rollCombatDice();
     const defenceRoll = rollCombatDice();
 
-    const damage = (100 / (100 + defenceRoll * defendingShip.armour)) * attackRoll * attackingShip.damage;
+    const damage = formatFloat(
+        (100 / (100 + defenceRoll * defendingShip.armour)) * attackRoll * attackingShip.damage,
+        0
+    );
     defendingShip.currentHealth -= damage;
 
     console.log(`${attackingShip.name} attacked ${defendingShip.name} for ${damage} damage`);
