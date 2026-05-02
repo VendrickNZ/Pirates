@@ -6,7 +6,7 @@ import { viewShip, hireCrew } from "./Ship";
 import { visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
 import { visitDocks, WorldGraph } from "./WorldGraph";
-
+import { GameOverError, type GameOverReason } from "./GameOver";
 export default class GameManager {
     private _duration: number;
     private _seed: number;
@@ -32,15 +32,23 @@ export default class GameManager {
 
     set daysRemaining(daysRemaining: number) {
         if (daysRemaining < 0) {
-            console.log('ye game is finished!');
-            this.endGame();
+            throw new GameOverError('Time');
         }
         this._duration = daysRemaining;
     }
 
     async run() {
-        while (!this._exitGame) {
-            this._state = await this.handleState(this._state);
+        try {
+            while (!this._exitGame) {
+                this._state = await this.handleState(this._state);
+            }
+        }
+        catch (e) {
+            if (e instanceof GameOverError) {
+                await this.endGame(e.reason);
+            } else {
+                throw(e);
+            }
         }
     }
 
@@ -88,7 +96,7 @@ export default class GameManager {
             case 'Hire Crew':
                 return hireCrew(this._player, this._rl);
             case 'Exit':
-                return this.endGame();
+                return this.endGame('Selected Exit');
             default:
                 console.log(`Invalid command ${state}. Please try again`);
                 return this.promptPlayer();
@@ -101,9 +109,29 @@ export default class GameManager {
         return result.nextState;
     }
 
-    async endGame(): Promise<GameState> {
+    async endGame(reason: GameOverReason): Promise<GameState> {
+        printEndOfGameInformation(reason);
         this._exitGame = true;
         this._rl.close();
         return 'Exit';
     }
+}
+
+function printEndOfGameInformation(reason: GameOverReason) {
+    switch (reason) {
+        case 'Selected Exit':
+            console.log('You selected Exit. Game over!');
+            break;
+        case 'Combat':
+            console.log('You died in combat. Game over!');
+            break;
+        case 'Time':
+            console.log('You ran out of time. Game over!');
+            break;
+        case 'Weather':
+            console.log('You died in a storm. Game over!');
+            break;
+    }
+
+    console.log('Your final score is xxx');
 }

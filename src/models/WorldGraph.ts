@@ -1,5 +1,6 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
+import { GameOverError } from "./GameOver";
 import { formatCommand, formatFloat, isNumber, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, type PirateEvent, type RescueEvent, type WeatherEvent } from "../types/EncounterTable";
@@ -211,33 +212,30 @@ async function playEvent(event: Event, ship: Ship, rl: Interface) {
             return;
     }
 }
-type EventResult = { survived: boolean }
-function playDiseaseEvent(event: DiseaseEvent, ship: Ship): EventResult {
+function playDiseaseEvent(event: DiseaseEvent, ship: Ship): void {
     const crewToRemove = Math.ceil(ship.crew * event.severity);
     const crewRemoved = Math.min(crewToRemove, ship.crew)
     ship.removeCrew(crewRemoved);
-    
+
     console.log(`ye caught ${event.name} and ${crewRemoved} crew mates were slain`);
     console.log(`ye only have ${ship.crew} mateys left`);
-    return { 'survived': true };
 }
 
-function playWeatherEvent(event: WeatherEvent, ship: Ship): EventResult {
+function playWeatherEvent(event: WeatherEvent, ship: Ship) {
     const damageToDeal = (event.severity * ship.maxHealth);
     ship.takeDamage(damageToDeal);
 
     if (ship.currentHealth <= 0) {
         console.log(`ye sailed into a ${event.name}`);
         console.log(`ye ship took ${damageToDeal} damage, ye 'n all o' yer crewmates died`);
-        return { 'survived': false };
+        throw new GameOverError('Weather');
     }
 
     console.log(`ye sailed into a ${event.name}`);
     console.log(`ye ship took ${damageToDeal} damage, ye only have ${ship.currentHealth} health left`);
-    return { 'survived': true };
 }
 
-async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface): Promise<EventResult> {
+async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
     console.log('some people to rescue!');
     console.log(`ye found ${event.numberOfSailors} marooned sailors`);
     console.log(`ye 'ave ${ship.numberOfBeds} cots available on yer ship`);
@@ -258,16 +256,14 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface): P
         }
         console.log(`yar that number is invalid`);
     }
-
-    return { 'survived': true };
 }
 
-function playPirateEvent(event: PirateEvent, ship: Ship): EventResult {
+function playPirateEvent(event: PirateEvent, ship: Ship) {
     console.log('oh no some pirates');
-    return initiateCombat(ship.stats, event.ship)
+    initiateCombat(ship.stats, event.ship);
 }
 
-function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats): EventResult {
+function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats) {
     let playersTurn = playerShip.speed > enemyShip.speed;
     while (!eitherShipHasBeenDestroyed(playerShip.currentHealth, enemyShip.currentHealth)) {
         if (playersTurn) {
@@ -278,9 +274,9 @@ function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats): EventResul
         playersTurn = !playersTurn;
     }
 
-    const survived = playerShip.currentHealth === 0 ? false : true;
-    return { 'survived': survived };
-
+    if (playerShip.currentHealth <= 0) {
+        throw new GameOverError('Combat');
+    }
 }
 
 function eitherShipHasBeenDestroyed(playerHealth: number, enemyHealth: number) {
