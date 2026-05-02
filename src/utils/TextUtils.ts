@@ -63,11 +63,6 @@ export function isValidGameDuration(durationString: string): boolean {
     return false;
 }
 
-export function isValidWorldSeed(worldSeed: string) {
-    // TODO: implement properly
-    return true ? worldSeed.length == 0 || isNumber(worldSeed) : false;
-}
-
 export function formatFloat(number: number, dp = 1) {
     return parseFloat(number.toFixed(dp));
 }

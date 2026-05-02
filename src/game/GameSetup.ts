@@ -1,7 +1,7 @@
 import { Interface } from "node:readline/promises";
 import Player from "../models/Player";
 import GameManager from "../models/GameManager";
-import { completer, isValidGameDuration, isValidPlayerName, isValidWorldSeed, printInformation } from "../utils/TextUtils";
+import { completer, isValidGameDuration, isValidPlayerName, printInformation } from "../utils/TextUtils";
 import { constructReadline } from "../utils/ReadlineUtils";
 import type { DevConfigs } from "./runDev";
 
@@ -9,21 +9,20 @@ export async function createNewGame(configs?: DevConfigs) {
     const rl = constructReadline(completer);
 
     if (configs) {
-        const { duration, worldSeed, name } = configs;
+        const { duration, name } = configs;
         const player = createPlayer(name);
-        const gm = new GameManager(duration, worldSeed, player, rl);
+        const gm = new GameManager(duration, player, rl);
         gm.beginGame();
         return;
     }
 
     const name = await promptPlayerName(rl);
     const duration = await promptGameDuration(rl);
-    const worldSeed = await promptWorldSeed(rl);
 
     printInformation('Intro text...')
 
     const player = createPlayer(name);
-    const gm = new GameManager(duration, worldSeed, player, rl);
+    const gm = new GameManager(duration, player, rl);
     gm.beginGame();
 }
 
@@ -50,16 +49,5 @@ async function promptGameDuration(rl: Interface): Promise<number> {
         return promptGameDuration(rl);
     } else {
         return parseInt(duration);
-    }
-}
-
-async function promptWorldSeed(rl: Interface): Promise<number> {
-    const seed = await rl.question('Enter a world seed (optional): ');
-
-    if (!isValidWorldSeed(seed)) {
-        console.log(`${seed} is invalid, please try again. \n`)
-        return promptWorldSeed(rl);
-    } else {
-        return parseInt(seed);
     }
 }

@@ -9,16 +9,14 @@ import { visitDocks, WorldGraph } from "./WorldGraph";
 import { GameOverError, type GameOverReason } from "./GameOver";
 export default class GameManager {
     private _duration: number;
-    private _seed: number;
     private _player: Player;
     private _exitGame: boolean;
     private _state: GameState;
     private _rl: Interface;
     private _worldGraph: WorldGraph;
 
-    constructor(duration: number, seed: number, player: Player, rl: Interface) {
+    constructor(duration: number, player: Player, rl: Interface) {
         this._duration = duration;
-        this._seed = seed;
         this._player = player;
         this._exitGame = false;
         this._state = 'At Island';
@@ -50,10 +48,6 @@ export default class GameManager {
                 throw(e);
             }
         }
-    }
-
-    printValues() {
-        console.log(this._duration, this._seed);
     }
 
     beginGame() {

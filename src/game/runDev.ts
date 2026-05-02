@@ -6,8 +6,7 @@ export function runDev() {
 
 const devConfigs = {
     name: 'Jakib',
-    duration: 50,
-    worldSeed: 1
+    duration: 50
 }
 
 export type DevConfigs = typeof devConfigs;

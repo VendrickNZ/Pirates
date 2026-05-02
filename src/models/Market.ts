@@ -23,7 +23,6 @@ export function getMonopolyMultiplier(itemId: number, player: Player) {
 }
 
 function applyItemMonopolyMultiplierFunction(marketShare: number) {
-    console.log(`Share: ${marketShare}, calc: ${(1 + 2*marketShare)**1.5}`);
     return (1 + 2*marketShare) ** 1.5;
 }
 
