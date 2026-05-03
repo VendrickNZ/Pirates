@@ -24,6 +24,42 @@ type RouteSelection =
     | { kind: 'selected'; routeIndex: number }
     | { kind: 'back'; }
 
+type ReceivedEvent =
+    | { result: true, event: Event }
+    | { result: false }
+
+export type DocksResult = { nextState: GameState, daysPassed: number };
+
+export class WorldGraph {
+    private _allRoutes: IslandRoutes;
+
+    constructor() {
+        this._allRoutes = assignAllRoutes();
+    }
+
+    get allRoutes() {
+        return this._allRoutes;
+    }
+
+    getRoutesFor(islandId: IslandId) {
+        return this.allRoutes[islandId];
+    }
+}
+
+export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<DocksResult> {
+    printAvailableRoutes(worldGraph, player);
+    const selectedOption = await promptPlayerForRoute(rl);
+
+    if (selectedOption.kind === 'back') {
+        await timeoutInSeconds(2);
+        return { nextState: 'At Island', daysPassed: 0 };
+    }
+
+    const daysPassed = await attemptTravelToIsland(selectedOption.routeIndex, player, worldGraph, rl);
+    await timeoutInSeconds(2);
+    return { nextState: 'At Island', daysPassed };
+}
+
 function assignAllRoutes(): IslandRoutes {
     const islands = getIslands();
     const islandRoutes: IslandRoutes = {};
@@ -32,6 +68,21 @@ function assignAllRoutes(): IslandRoutes {
         islandRoutes[islandId] = assignRoutes(island);
     }
 
+    return islandRoutes;
+}
+
+function assignRoutes(islandFrom: Island): Route[] {
+    const allOtherIslands = getIslands().filter(i => i.id !== islandFrom.id);
+
+    const islandRoutes: Route[] = [];
+    for (const [i, islandTo] of allOtherIslands.entries()) {
+        const distance = computeDistanceBetweenIslands(islandFrom.location, islandTo.location);
+        islandRoutes[i] = {
+            destinationIslandId: islandTo.id,
+            distanceKm: distance,
+            encounterTable: createEncounterTable()
+        };
+    }
     return islandRoutes;
 }
 
@@ -53,53 +104,6 @@ function createEncounterTable(): EncounterTable {
     return encounterTable;
 }
 
-function assignRoutes(islandFrom: Island): Route[] {
-    const allOtherIslands = getIslands().filter(i => i.id !== islandFrom.id);
-
-    const islandRoutes: Route[] = [];
-    for (const [i, islandTo] of allOtherIslands.entries()) {
-        const distance = computeDistanceBetweenIslands(islandFrom.location, islandTo.location);
-        islandRoutes[i] = {
-            destinationIslandId: islandTo.id,
-            distanceKm: distance,
-            encounterTable: createEncounterTable()
-        };
-    }
-    return islandRoutes;
-}
-
-export class WorldGraph {
-    private _allRoutes: IslandRoutes;
-
-    constructor() {
-        this._allRoutes = assignAllRoutes();
-    }
-
-    get allRoutes() {
-        return this._allRoutes;
-    }
-
-    getRoutesFor(islandId: IslandId) {
-        return this.allRoutes[islandId];
-    }
-}
-
-export type DocksResult = { nextState: GameState, daysPassed: number };
-
-export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<DocksResult> {
-    printAvailableRoutes(worldGraph, player);
-    const selectedOption = await promptPlayerForRoute(rl);
-
-    if (selectedOption.kind === 'back') {
-        await timeoutInSeconds(2);
-        return { nextState: 'At Island', daysPassed: 0 };
-    }
-
-    const daysPassed = await attemptTravelToIsland(selectedOption.routeIndex, player, worldGraph, rl);
-    await timeoutInSeconds(2);
-    return { nextState: 'At Island', daysPassed };
-}
-
 function printAvailableRoutes(graph: WorldGraph, player: Player) {
     printInformation('Available Routes:', 0);
 
@@ -113,6 +117,11 @@ function printAvailableRoutes(graph: WorldGraph, player: Player) {
     }
 }
 
+function printIslandRouteTitle(index: number, name: string, distance: number, playerShip: Ship) {
+    const travelDays = computeTravelDays(distance, playerShip);
+    console.log(`[${index+1}] ${name} (${distance} km, ${travelDays} days)`);
+}
+
 function printIslandRouteInformation(encounterTable: EncounterTable, island: Island) {
     const totalWeight = encounterTable.reduce((acc, currItem) => acc + currItem.weight, 0);
 
@@ -123,21 +132,16 @@ function printIslandRouteInformation(encounterTable: EncounterTable, island: Isl
     }
 }
 
-function computeTravelDays(distance: number, playerShip: Ship) {
-    const shipSpeed = playerShip.speed;
-    const distancePerDay = KNOTS_TO_KM_PER_DAY_CONVERSION(shipSpeed);
-    return formatFloat(distance / distancePerDay, 0);
-}
-
-function printIslandRouteTitle(index: number, name: string, distance: number, playerShip: Ship) {
-    const travelDays = computeTravelDays(distance, playerShip);
-    console.log(`[${index+1}] ${name} (${distance} km, ${travelDays} days)`);
-}
-
 function printIslandRouteItemModifiers(island: Island) {
     Object.entries(island.commodityMultipliers).forEach(([itemType, value]) => {
         console.log(`${itemType}: ${value}`);
     })
+}
+
+function computeTravelDays(distance: number, playerShip: Ship) {
+    const shipSpeed = playerShip.speed;
+    const distancePerDay = KNOTS_TO_KM_PER_DAY_CONVERSION(shipSpeed);
+    return formatFloat(distance / distancePerDay, 0);
 }
 
 async function promptPlayerForRoute(rl: Interface): Promise<RouteSelection> {
@@ -173,24 +177,21 @@ async function attemptTravelToIsland(selectedRoute: number, player: Player, worl
     const islandToTravelTo = nonPlayerIslands[selectedRoute - 1];
 
     const route = worldGraph.getRoutesFor(player.island.id)[selectedRoute - 1];
-    const daysPassed = computeTravelDays(route.distanceKm, player.ship);
-
-    const selectedEvent = selectEvent(route.encounterTable);
-
-    if (selectedEvent.result) {
-        await playEvent(selectedEvent.event, player.ship, rl);
-    }
+    let daysPassed = computeTravelDays(route.distanceKm, player.ship);
 
     if (!player.canAffordToPayWages(daysPassed)) {
         return 0;
     }
+
+    const selectedEvent = selectEvent(route.encounterTable);
+    if (selectedEvent.result) {
+        const daysAdded = await playEvent(selectedEvent.event, player.ship, rl);
+        daysPassed += daysAdded;
+    }
+
     player.island = islandToTravelTo;
     return daysPassed;
 }
-
-type ReceivedEvent = 
- | { result: true, event: Event }
- | { result: false }
 
 function selectEvent(encounterTable: EncounterTable): ReceivedEvent {
     let roll = Math.random() * 100;
@@ -202,7 +203,7 @@ function selectEvent(encounterTable: EncounterTable): ReceivedEvent {
     return { result: false }
 }
 
-async function playEvent(event: Event, ship: Ship, rl: Interface) {
+async function playEvent(event: Event, ship: Ship, rl: Interface): Promise<number> {
     switch (event.type) {
         case 'Disease':
             return playDiseaseEvent(event, ship);
@@ -213,16 +214,23 @@ async function playEvent(event: Event, ship: Ship, rl: Interface) {
         case 'Pirate':
             return playPirateEvent(event, ship);
         default:
-            return;
+            return 0;
     }
 }
-function playDiseaseEvent(event: DiseaseEvent, ship: Ship): void {
+
+function playDiseaseEvent(event: DiseaseEvent, ship: Ship) {
     const crewToRemove = Math.ceil(ship.crew * event.severity);
     const crewRemoved = Math.min(crewToRemove, ship.crew)
     ship.removeCrew(crewRemoved);
 
     console.log(`ye caught ${event.name} and ${crewRemoved} crew mates were slain`);
     console.log(`ye only have ${ship.crew} mateys left`);
+
+    if (!ship.hasEnoughCrewForSailing()) {
+        return initiateStranded();
+    }
+
+    return 0;
 }
 
 function playWeatherEvent(event: WeatherEvent, ship: Ship) {
@@ -237,6 +245,8 @@ function playWeatherEvent(event: WeatherEvent, ship: Ship) {
 
     console.log(`ye sailed into a ${event.name}`);
     console.log(`ye ship took ${damageToDeal} damage, ye only have ${ship.currentHealth} health left`);
+
+    return calculateTimeLossDueToWeatherEvent(event.severity);
 }
 
 async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
@@ -260,11 +270,14 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
         }
         console.log(`yar that number is invalid`);
     }
+
+    return 0;
 }
 
 function playPirateEvent(event: PirateEvent, ship: Ship) {
     console.log('oh no some pirates');
     initiateCombat(ship.stats, event.ship);
+    return 0;
 }
 
 function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats) {
@@ -301,7 +314,33 @@ function shipAttack(attackingShip: ShipStats, defendingShip: ShipStats) {
     console.log(`${defendingShip.name} has ${defendingShip.currentHealth}/${defendingShip.maxHealth} health remaining`);
 }
 
-/** D6 dice roll */
 function rollCombatDice(): number {
     return Math.floor(Math.random() * 6) + 1;
+}
+
+/** ~~20% chance of death */
+function initiateStranded(): number {
+    const daysToSurvive = 10;
+    let found = false;
+    let i = 0;
+
+    while (i < daysToSurvive && !found) {
+        found = isFound();
+        i++
+    }
+
+    if (!found) {
+        throw new GameOverError('Stranded');
+    }
+
+    console.log(`You were stranded for ${i} days, but have been found!`);
+    return i;
+}
+
+function isFound() {
+    return Math.random() >= 0.85;
+}
+
+function calculateTimeLossDueToWeatherEvent(eventSeverity: number) {
+    return Math.floor(eventSeverity * 10)
 }

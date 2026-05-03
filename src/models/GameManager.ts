@@ -125,6 +125,9 @@ function printEndOfGameInformation(reason: GameOverReason) {
         case 'Weather':
             console.log('You died in a storm. Game over!');
             break;
+        case 'Stranded':
+            console.log('You got stranded and died. Game over!');
+            break;
     }
 
     console.log('Your final score is xxx');

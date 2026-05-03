@@ -1,3 +1,10 @@
+export type GameOverReason =
+    | 'Selected Exit'
+    | 'Time'
+    | 'Combat'
+    | 'Weather'
+    | 'Stranded'
+
 export class GameOverError extends Error {
     private _cause: GameOverReason;
     constructor(cause: GameOverReason) {
@@ -9,9 +16,3 @@ export class GameOverError extends Error {
         return this._cause;
     }
 }
-
-export type GameOverReason =
-    | 'Selected Exit'
-    | 'Time'
-    | 'Combat'
-    | 'Weather'
