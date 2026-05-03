@@ -165,6 +165,10 @@ function isValidRoute(rawAnswer: string, numberOfRoutes: number) {
 }
 
 async function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph, rl: Interface): Promise<number> {
+    if (!player.ship.hasEnoughCrewForSailing()) {
+        console.log('ye do not have enough crew to sail, hire some more crew');
+        return 0;
+    }
     const nonPlayerIslands = getIslands().filter(x => x.id !== player.island.id);
     const islandToTravelTo = nonPlayerIslands[selectedRoute - 1];
 

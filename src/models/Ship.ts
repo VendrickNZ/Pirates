@@ -115,6 +115,10 @@ export class Ship {
     async viewCargo(rl: Interface) {
         await this.cargo.playerCommand(rl);
     }
+
+    hasEnoughCrewForSailing() {
+        return this.crew >= this.minimumCrewToSail;
+    }
 }
 
 export type CrewOutcome =
