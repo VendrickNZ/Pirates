@@ -45,7 +45,7 @@ export default class Player {
     }
 
     calculateCrewWageCost(daysPassed: number) {
-        return formatFloat((this.ship.crew * 10) * daysPassed);
+        return formatFloat((this.ship.crew * this.ship.wagesPerDay) * daysPassed);
     }
 
     canAffordToPayWages(daysPassed: number) {
