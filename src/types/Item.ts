@@ -1,5 +1,5 @@
 
-export const ItemTypes = ['Food', 'Weapon', 'Luxury', 'Natural Resource', 'Alcohol', 'Common', 'Medicine']
+export const ItemTypes = ['Food', 'Weapon', 'Luxury', 'Natural Resource', 'Alcohol', 'Common', 'Medicine', 'Upgrade']
 export type ItemType = typeof ItemTypes[number];
 
 export type Item = {
@@ -9,6 +9,25 @@ export type Item = {
     readonly baseValue: number,
     readonly weight: number,
 }
+
+export type ShipEffect = {
+    maxHealth?: number;
+    speed?: number;
+    damage?: number;
+    armour?: number;
+    numberOfBeds?: number;
+    maxWeight?: number;
+}
+export type UpgradeItem = Item & {
+    effect: ShipEffect
+}
+
+export const GameUpgrades: readonly UpgradeItem[] = [
+    { id: 101, name: "Cannons", type: "Upgrade", baseValue: 35.7, weight: 25, effect: { maxHealth: 5, damage: 15, armour: 5 } },
+    { id: 102, name: "Steel Hull", type: "Upgrade", baseValue: 45.0, weight: 25, effect: { maxHealth: 15, speed: -5, armour: 15 } },
+    { id: 103, name: "Ram", type: "Upgrade", baseValue: 25.0, weight: 15, effect: { speed: 5, damage: 15, armour: 3 } },
+    { id: 104, name: "Bunk Beds", type: "Upgrade", baseValue: 15.5, weight: 5, effect: { numberOfBeds: 25 } },
+]
 
 export type Inventory = ItemReference[]
 
