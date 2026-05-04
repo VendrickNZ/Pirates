@@ -3,7 +3,7 @@ import { recomputePrices } from "../models/Market";
 import type Player from "../models/Player";
 import { type Vendor } from "../models/Vendor";
 import { formatFloat, printInformation } from "../utils/TextUtils";
-import { GameItems, type ItemReference, type Inventory } from "./Item";
+import { ItemLookup, type ItemReference, type Inventory } from "./Item";
 
 export const PAGE_SIZE = 10;
 
@@ -133,7 +133,7 @@ export function printInventoryStock(pageOwner: PageOwner) {
     for (let i = 0; i < pageToDisplay.length; ++i) {
         const itemRef = pageToDisplay[i]
 
-        const item = GameItems.find(x => x.id === itemRef.id);
+        const item = ItemLookup.get(itemRef.id);
         if (!item) continue;
 
         const itemIndex = i + 1 + pageNumberIndexShift;
@@ -142,7 +142,7 @@ export function printInventoryStock(pageOwner: PageOwner) {
 }
 
 export function inventoryFormatter(itemRef: ItemReference, index: number) {
-    const item = GameItems.find(x => x.id == itemRef.id)!;
+    const item = ItemLookup.get(itemRef.id)!;
     const spacing = 50;
     const itemVariableLength = item.name.length + item.type.length + itemRef.units.toString().length + index.toString().length;
     return '.'.repeat(spacing - itemVariableLength);
@@ -162,7 +162,7 @@ export function cleanInventory(pageOwner: PageOwner) {
 /** maybe make this page owner? */
 export function updateInventoryPrices(vendor: Vendor, player: Player) {
     for (const itemReference of vendor.inventory) {
-        const item = GameItems.find(x => x.id === itemReference.id)!;
-        itemReference.currentValue = formatFloat(recomputePrices(item, vendor.commodities, player), 1);
+        const item = ItemLookup.get(itemReference.id);
+        itemReference.currentValue = formatFloat(recomputePrices(item!, vendor.commodities, player), 1);
     }
 }

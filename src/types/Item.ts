@@ -99,6 +99,10 @@ export const GameItems: readonly Item[] = [
     { id: 53, name: "Wooden Tables", type: "Common", baseValue: 13.3, weight: 8 }
 ];
 
+export const ItemLookup = new Map<number, Item>(
+    [...GameUpgrades, ...GameItems].map(item => [item.id, item])
+);
+
 export function getItems(n: number = 10): ItemReference[] {
     const itemList: ItemReference[] = [];
     for (let i = 0; i < n; ++i) {

@@ -3,7 +3,7 @@ import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber, updateInventoryPrices } from "../types/Page";
-import { GameItems, type Inventory, getItems, type ItemReference, getUpgradeItems, GameUpgrades } from "../types/Item";
+import { ItemLookup, type Inventory, getItems, type ItemReference, getUpgradeItems } from "../types/Item";
 import { recomputePrices } from "./Market";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
@@ -52,7 +52,7 @@ export class Vendor {
         const itemRef = this.inventory.find(item => item.id === id);
         if (!itemRef) return false;
 
-        const item = GameItems.find(x => x.id === itemRef.id);
+        const item = ItemLookup.get(itemRef.id);
         if (!item) return false;
 
         const itemPrice = recomputePrices(item, this._commodities, player)
@@ -93,7 +93,9 @@ export class Vendor {
  */
 export function restock() {
     const items = getItems(50);
-    return items;
+    const upgradeItems = getUpgradeItems(2);
+
+    return [...upgradeItems, ...items];
 }
 
 function setupInitialVendorPages(vendor: Vendor) {
@@ -155,7 +157,7 @@ function hasSelectedValidItem(rawAnswer: string, session: VendorSession, ctx: Ve
         return null;
     }
 
-    const item = GameItems.find(x => x.id === itemReferenceChosen.id);
+    const item = ItemLookup.get(itemReferenceChosen.id);
     if (!item) {
         return null;
     }

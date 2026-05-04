@@ -1,6 +1,6 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
-import { GameItems, type Inventory } from "../types/Item";
+import { ItemLookup, type Inventory } from "../types/Item";
 import { cleanInventory, Page, printInventoryStock, printPageNumber, updateInventoryPrices, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
 import { formatCommand, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
@@ -100,7 +100,7 @@ export default class Cargo {
         const itemRef = this.inventory.find(item => item.id === id);
         if (!itemRef) return false;
 
-        const item = GameItems.find(x => x.id === itemRef.id);
+        const item = ItemLookup.get(itemRef.id);
         if (!item) return false;
 
         if (!(await player.canSell(itemRef.currentValue, vendor))) return false;

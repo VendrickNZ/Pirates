@@ -1,4 +1,4 @@
-import { GameItems, type ItemReference } from "../types/Item"
+import { ItemLookup, type ItemReference } from "../types/Item"
 import { formatFloat, printInformationWithDelay } from "../utils/TextUtils"
 import { createShip, type Ship } from "./Ship"
 import type { Vendor } from "./Vendor"
@@ -86,7 +86,7 @@ export default class Player {
 
     /** assumes Player can purchase */
     purchaseItem(itemRef: ItemReference, itemPrice: number) {
-        const chosenItem = GameItems.find(x => x.id == itemRef.id);
+        const chosenItem = ItemLookup.get(itemRef.id);
         if (!chosenItem) return;
 
         itemRef.units--;
@@ -109,7 +109,7 @@ export default class Player {
     }
 
     sellItem(itemRef: ItemReference) {
-        const chosenItem = GameItems.find(x => x.id == itemRef.id);
+        const chosenItem = ItemLookup.get(itemRef.id);
         if (!chosenItem) return;
 
         itemRef.units++;

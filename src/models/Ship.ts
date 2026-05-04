@@ -4,7 +4,7 @@ import { printInformation, timeoutInSeconds, isNumber } from "../utils/TextUtils
 import Cargo from "./Cargo"
 import type Player from "./Player"
 import Upgrades from "./Upgrades"
-import { GameItems, type ItemReference } from "../types/Item"
+import { ItemLookup, type ItemReference } from "../types/Item"
 
 export const COST_TO_HIRE_CREW = 50;
 export const CALCULATE_COST_TO_HIRE_CREW = (numberOfCrew: number) => (numberOfCrew * COST_TO_HIRE_CREW);
@@ -71,7 +71,7 @@ export class Ship {
             this._cargo.inventory.push(newItem);
         }
 
-        const item = GameItems.find(x => x.id == itemRef.id)!;
+        const item = ItemLookup.get(itemRef.id)!;
 
         this.cargo.currentCapacity += item.weight;
         this._cargo.update();
@@ -81,7 +81,7 @@ export class Ship {
         const index = this.cargo.inventory.indexOf(itemRef);
         this.cargo.inventory.splice(index, 1);
 
-        const item = GameItems.find(x => x.id === itemRef.id);
+        const item = ItemLookup.get(itemRef.id);
         if (!item) return;
 
         this.cargo.currentCapacity -= item.weight;
