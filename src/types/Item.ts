@@ -117,8 +117,25 @@ export function getItems(n: number = 10): ItemReference[] {
     return itemList;
 }
 
+export function getUpgradeItems(n: number) {
+    const itemList: ItemReference[] = [];
+    for (let i = 0; i < n; ++i) {
+        const item = GameUpgrades[getRandomInt(GameUpgrades)];
+        console.log(item.name);
+
+        const itemInStack = itemList.find(x => x.id == item.id);
+
+        if (itemInStack) {
+            itemInStack.units++;
+            continue;
+        }
+
+        const newStackItem: ItemReference = { id: item.id, units: 1, currentValue: item.baseValue };
+        itemList.push(newStackItem);
+    }
+    return itemList;
+}
+
 function getRandomInt(items: readonly Item[]) {
-    const minCeiled = Math.ceil(0);
-    const maxFloored = Math.floor(items.length - 1);
-    return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled)
+    return Math.floor(Math.random() * items.length);
 }

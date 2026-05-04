@@ -3,7 +3,7 @@ import type { GameState } from "../types/GameState";
 import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber, updateInventoryPrices } from "../types/Page";
-import { GameItems, type Inventory, getItems, type ItemReference } from "../types/Item";
+import { GameItems, type Inventory, getItems, type ItemReference, getUpgradeItems, GameUpgrades } from "../types/Item";
 import { recomputePrices } from "./Market";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
