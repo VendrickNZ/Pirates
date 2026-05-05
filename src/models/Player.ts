@@ -89,12 +89,20 @@ export default class Player {
         const chosenItem = ItemLookup.get(itemRef.id);
         if (!chosenItem) return;
 
+        if (chosenItem.type === 'Upgrade') {
+            if (this.ship.upgradeCount === this.ship.upgradeMax) {
+                console.log('womp womp');
+                return
+            }
+            this.ship.applyItemEffectIfApplicable(chosenItem);
+        }
         itemRef.units--;
 
-        console.log(`I am purchasing for ${itemPrice}`);
+        console.log(`You purchased ${chosenItem.name} for ${itemPrice} doubloons!`);
         this._balance -= itemPrice;
-        this._ship.currentWeight += chosenItem.weight;
-        this._ship.addCargo(itemRef);
+        this.ship.currentWeight += chosenItem.weight;
+        this.ship.addCargo(itemRef);
+
     }
 
     // check if vendor has enough money

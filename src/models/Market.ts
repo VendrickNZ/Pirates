@@ -28,5 +28,5 @@ function applyItemMonopolyMultiplierFunction(marketShare: number) {
 
 export function recomputePrices(item: Item, multipliers: IslandCommoditiesTable, player: Player) {
     const commodityMultiplier = multipliers[item.type];
-    return item.baseValue * commodityMultiplier * getMonopolyMultiplier(item.id, player);
+    return formatFloat(item.baseValue * commodityMultiplier * getMonopolyMultiplier(item.id, player));
 }

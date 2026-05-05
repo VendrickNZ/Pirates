@@ -48,12 +48,13 @@ function createIsland(id: IslandId, name: IslandNames): Island {
 
 let islands: Island[] | null = null;
 
+/** :/ */
 function generateCommodityMultipliers() {
-    const commodityMultiplier: IslandCommoditiesTable = {};
+    const commodityMultiplier: Partial<IslandCommoditiesTable> = {};
     for (const type of ItemTypes) {
         commodityMultiplier[type] = getRandomFloat(0.25, 2, 2); 
     }
-    return commodityMultiplier;
+    return commodityMultiplier as IslandCommoditiesTable;
 }
 
 export function getIslands(): Island[] {

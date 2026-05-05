@@ -188,7 +188,9 @@ const PirateEvents: PirateEvent[] = [
             armour: 40,
             damage: 25,
             currentWeight: 1,
-            maxWeight: 500
+            maxWeight: 500,
+            currentUpgradeSlots: 0,
+            maxUpgradeSlots: 6
         }
     },
     {
@@ -207,7 +209,9 @@ const PirateEvents: PirateEvent[] = [
             armour: 30,
             damage: 30,
             currentWeight: 1,
-            maxWeight: 500
+            maxWeight: 500,
+            currentUpgradeSlots: 0,
+            maxUpgradeSlots: 5
         }
     },
     {
@@ -226,7 +230,9 @@ const PirateEvents: PirateEvent[] = [
             armour: 5,
             damage: 50,
             currentWeight: 1,
-            maxWeight: 500
+            maxWeight: 500,
+            currentUpgradeSlots: 0,
+            maxUpgradeSlots: 3
         }
     },
     {
@@ -245,7 +251,9 @@ const PirateEvents: PirateEvent[] = [
             armour: 30,
             damage: 30,
             currentWeight: 1,
-            maxWeight: 500
+            maxWeight: 500,
+            currentUpgradeSlots: 0,
+            maxUpgradeSlots: 4
         }
     }
 ]

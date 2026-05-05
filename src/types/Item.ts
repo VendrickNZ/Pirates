@@ -1,11 +1,10 @@
-
-export const ItemTypes = ['Food', 'Weapon', 'Luxury', 'Natural Resource', 'Alcohol', 'Common', 'Medicine', 'Upgrade']
+export const ItemTypes = ['Food', 'Weapon', 'Luxury', 'Natural Resource', 'Alcohol', 'Common', 'Medicine', 'Upgrade'] as const
 export type ItemType = typeof ItemTypes[number];
 
-export type Item = {
+export type TradeItem = {
     readonly id: number,
     readonly name: string,
-    readonly type: ItemType,
+    readonly type: Exclude<ItemType, 'Upgrade'>,
     readonly baseValue: number,
     readonly weight: number,
 }
@@ -18,9 +17,17 @@ export type ShipEffect = {
     numberOfBeds?: number;
     maxWeight?: number;
 }
-export type UpgradeItem = Item & {
-    effect: ShipEffect
+
+export type UpgradeItem = {
+    readonly id: number,
+    readonly name: string,
+    readonly type: 'Upgrade',
+    readonly baseValue: number,
+    readonly weight: number,
+    readonly effect: ShipEffect
 }
+
+export type Item = TradeItem | UpgradeItem
 
 export const GameUpgrades: readonly UpgradeItem[] = [
     { id: 101, name: "Cannons", type: "Upgrade", baseValue: 35.7, weight: 25, effect: { maxHealth: 5, damage: 15, armour: 5 } },
@@ -37,7 +44,7 @@ export interface ItemReference {
     currentValue: number;
 }
 
-export const GameItems: readonly Item[] = [
+export const GameItems: readonly TradeItem[] = [
     { id: 1, name: "Barrel of Rum", type: "Alcohol", baseValue: 30.0, weight: 5 },
     { id: 2, name: "Barrel of Wine", type: "Alcohol", baseValue: 35.0, weight: 5 },
     { id: 3, name: "Barrel of Mead", type: "Alcohol", baseValue: 26.0, weight: 5 },

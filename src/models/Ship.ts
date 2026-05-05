@@ -3,8 +3,7 @@ import type { GameState } from "../types/GameState"
 import { printInformation, timeoutInSeconds, isNumber } from "../utils/TextUtils"
 import Cargo from "./Cargo"
 import type Player from "./Player"
-import Upgrades from "./Upgrades"
-import { ItemLookup, type ItemReference } from "../types/Item"
+import { ItemLookup, type ItemReference, type Item } from "../types/Item"
 
 export const COST_TO_HIRE_CREW = 50;
 export const CALCULATE_COST_TO_HIRE_CREW = (numberOfCrew: number) => (numberOfCrew * COST_TO_HIRE_CREW);
@@ -21,17 +20,19 @@ export interface ShipStats {
     damage: number
     currentWeight: number
     maxWeight: number
+    currentUpgradeSlots: number
+    maxUpgradeSlots: number
 }
+
+type NumericShipStats = Omit<ShipStats, 'name'>
 
 export class Ship {
     private _stats: ShipStats;
     private _cargo: Cargo;
-    private _upgrades: Upgrades;
 
     constructor(stats: ShipStats) {
         this._stats = stats;
         this._cargo = new Cargo(this.maxWeight);
-        this._upgrades = new Upgrades();
     }
 
     get name(): string { return this._stats.name; }
@@ -48,11 +49,15 @@ export class Ship {
     get currentWeight(): number { return this._stats.currentWeight; }
     get maxWeight(): number { return this._stats.maxWeight; }
     get cargo(): Cargo { return this._cargo; }
-    get upgrades(): Upgrades { return this._upgrades; }
     get cargoMax(): number { return this.cargo.maxCapacity; }
-    get upgradeCount(): number { return this.upgrades.currentNumber; }
-    get upgradeMax(): number { return this.upgrades.maxNumber; }
+    get upgradeCount(): number { return this._stats.currentUpgradeSlots; }
+    get upgradeMax(): number { return this._stats.maxUpgradeSlots; }
     get stats(): ShipStats { return this._stats; }
+
+
+    set upgradeCount(count: number) {
+        this.stats.currentUpgradeSlots = count;
+    }
 
     set currentHealth(health: number) {
         this.stats.currentHealth = health;
@@ -119,6 +124,22 @@ export class Ship {
     hasEnoughCrewForSailing() {
         return this.crew >= this.minimumCrewToSail;
     }
+
+    hasEnoughUpgradeSlots() {
+        return this.upgradeCount < this.upgradeMax;
+    }
+
+    applyItemEffectIfApplicable(item: Item) {
+        if (item.type !== 'Upgrade') return;
+        this.upgradeCount += 1;
+
+
+        const itemEffect = item.effect;
+        for (const [key, value] of Object.entries(itemEffect) as [keyof NumericShipStats, number][]) {
+            this._stats[key] = (this._stats[key] as number) + value;
+        }
+        console.log(`scream if you love israel ${JSON.stringify(itemEffect, null, 2)}`);
+    }
 }
 
 export type CrewOutcome =
@@ -156,7 +177,7 @@ function printShipStatistics(ship: Ship): string {
         `Current weight: ${ship.currentWeight}`,
         `Max weight: ${ship.maxWeight}`,
         `Cargo: ${ship.cargo.currentCapacity} / ${ship.cargo.maxCapacity} slots filled`,
-        `Upgrades: ${ship.upgrades.currentNumber} / ${ship.upgrades.maxNumber} slots filled`,
+        `Upgrades: ${ship.upgradeCount} / ${ship.upgradeMax} slots filled`,
     ].join('\n');
 }
 
@@ -221,7 +242,9 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         armour: 10,
         damage: 3,
         currentWeight: 0,
-        maxWeight: 150
+        maxWeight: 150,
+        currentUpgradeSlots: 0,
+        maxUpgradeSlots: 2
     },
     'AnotherShip': {
         name: 'Stormbreaker',
@@ -235,6 +258,8 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         armour: 12,
         damage: 3,
         currentWeight: 0,
-        maxWeight: 155
+        maxWeight: 155,
+        currentUpgradeSlots: 0,
+        maxUpgradeSlots: 3
     }
 }
