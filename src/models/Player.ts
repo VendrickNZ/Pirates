@@ -90,10 +90,6 @@ export default class Player {
         if (!chosenItem) return;
 
         if (chosenItem.type === 'Upgrade') {
-            if (this.ship.upgradeCount === this.ship.upgradeMax) {
-                console.log('womp womp');
-                return
-            }
             this.ship.applyItemEffectIfApplicable(chosenItem);
         }
         itemRef.units--;

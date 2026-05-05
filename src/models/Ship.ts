@@ -138,7 +138,6 @@ export class Ship {
         for (const [key, value] of Object.entries(itemEffect) as [keyof NumericShipStats, number][]) {
             this._stats[key] = (this._stats[key] as number) + value;
         }
-        console.log(`scream if you love israel ${JSON.stringify(itemEffect, null, 2)}`);
     }
 }
 
