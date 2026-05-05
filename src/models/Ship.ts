@@ -133,7 +133,6 @@ export class Ship {
         if (item.type !== 'Upgrade') return;
         this.upgradeCount += 1;
 
-
         const itemEffect = item.effect;
         for (const [key, value] of Object.entries(itemEffect) as [keyof NumericShipStats, number][]) {
             this._stats[key] = (this._stats[key] as number) + value;
