@@ -11,7 +11,7 @@ export function completer(line: string): CompleterResult {
     return [hits.length ? hits : completions, formattedLine];
 }
 
-export function printInformation(toPrint: string, spacing: number = 1): void {
+export function printInformation(toPrint: string, spacing: number = 0): void {
     console.log(newLine(spacing))
     console.log(toPrint);
     console.log(newLine(spacing))

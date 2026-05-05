@@ -89,9 +89,7 @@ export default class Player {
         const chosenItem = ItemLookup.get(itemRef.id);
         if (!chosenItem) return;
 
-        if (chosenItem.type === 'Upgrade') {
-            this.ship.applyItemEffectIfApplicable(chosenItem);
-        }
+        this.ship.applyItemEffectIfApplicable(chosenItem);
         itemRef.units--;
 
         console.log(`You purchased ${chosenItem.name} for ${itemPrice} doubloons!`);

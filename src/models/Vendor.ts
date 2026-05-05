@@ -58,11 +58,9 @@ export class Vendor {
         const itemPrice = recomputePrices(item, this._commodities, player)
         
         if (!(await player.canPurchase(itemPrice, item.weight))) return false;
-        if (item.type === 'Upgrade') {
-            if (!player.ship.hasEnoughUpgradeSlots()) {
-                console.log('not enough upgrade slots');
-                return false;
-            }
+        if (item.type === 'Upgrade' && !player.ship.hasEnoughUpgradeSlots()) {
+            printInformation("ye do nah 'ave enough upgrade slots");
+            return false;
         }
         
         player.purchaseItem(itemRef, itemPrice);
