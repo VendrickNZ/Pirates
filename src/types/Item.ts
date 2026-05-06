@@ -16,6 +16,7 @@ export type ShipEffect = {
     armour?: number;
     numberOfBeds?: number;
     maxWeight?: number;
+    maxUpgradeSlots?: number;
 }
 
 export type UpgradeItem = {
@@ -30,10 +31,15 @@ export type UpgradeItem = {
 export type Item = TradeItem | UpgradeItem
 
 export const GameUpgrades: readonly UpgradeItem[] = [
-    { id: 101, name: "Cannons", type: "Upgrade", baseValue: 35.7, weight: 25, effect: { maxHealth: 5, damage: 15, armour: 5 } },
-    { id: 102, name: "Steel Hull", type: "Upgrade", baseValue: 45.0, weight: 25, effect: { maxHealth: 15, speed: -5, armour: 15 } },
+    { id: 101, name: "Bronze Cannons", type: "Upgrade", baseValue: 35.0, weight: 25, effect: { maxHealth: 5, damage: 15, armour: 5 } },
+    { id: 102, name: "Steel Hull", type: "Upgrade", baseValue: 40.0, weight: 25, effect: { maxHealth: 15, speed: -5, armour: 15 } },
     { id: 103, name: "Ram", type: "Upgrade", baseValue: 25.0, weight: 15, effect: { speed: 5, damage: 15, armour: 3 } },
-    { id: 104, name: "Bunk Beds", type: "Upgrade", baseValue: 15.5, weight: 5, effect: { numberOfBeds: 25 } },
+    { id: 104, name: "Cotton Sails", type: "Upgrade", baseValue: 12.0, weight: 5, effect: { speed: 3 } },
+    { id: 105, name: "Iron Scantlings", type: "Upgrade", baseValue: 32.0, weight: 5, effect: { maxHealth: 50, armour: 10 } },
+    { id: 106, name: "Fine-Grain Powder", type: "Upgrade", baseValue: 10.0, weight: 5, effect: { damage: 5 } },
+    { id: 107, name: "Triple Hammocks", type: "Upgrade", baseValue: 12.0, weight: 5, effect: { numberOfBeds: 25 } },
+    { id: 108, name: "Armory", type: "Upgrade", baseValue: 20.0, weight: 5, effect: { maxUpgradeSlots: 2 } },
+    { id: 109, name: "Extended Keel", type: "Upgrade", baseValue: 12.0, weight: 5, effect: { maxWeight: 75 } },
 ]
 
 export type Inventory = ItemReference[]
