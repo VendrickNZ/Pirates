@@ -113,7 +113,7 @@ export const ItemLookup = new Map<number, Item>(
 export function getItems(n: number = 10): ItemReference[] {
     const itemList: ItemReference[] = [];
     for (let i = 0; i < n; ++i) {
-        const item = GameItems[getRandomInt(GameItems)];
+        const item = GameItems[getRandomIntForItem(GameItems)];
 
         const itemInStack = itemList.find(x => x.id == item.id);
 
@@ -131,7 +131,7 @@ export function getItems(n: number = 10): ItemReference[] {
 export function getUpgradeItems(n: number) {
     const itemList: ItemReference[] = [];
     for (let i = 0; i < n; ++i) {
-        const item = GameUpgrades[getRandomInt(GameUpgrades)];
+        const item = GameUpgrades[getRandomIntForItem(GameUpgrades)];
         console.log(item.name);
 
         const itemInStack = itemList.find(x => x.id == item.id);
@@ -147,6 +147,6 @@ export function getUpgradeItems(n: number) {
     return itemList;
 }
 
-function getRandomInt(items: readonly Item[]) {
+function getRandomIntForItem(items: readonly Item[]) {
     return Math.floor(Math.random() * items.length);
 }

@@ -8,6 +8,7 @@ import { recomputePrices } from "./Market";
 import { VendorContext } from "../contexts/VendorContext";
 import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
 import type { IslandCommoditiesTable } from "./Island";
+import { getRandomInt } from "../utils/NumberUtils";
 
 const STARTING_VENDOR_BALANCE = 250;
 
@@ -97,7 +98,7 @@ export class Vendor {
  */
 export function restock() {
     const items = getItems(50);
-    const upgradeItems = getUpgradeItems(2);
+    const upgradeItems = getUpgradeItems(getRandomInt(0, 3));
 
     return [...upgradeItems, ...items];
 }
