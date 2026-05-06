@@ -220,7 +220,6 @@ export function createShip(kind: keyof typeof ShipPresets) {
 
 type ShipsThatExist = 'StartingShip'
 
-
 /**
  * When it comes to speed I'm going for generally:
  * Slow: 4-6 knots
@@ -229,7 +228,7 @@ type ShipsThatExist = 'StartingShip'
  */
 export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
     'StartingShip': {
-        name: 'The Black Pearl',
+        name: 'Victoria',
         currentHealth: 100,
         maxHealth: 100,
         crew: 0,
