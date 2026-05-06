@@ -175,7 +175,7 @@ const PirateEvents: PirateEvent[] = [
     {
         type: "Pirate",
         name: "Black Beard Pirates",
-        weight: 4,
+        weight: 1,
         ship: {
             name: "Queen Anne's Revenge",
             currentHealth: 330,
@@ -183,11 +183,11 @@ const PirateEvents: PirateEvent[] = [
             crew: 80,
             numberOfBeds: 100,
             minimumCrewToSail: 20,
-            wagesPerDay: 40,
-            speed: 1,
+            wagesPerDay: 3,
+            speed: 5,
             armour: 38,
             damage: 30,
-            currentWeight: 1,
+            currentWeight: 0,
             maxWeight: 500,
             currentUpgradeSlots: 0,
             maxUpgradeSlots: 6
@@ -196,7 +196,7 @@ const PirateEvents: PirateEvent[] = [
     {
         type: "Pirate",
         name: "Red Beard Pirates",
-        weight: 6,
+        weight: 2,
         ship: {
             name: "Queen Boudicca's Revenge",
             currentHealth: 180,
@@ -204,41 +204,20 @@ const PirateEvents: PirateEvent[] = [
             crew: 70,
             numberOfBeds: 100,
             minimumCrewToSail: 18,
-            wagesPerDay: 35,
-            speed: 1,
+            wagesPerDay: 3,
+            speed: 4,
             armour: 22,
             damage: 22,
-            currentWeight: 1,
-            maxWeight: 500,
+            currentWeight: 0,
+            maxWeight: 400,
             currentUpgradeSlots: 0,
             maxUpgradeSlots: 5
         }
     },
     {
         type: "Pirate",
-        name: "Jack Sparrow",
-        weight: 3,
-        ship: {
-            name: "Black Pearl",
-            currentHealth: 100,
-            maxHealth: 100,
-            crew: 60,
-            numberOfBeds: 100,
-            minimumCrewToSail: 15,
-            wagesPerDay: 30,
-            speed: 2,
-            armour: 5,
-            damage: 40,
-            currentWeight: 1,
-            maxWeight: 500,
-            currentUpgradeSlots: 0,
-            maxUpgradeSlots: 3
-        }
-    },
-    {
-        type: "Pirate",
         name: "Pirates of Edward Kenway",
-        weight: 1,
+        weight: 4,
         ship: {
             name: "Jackdaw",
             currentHealth: 155,
@@ -246,14 +225,35 @@ const PirateEvents: PirateEvent[] = [
             crew: 65,
             numberOfBeds: 100,
             minimumCrewToSail: 16,
-            wagesPerDay: 32,
-            speed: 1,
+            wagesPerDay: 2,
+            speed: 4,
             armour: 18,
             damage: 18,
-            currentWeight: 1,
-            maxWeight: 500,
+            currentWeight: 0,
+            maxWeight: 300,
             currentUpgradeSlots: 0,
             maxUpgradeSlots: 4
+        }
+    },
+    {
+        type: "Pirate",
+        name: "Jack Sparrow",
+        weight: 6,
+        ship: {
+            name: "Black Pearl",
+            currentHealth: 100,
+            maxHealth: 100,
+            crew: 60,
+            numberOfBeds: 100,
+            minimumCrewToSail: 15,
+            wagesPerDay: 2,
+            speed: 3,
+            armour: 5,
+            damage: 40,
+            currentWeight: 0,
+            maxWeight: 250,
+            currentUpgradeSlots: 0,
+            maxUpgradeSlots: 3
         }
     }
 ]
