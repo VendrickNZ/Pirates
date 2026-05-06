@@ -218,7 +218,7 @@ export function createShip(kind: keyof typeof ShipPresets) {
 }
 
 
-type ShipsThatExist = 'StartingShip' | 'AnotherShip'
+type ShipsThatExist = 'StartingShip'
 
 
 /**
@@ -243,21 +243,5 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         maxWeight: 150,
         currentUpgradeSlots: 0,
         maxUpgradeSlots: 2
-    },
-    'AnotherShip': {
-        name: 'Stormbreaker',
-        currentHealth: 120,
-        maxHealth: 120,
-        crew: 0,
-        numberOfBeds: 14,
-        minimumCrewToSail: 4,
-        wagesPerDay: 2,
-        speed: 6,
-        armour: 12,
-        damage: 3,
-        currentWeight: 0,
-        maxWeight: 155,
-        currentUpgradeSlots: 0,
-        maxUpgradeSlots: 3
     }
 }
