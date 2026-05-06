@@ -138,8 +138,6 @@ export function getUpgradeItems(n: number) {
     const itemList: ItemReference[] = [];
     for (let i = 0; i < n; ++i) {
         const item = GameUpgrades[getRandomIntForItem(GameUpgrades)];
-        console.log(item.name);
-
         const itemInStack = itemList.find(x => x.id == item.id);
 
         if (itemInStack) {
