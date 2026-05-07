@@ -46,6 +46,12 @@ export class WorldGraph {
     }
 }
 
+/** heals for 30% */
+function healShip(ship: Ship) {
+    const amount = formatFloat(ship.maxHealth * 0.3, 0);
+    ship.currentHealth += amount;
+}
+
 export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<DocksResult> {
     printAvailableRoutes(worldGraph, player);
     const selectedOption = await promptPlayerForRoute(rl);
@@ -55,6 +61,7 @@ export async function visitDocks(player: Player, rl: Interface, worldGraph: Worl
         return { nextState: 'At Island', daysPassed: 0 };
     }
 
+    healShip(player.ship);
     const daysPassed = await attemptTravelToIsland(selectedOption.routeIndex, player, worldGraph, rl);
     await timeoutInSeconds(2);
     return { nextState: 'At Island', daysPassed };
@@ -212,7 +219,7 @@ async function playEvent(event: Event, ship: Ship, rl: Interface): Promise<numbe
         case 'Rescue':
             return playRescueEvent(event, ship, rl);
         case 'Pirate':
-            return playPirateEvent(event, ship);
+            return await playPirateEvent(event, ship, rl);
         default:
             return 0;
     }
@@ -274,13 +281,13 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
     return 0;
 }
 
-function playPirateEvent(event: PirateEvent, ship: Ship) {
+async function playPirateEvent(event: PirateEvent, ship: Ship, rl: Interface) {
     console.log('oh no some pirates');
-    initiateCombat(ship.stats, event.ship);
+    await initiateCombat(ship.stats, event.ship, rl);
     return 0;
 }
 
-function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats) {
+async function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats, rl: Interface) {
     let playersTurn = playerShip.speed > enemyShip.speed;
     while (!eitherShipHasBeenDestroyed(playerShip.currentHealth, enemyShip.currentHealth)) {
         if (playersTurn) {
@@ -294,6 +301,26 @@ function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats) {
     if (playerShip.currentHealth <= 0) {
         throw new GameOverError('Combat');
     }
+
+    // player won
+    await plunder(playerShip, enemyShip, rl);
+}
+
+async function plunder(playerShip: ShipStats, enemyShip: ShipStats, rl: Interface) {
+    console.log(`You have defeated ${enemyShip.name}. Would you like to commandeer her? (y/n)`);
+    let answer;
+    do {
+        answer = await rl.question('');
+    } while (!validPlunderAnswer(answer));
+
+    console.log(`finally valid ${answer}`);
+
+}
+
+function validPlunderAnswer(answer: string) {
+    const isValid = answer === 'y' || answer === 'n';
+    if (!isValid) console.log(`ye answer is invalid, try again`);
+    return isValid
 }
 
 function eitherShipHasBeenDestroyed(playerHealth: number, enemyHealth: number) {

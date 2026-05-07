@@ -60,7 +60,7 @@ export class Ship {
     }
 
     set currentHealth(health: number) {
-        this.stats.currentHealth = health;
+        this.stats.currentHealth = Math.min(health, this.stats.maxHealth);
     }
 
     set currentWeight(weight: number) {
