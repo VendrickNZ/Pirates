@@ -6,7 +6,8 @@ import type Player from "./Player";
 import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, type PirateEvent, type RescueEvent, type WeatherEvent } from "../types/EncounterTable";
 import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
-import type { Ship, ShipStats } from "./Ship";
+import { Ship } from "./Ship";
+import { getItems, ItemLookup } from "../types/Item";
 
 const HOURS_IN_DAY = 24;
 
@@ -283,11 +284,12 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
 
 async function playPirateEvent(event: PirateEvent, ship: Ship, rl: Interface) {
     console.log('oh no some pirates');
-    await initiateCombat(ship.stats, event.ship, rl);
+    const enemyShip = new Ship(event.ship, getItems(20));
+    await initiateCombat(ship, enemyShip, rl);
     return 0;
 }
 
-async function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats, rl: Interface) {
+async function initiateCombat(playerShip: Ship, enemyShip: Ship, rl: Interface) {
     let playersTurn = playerShip.speed > enemyShip.speed;
     while (!eitherShipHasBeenDestroyed(playerShip.currentHealth, enemyShip.currentHealth)) {
         if (playersTurn) {
@@ -302,17 +304,54 @@ async function initiateCombat(playerShip: ShipStats, enemyShip: ShipStats, rl: I
         throw new GameOverError('Combat');
     }
 
-    // player won
+    // player won and enemy ship plunderable (TODO: when dummy ships exist)
     await plunder(playerShip, enemyShip, rl);
 }
 
-async function plunder(playerShip: ShipStats, enemyShip: ShipStats, rl: Interface) {
+function seizeCargo(playerShip: Ship, enemyShip: Ship) {
+    console.log(`initial inventory: ${playerShip.cargo.printCargoContent()}`);
+    for (const item of enemyShip.cargo.inventory) {
+        const itemA = ItemLookup.get(item.id);
+        if (!playerShip.haveEnoughCapacityForCargo(item)) return
+        playerShip.addCargo(item);
+        enemyShip.removeCargo(item);
+        console.log(`adding ${itemA?.name} to player ship from enemy`);
+    }
+    console.log(`final inventory: ${playerShip.cargo.printCargoContent()}`);
+}
+
+function commandeerShip(playerShip: Ship, enemyShip: Ship) {
+    // store enemy cargo in temp, move player ship to enemy ship, add temp
+    // seize temp cargo and pass the new playerShip which was enemyShip
+    seizeCargo(playerShip, enemyShip);
+    reapplyUpgrades();
+    removeShipFromPool();
+
+}
+
+function reapplyUpgrades() {
+
+}
+
+function removeShipFromPool() {
+    // also add their weight to pool
+    // check if any custom ships left, if not populate with the dummy ships
+}
+async function plunder(playerShip: Ship, enemyShip: Ship, rl: Interface) {
     console.log(`You have defeated ${enemyShip.name}. Would you like to commandeer her? (y/n)`);
     let answer;
     do {
         answer = await rl.question('');
     } while (!validPlunderAnswer(answer));
 
+    if (answer === 'n') {
+        seizeCargo(playerShip, enemyShip);
+        return;
+        // take cargo and return
+    }
+
+    commandeerShip(playerShip, enemyShip);
+    // take ship + cargo
     console.log(`finally valid ${answer}`);
 
 }
@@ -327,7 +366,7 @@ function eitherShipHasBeenDestroyed(playerHealth: number, enemyHealth: number) {
     return playerHealth <= 0 || enemyHealth <= 0;
 }
 
-function shipAttack(attackingShip: ShipStats, defendingShip: ShipStats) {
+function shipAttack(attackingShip: Ship, defendingShip: Ship) {
     const attackRoll = rollCombatDice();
     const defenceRoll = rollCombatDice();
 
@@ -335,7 +374,7 @@ function shipAttack(attackingShip: ShipStats, defendingShip: ShipStats) {
         (100 / (100 + defenceRoll * defendingShip.armour)) * attackRoll * attackingShip.damage,
         0
     );
-    defendingShip.currentHealth -= damage;
+    defendingShip.takeDamage(damage);
 
     console.log(`${attackingShip.name} attacked ${defendingShip.name} for ${damage} damage`);
     console.log(`${defendingShip.name} has ${defendingShip.currentHealth}/${defendingShip.maxHealth} health remaining`);

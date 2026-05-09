@@ -3,7 +3,7 @@ import type { GameState } from "../types/GameState"
 import { printInformation, timeoutInSeconds, isNumber } from "../utils/TextUtils"
 import Cargo from "./Cargo"
 import type Player from "./Player"
-import { ItemLookup, type ItemReference, type Item } from "../types/Item"
+import { ItemLookup, type ItemReference, type Item, getItems, type Inventory } from "../types/Item"
 
 export const COST_TO_HIRE_CREW = 50;
 export const CALCULATE_COST_TO_HIRE_CREW = (numberOfCrew: number) => (numberOfCrew * COST_TO_HIRE_CREW);
@@ -30,9 +30,9 @@ export class Ship {
     private _stats: ShipStats;
     private _cargo: Cargo;
 
-    constructor(stats: ShipStats) {
+    constructor(stats: ShipStats, startingCargo?: Inventory) {
         this._stats = stats;
-        this._cargo = new Cargo(this.maxWeight);
+        this._cargo = new Cargo(this.maxWeight, startingCargo);
     }
 
     get name(): string { return this._stats.name; }
@@ -99,6 +99,12 @@ export class Ship {
         }
 
         return { kind: 'Success' }
+    }
+
+    haveEnoughCapacityForCargo(cargoToAdd: ItemReference) {
+        const cargoItem = ItemLookup.get(cargoToAdd.id);
+        const newWeight = this.cargo.currentCapacity + (cargoItem?.weight || 0);
+        return this.cargo.maxCapacity > newWeight;
     }
 
     addCrew(crewToHire: number): CrewOutcome {
