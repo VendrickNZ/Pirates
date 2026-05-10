@@ -118,6 +118,7 @@ export default class Player {
         const chosenItem = ItemLookup.get(itemRef.id);
         if (!chosenItem) return;
 
+        this.ship.removeItemEffectIfApplicable(chosenItem);
         itemRef.units++;
 
         this._balance += itemRef.currentValue;

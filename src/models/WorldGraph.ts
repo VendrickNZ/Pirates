@@ -7,7 +7,7 @@ import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, ty
 import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
 import { Ship } from "./Ship";
-import { getItems } from "../types/Item";
+import { getItems, ItemLookup, type Inventory } from "../types/Item";
 
 const HOURS_IN_DAY = 24;
 
@@ -319,16 +319,19 @@ function seizeCargo(shipToGainCargo: Ship, seizedShip: Ship) {
 function commandeerShip(player: Player, enemyShip: Ship) {
     const playerCrew = player.ship.crew;
 
+    // give enemy ship player cargo, then take enemy ship
     seizeCargo(enemyShip, player.ship);
     player.ship = enemyShip;
     player.ship.stats.crew += playerCrew;
 
-    reapplyUpgrades();
+    reapplyUpgrades(player.ship.cargo.inventory);
     removeShipFromPool();
 }
 
-function reapplyUpgrades() {
-
+function reapplyUpgrades(cargo: Inventory) {
+    for (const itemRef of cargo) {
+        const item = ItemLookup.get(itemRef.id);
+    }
 }
 
 function removeShipFromPool() {
