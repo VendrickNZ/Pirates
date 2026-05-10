@@ -318,19 +318,25 @@ function seizeCargo(shipToGainCargo: Ship, seizedShip: Ship) {
 
 function commandeerShip(player: Player, enemyShip: Ship) {
     const playerCrew = player.ship.crew;
+    const playerUpgrades = player.ship.upgradeCount;
 
     // give enemy ship player cargo, then take enemy ship
     seizeCargo(enemyShip, player.ship);
     player.ship = enemyShip;
     player.ship.stats.crew += playerCrew;
+    player.ship.stats.currentUpgradeSlots += playerUpgrades;
 
-    reapplyUpgrades(player.ship.cargo.inventory);
+    reapplyUpgrades(player.ship);
     removeShipFromPool();
 }
 
-function reapplyUpgrades(cargo: Inventory) {
-    for (const itemRef of cargo) {
+/** this assumes you are only going to ships with equal or more slots than you */
+function reapplyUpgrades(playerShip: Ship) {
+    for (const itemRef of playerShip.cargo.inventory) {
         const item = ItemLookup.get(itemRef.id);
+        if (item?.type !== 'Upgrade') return;
+
+        playerShip.applyItemEffectIfApplicable(item);
     }
 }
 
