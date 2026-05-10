@@ -44,6 +44,10 @@ export default class Player {
         return this._ship;
     }
 
+    set ship(ship: Ship) {
+        this._ship = ship;
+    }
+
     calculateCrewWageCost(daysPassed: number) {
         return formatFloat((this.ship.crew * this.ship.wagesPerDay) * daysPassed);
     }

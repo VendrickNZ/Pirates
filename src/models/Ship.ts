@@ -3,7 +3,7 @@ import type { GameState } from "../types/GameState"
 import { printInformation, timeoutInSeconds, isNumber } from "../utils/TextUtils"
 import Cargo from "./Cargo"
 import type Player from "./Player"
-import { ItemLookup, type ItemReference, type Item, getItems, type Inventory } from "../types/Item"
+import { ItemLookup, type ItemReference, type Item, type Inventory } from "../types/Item"
 
 export const COST_TO_HIRE_CREW = 50;
 export const CALCULATE_COST_TO_HIRE_CREW = (numberOfCrew: number) => (numberOfCrew * COST_TO_HIRE_CREW);

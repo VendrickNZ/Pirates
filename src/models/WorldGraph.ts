@@ -7,7 +7,7 @@ import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, ty
 import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
 import { Ship } from "./Ship";
-import { getItems, ItemLookup } from "../types/Item";
+import { getItems } from "../types/Item";
 
 const HOURS_IN_DAY = 24;
 
@@ -193,7 +193,7 @@ async function attemptTravelToIsland(selectedRoute: number, player: Player, worl
 
     const selectedEvent = selectEvent(route.encounterTable);
     if (selectedEvent.result) {
-        const daysAdded = await playEvent(selectedEvent.event, player.ship, rl);
+        const daysAdded = await playEvent(selectedEvent.event, player, rl);
         daysPassed += daysAdded;
     }
 
@@ -211,16 +211,16 @@ function selectEvent(encounterTable: EncounterTable): ReceivedEvent {
     return { result: false }
 }
 
-async function playEvent(event: Event, ship: Ship, rl: Interface): Promise<number> {
+async function playEvent(event: Event, player: Player, rl: Interface): Promise<number> {
     switch (event.type) {
         case 'Disease':
-            return playDiseaseEvent(event, ship);
+            return playDiseaseEvent(event, player.ship);
         case 'Weather':
-            return playWeatherEvent(event, ship);
+            return playWeatherEvent(event, player.ship);
         case 'Rescue':
-            return playRescueEvent(event, ship, rl);
+            return playRescueEvent(event, player.ship, rl);
         case 'Pirate':
-            return await playPirateEvent(event, ship, rl);
+            return await playPirateEvent(event, player, rl);
         default:
             return 0;
     }
@@ -282,51 +282,49 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
     return 0;
 }
 
-async function playPirateEvent(event: PirateEvent, ship: Ship, rl: Interface) {
+async function playPirateEvent(event: PirateEvent, player: Player, rl: Interface) {
     console.log('oh no some pirates');
     const enemyShip = new Ship(event.ship, getItems(20));
-    await initiateCombat(ship, enemyShip, rl);
+    await initiateCombat(player, enemyShip, rl);
     return 0;
 }
 
-async function initiateCombat(playerShip: Ship, enemyShip: Ship, rl: Interface) {
-    let playersTurn = playerShip.speed > enemyShip.speed;
-    while (!eitherShipHasBeenDestroyed(playerShip.currentHealth, enemyShip.currentHealth)) {
+async function initiateCombat(player: Player, enemyShip: Ship, rl: Interface) {
+    let playersTurn = player.ship.speed > enemyShip.speed;
+    while (!eitherShipHasBeenDestroyed(player.ship.currentHealth, enemyShip.currentHealth)) {
         if (playersTurn) {
-            shipAttack(playerShip, enemyShip);
+            shipAttack(player.ship, enemyShip);
         } else {
-            shipAttack(enemyShip, playerShip)
+            shipAttack(enemyShip, player.ship)
         }
         playersTurn = !playersTurn;
     }
 
-    if (playerShip.currentHealth <= 0) {
+    if (player.ship.currentHealth <= 0) {
         throw new GameOverError('Combat');
     }
 
     // player won and enemy ship plunderable (TODO: when dummy ships exist)
-    await plunder(playerShip, enemyShip, rl);
+    await plunder(player, enemyShip, rl);
 }
 
-function seizeCargo(playerShip: Ship, enemyShip: Ship) {
-    console.log(`initial inventory: ${playerShip.cargo.printCargoContent()}`);
-    for (const item of enemyShip.cargo.inventory) {
-        const itemA = ItemLookup.get(item.id);
-        if (!playerShip.haveEnoughCapacityForCargo(item)) return
-        playerShip.addCargo(item);
-        enemyShip.removeCargo(item);
-        console.log(`adding ${itemA?.name} to player ship from enemy`);
+function seizeCargo(shipToGainCargo: Ship, seizedShip: Ship) {
+    for (const item of seizedShip.cargo.inventory) {
+        if (!shipToGainCargo.haveEnoughCapacityForCargo(item)) return
+        shipToGainCargo.addCargo(item);
+        seizedShip.removeCargo(item);
     }
-    console.log(`final inventory: ${playerShip.cargo.printCargoContent()}`);
 }
 
-function commandeerShip(playerShip: Ship, enemyShip: Ship) {
-    // store enemy cargo in temp, move player ship to enemy ship, add temp
-    // seize temp cargo and pass the new playerShip which was enemyShip
-    seizeCargo(playerShip, enemyShip);
+function commandeerShip(player: Player, enemyShip: Ship) {
+    const playerCrew = player.ship.crew;
+
+    seizeCargo(enemyShip, player.ship);
+    player.ship = enemyShip;
+    player.ship.stats.crew += playerCrew;
+
     reapplyUpgrades();
     removeShipFromPool();
-
 }
 
 function reapplyUpgrades() {
@@ -337,7 +335,7 @@ function removeShipFromPool() {
     // also add their weight to pool
     // check if any custom ships left, if not populate with the dummy ships
 }
-async function plunder(playerShip: Ship, enemyShip: Ship, rl: Interface) {
+async function plunder(player: Player, enemyShip: Ship, rl: Interface) {
     console.log(`You have defeated ${enemyShip.name}. Would you like to commandeer her? (y/n)`);
     let answer;
     do {
@@ -345,15 +343,12 @@ async function plunder(playerShip: Ship, enemyShip: Ship, rl: Interface) {
     } while (!validPlunderAnswer(answer));
 
     if (answer === 'n') {
-        seizeCargo(playerShip, enemyShip);
+        seizeCargo(player.ship, enemyShip);
         return;
-        // take cargo and return
     }
 
-    commandeerShip(playerShip, enemyShip);
-    // take ship + cargo
+    commandeerShip(player, enemyShip);
     console.log(`finally valid ${answer}`);
-
 }
 
 function validPlunderAnswer(answer: string) {
