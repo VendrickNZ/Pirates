@@ -344,7 +344,7 @@ function removeShipFromPool(pirateShip: Ship) {
     let weightOfEventsToRemove = 0;
     const totalPirateEventWeight = PirateEvents.reduce((acc, curr) => acc + curr.weight, 0)
     
-    const pirateToRemove = PirateEvents.find(x => x.name === pirateShip.name);
+    const pirateToRemove = PirateEvents.find(x => x.ship.name === pirateShip.name);
     weightOfEventsToRemove += pirateToRemove?.weight ?? 0;
 
     for (const [i, pirate] of PirateEvents.entries()) {
@@ -352,7 +352,7 @@ function removeShipFromPool(pirateShip: Ship) {
             PirateEvents.splice(i, 1);
             continue;
         }
-        const fractionOfTotalWeight = formatFloat((pirate.weight / totalPirateEventWeight), 1);
+        const fractionOfTotalWeight = formatFloat((pirate.weight / totalPirateEventWeight), 3);
         pirate.weight += formatFloat(fractionOfTotalWeight * weightOfEventsToRemove, 1);
     }
 
