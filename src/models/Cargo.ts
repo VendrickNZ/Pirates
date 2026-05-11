@@ -15,6 +15,7 @@ export default class Cargo {
 
     constructor(maxCapacity: number, startingInventory?: Inventory) {
         this._inventory = startingInventory ?? [];
+        if (startingInventory) this.calculateStartingCargoWeight();
 
         this._maxCapacity = maxCapacity
         this._currentCapacity = 0
@@ -122,6 +123,13 @@ export default class Cargo {
             return false;
         }
         return true;
+    }
+
+    calculateStartingCargoWeight() {
+        for (const itemRef of this.inventory) {
+            const item = ItemLookup.get(itemRef.id);
+            this.currentCapacity += item?.weight ?? 0
+        }
     }
 }
 
