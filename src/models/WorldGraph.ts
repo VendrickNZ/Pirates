@@ -325,6 +325,7 @@ function commandeerShip(player: Player, enemyShip: Ship) {
     player.ship = enemyShip;
     player.ship.stats.crew += playerCrew;
     player.ship.stats.currentUpgradeSlots += playerUpgrades;
+    player.ship.currentHealth = player.ship.maxHealth;
 
     reapplyUpgrades(player.ship);
     removeShipFromPool(enemyShip);

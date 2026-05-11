@@ -33,6 +33,7 @@ export class Ship {
     constructor(stats: ShipStats, startingCargo?: Inventory) {
         this._stats = stats;
         this._cargo = new Cargo(this.maxWeight, startingCargo);
+        this.calculateStartingCargoWeight();
     }
 
     get name(): string { return this._stats.name; }
@@ -159,6 +160,13 @@ export class Ship {
             this._stats[key] = (this._stats[key] as number) - value;
         }
     }
+
+    calculateStartingCargoWeight() {
+        for (const itemRef of this.cargo.inventory) {
+            const item = ItemLookup.get(itemRef.id);
+            this.currentWeight += item?.weight ?? 0
+        }
+    }
 }
 
 export type CrewOutcome =
@@ -258,7 +266,7 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         wagesPerDay: 1,
         speed: 4,
         armour: 10,
-        damage: 3,
+        damage: 300,
         currentWeight: 0,
         maxWeight: 150,
         currentUpgradeSlots: 0,

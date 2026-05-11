@@ -15,6 +15,7 @@ export default class Cargo {
 
     constructor(maxCapacity: number, startingInventory?: Inventory) {
         this._inventory = startingInventory ?? [];
+
         this._maxCapacity = maxCapacity
         this._currentCapacity = 0
         this._page = new Page(this.inventory)
