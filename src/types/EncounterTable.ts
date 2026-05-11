@@ -171,7 +171,7 @@ const RescueEvents: RescueEvent[] = [
     }
 ]
 
-const PirateEvents: PirateEvent[] = [
+export const PirateEvents: PirateEvent[] = [
     {
         type: "Pirate",
         name: "Black Beard Pirates",

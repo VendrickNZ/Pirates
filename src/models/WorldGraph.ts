@@ -3,11 +3,11 @@ import type { GameState } from "../types/GameState";
 import { GameOverError } from "./GameOver";
 import { formatCommand, formatFloat, isNumber, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
-import { getRandomEvents, type DiseaseEvent, type EncounterTable, type Event, type PirateEvent, type RescueEvent, type WeatherEvent } from "../types/EncounterTable";
+import { getRandomEvents, PirateEvents, type DiseaseEvent, type EncounterTable, type Event, type PirateEvent, type RescueEvent, type WeatherEvent } from "../types/EncounterTable";
 import { getIslands } from "./Island";
 import type { IslandId, Island, IslandLocationVector2 } from "./Island";
 import { Ship } from "./Ship";
-import { getItems, ItemLookup, type Inventory } from "../types/Item";
+import { getItems, ItemLookup } from "../types/Item";
 
 const HOURS_IN_DAY = 24;
 
@@ -327,7 +327,7 @@ function commandeerShip(player: Player, enemyShip: Ship) {
     player.ship.stats.currentUpgradeSlots += playerUpgrades;
 
     reapplyUpgrades(player.ship);
-    removeShipFromPool();
+    removeShipFromPool(enemyShip);
 }
 
 /** this assumes you are only going to ships with equal or more slots than you */
@@ -340,8 +340,22 @@ function reapplyUpgrades(playerShip: Ship) {
     }
 }
 
-function removeShipFromPool() {
-    // also add their weight to pool
+function removeShipFromPool(pirateShip: Ship) {
+    let weightOfEventsToRemove = 0;
+    const totalPirateEventWeight = PirateEvents.reduce((acc, curr) => acc + curr.weight, 0)
+    
+    const pirateToRemove = PirateEvents.find(x => x.name === pirateShip.name);
+    weightOfEventsToRemove += pirateToRemove?.weight ?? 0;
+
+    for (const [i, pirate] of PirateEvents.entries()) {
+        if (pirate === pirateToRemove) {
+            PirateEvents.splice(i, 1);
+            continue;
+        }
+        const fractionOfTotalWeight = formatFloat((pirate.weight / totalPirateEventWeight), 1);
+        pirate.weight += formatFloat(fractionOfTotalWeight * weightOfEventsToRemove, 1);
+    }
+
     // check if any custom ships left, if not populate with the dummy ships
 }
 async function plunder(player: Player, enemyShip: Ship, rl: Interface) {
