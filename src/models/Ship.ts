@@ -83,11 +83,15 @@ export class Ship {
     }
 
     removeCargo(itemRef: ItemReference) {
-        const index = this.cargo.inventory.indexOf(itemRef);
-        this.cargo.inventory.splice(index, 1);
-
         const item = ItemLookup.get(itemRef.id);
         if (!item) return;
+
+        if (itemRef.units > 1) {
+            itemRef.units--;
+        } else {
+            const index = this.cargo.inventory.indexOf(itemRef);
+            this.cargo.inventory.splice(index, 1);
+        }
 
         this.cargo.currentCapacity -= item.weight;
         this._cargo.update();

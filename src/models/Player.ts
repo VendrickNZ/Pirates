@@ -119,8 +119,6 @@ export default class Player {
         if (!chosenItem) return;
 
         this.ship.removeItemEffectIfApplicable(chosenItem);
-        itemRef.units++;
-
         this._balance += itemRef.currentValue;
         this._ship.currentWeight -= chosenItem.weight;
         this._ship.removeCargo(itemRef);
