@@ -10,7 +10,7 @@ import { BuyStrategy, SellStrategy } from "../contexts/VendorStrategy";
 import type { IslandCommoditiesTable } from "./Island";
 import { getRandomInt } from "../utils/NumberUtils";
 
-const STARTING_VENDOR_BALANCE = 250;
+const STARTING_VENDOR_BALANCE = 750;
 
 export type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
 export type VendorSession = {

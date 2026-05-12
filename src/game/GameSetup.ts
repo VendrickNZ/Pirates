@@ -19,7 +19,7 @@ export async function createNewGame(configs?: DevConfigs) {
     const name = await promptPlayerName(rl);
     const duration = await promptGameDuration(rl);
 
-    printInformation('Intro text...')
+    printInformation(`Ahoy, Captain ${name}! Ye've taken command o' the Victoria - a humble vessel with naught but ${duration} days afore the trading season ends.\nTrade, plunder, or chase the horizon - make yer fortune afore the tides turn. Good luck, ye scurvy dog!`)
 
     const player = createPlayer(name);
     const gm = new GameManager(duration, player, rl);

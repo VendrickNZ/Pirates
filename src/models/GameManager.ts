@@ -7,8 +7,10 @@ import { visitVendor } from "./Vendor";
 import type { Interface } from "node:readline/promises";
 import { visitDocks, WorldGraph } from "./WorldGraph";
 import { GameOverError, type GameOverReason } from "./GameOver";
+import { computeFinalScore, printScoreBreakdown, type ScoreBreakdown } from "./Score";
 export default class GameManager {
     private _duration: number;
+    private _maxDays: number;
     private _player: Player;
     private _exitGame: boolean;
     private _state: GameState;
@@ -17,6 +19,7 @@ export default class GameManager {
 
     constructor(duration: number, player: Player, rl: Interface) {
         this._duration = duration;
+        this._maxDays = duration;
         this._player = player;
         this._exitGame = false;
         this._state = 'At Island';
@@ -28,8 +31,13 @@ export default class GameManager {
         return this._duration;
     }
 
+    get maxDays(): number {
+        return this._maxDays;
+    }
+
     set daysRemaining(daysRemaining: number) {
         if (daysRemaining < 0) {
+            this._duration = 0;
             throw new GameOverError('Time');
         }
         this._duration = daysRemaining;
@@ -104,31 +112,32 @@ export default class GameManager {
     }
 
     async endGame(reason: GameOverReason): Promise<GameState> {
-        printEndOfGameInformation(reason);
+        const score = computeFinalScore(this._player, this);
+        printEndOfGameInformation(reason, score);
         this._exitGame = true;
         this._rl.close();
         return 'Exit';
     }
 }
 
-function printEndOfGameInformation(reason: GameOverReason) {
+function printEndOfGameInformation(reason: GameOverReason, score: ScoreBreakdown) {
     switch (reason) {
         case 'Selected Exit':
-            console.log('You selected Exit. Game over!');
+            console.log('Ye laid down yer sword. The voyage ends here.');
             break;
         case 'Combat':
-            console.log('You died in combat. Game over!');
+            console.log('Ye fell in glorious battle. The sea claims another captain.');
             break;
         case 'Time':
-            console.log('You ran out of time. Game over!');
+            console.log('The trading season be over. Yer voyage be done.');
             break;
         case 'Weather':
-            console.log('You died in a storm. Game over!');
+            console.log('The storm swallowed ye whole. Davy Jones be pleased with his prize.');
             break;
         case 'Stranded':
-            console.log('You got stranded and died. Game over!');
+            console.log('Marooned and forgotten, ye perished alone on the open sea.');
             break;
     }
 
-    console.log('Your final score is xxx');
+    printScoreBreakdown(score);
 }

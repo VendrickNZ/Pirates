@@ -105,7 +105,7 @@ export class Ship {
     haveEnoughCapacityForCargo(cargoToAdd: ItemReference) {
         const cargoItem = ItemLookup.get(cargoToAdd.id);
         const newWeight = this._stats.currentWeight + (cargoItem?.weight || 0);
-        return this._stats.maxWeight > newWeight;
+        return this._stats.maxWeight >= newWeight;
     }
 
     addCrew(crewToHire: number): CrewOutcome {
@@ -170,14 +170,12 @@ export type CrewOutcome =
     | { kind: 'NotEnoughBeds'; beds: number; attempted: number; currentCrew: number }
     | { kind: 'NotEnoughMoney'; cost: number; balance: number }
     | { kind: 'NotANumber'; input: string }
-    | { kind: 'NegativeValue'; }
 
 function message(outcome: CrewOutcome) {
     switch (outcome.kind) {
         case 'NotEnoughBeds': return `Thar be nah enough cots on yer ship. Ye only 'ave ${outcome.beds} cots 'n ${outcome.currentCrew} crew but be wantin' t' add ${outcome.attempted} more.\n`
         case 'NotEnoughMoney': return `Ye be tryin' t' spend ${outcome.cost} Doubloons, but ye only 'ave ${outcome.balance}. Ye be broke.\n`
         case 'NotANumber': return `Blast ye! ${outcome.input} ain't a number. Give it another go.\n`
-        case 'NegativeValue': return `Ye caught me, I 'ave nah added sellin' yet.\n`
     }
 }
 
@@ -203,22 +201,29 @@ function printShipStatistics(ship: Ship): string {
 }
 
 export async function hireCrew(player: Player, rl: Interface): Promise<GameState> {
-    const crewToHirePlayerResponse = await rl.question("Enter the number of crew you'd like to hire: ");
+    const crewToHirePlayerResponse = await rl.question("Enter the number of crew to hire (negative to dismiss): ");
 
     if (!isNumber(crewToHirePlayerResponse)) {
         console.log(message({ kind: 'NotANumber', input: crewToHirePlayerResponse }));
         return hireCrew(player, rl);
     }
 
-    const crewToHire = parseInt(crewToHirePlayerResponse);
-    if (crewToHire < 0) {
-        console.log(message({ kind: 'NegativeValue' }));
-        return hireCrew(player, rl);
+    const crewToChange = parseInt(crewToHirePlayerResponse);
+
+    if (crewToChange < 0) {
+        const crewToDismiss = Math.min(Math.abs(crewToChange), player.ship.crew);
+        player.ship.removeCrew(crewToDismiss);
+        console.log(`Ye dismissed ${crewToDismiss} crewmates. They wandered off into the port.\n`);
+        return 'At Island';
     }
 
-    const cost = CALCULATE_COST_TO_HIRE_CREW(crewToHire);
+    if (crewToChange === 0) {
+        return 'At Island';
+    }
 
-    const spaceOutcome = player.ship.haveEnoughSpaceForCrew(crewToHire);
+    const cost = CALCULATE_COST_TO_HIRE_CREW(crewToChange);
+
+    const spaceOutcome = player.ship.haveEnoughSpaceForCrew(crewToChange);
     if (spaceOutcome.kind !== 'Success') {
         console.log(message(spaceOutcome));
         return hireCrew(player, rl);
@@ -229,9 +234,9 @@ export async function hireCrew(player: Player, rl: Interface): Promise<GameState
         return hireCrew(player, rl);
     }
 
-    player.ship.addCrew(crewToHire);
+    player.ship.addCrew(crewToChange);
     player.removeFunds(cost);
-    console.log(`Ye hired ${crewToHire} crewmates fer ${cost} Doubloons!\n`);
+    console.log(`Ye hired ${crewToChange} crewmates fer ${cost} Doubloons!\n`);
 
     return 'At Island';
 }
@@ -258,9 +263,9 @@ export const ShipPresets: Record<ShipsThatExist, ShipStats> = {
         numberOfBeds: 10,
         minimumCrewToSail: 3,
         wagesPerDay: 1,
-        speed: 4,
+        speed: 5,
         armour: 10,
-        damage: 300,
+        damage: 12,
         currentWeight: 0,
         maxWeight: 150,
         currentUpgradeSlots: 0,

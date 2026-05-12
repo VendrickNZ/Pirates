@@ -10,18 +10,28 @@ export default class Player {
     /** Minor note 4fun here, this is an extrinsic attribute and should be on another object - not worth to change now */
     private _island: Island
     private _ship: Ship
+    private _combatsWon: number
 
     constructor(name: string) {
         this._name = name;
         this._balance = 0;
         this._island = getStartingIsland();
         this._ship = createShip('StartingShip')
+        this._combatsWon = 0;
 
         this.addFunds(750);
     }
 
     get name(): string {
         return this._name;
+    }
+
+    get combatsWon(): number {
+        return this._combatsWon;
+    }
+
+    recordCombatWin() {
+        this._combatsWon++;
     }
 
     get balance(): number {
@@ -56,10 +66,13 @@ export default class Player {
         const cost = this.calculateCrewWageCost(daysPassed);
         if (this._balance - cost >= 0) {
             this.deductWages(cost);
+            if (cost > 0) {
+                console.log(`Ye paid yer crew ${cost} Doubloons fer ${daysPassed} days at sea.`);
+            }
             return true;
         }
-        console.log('ye cannot afford ye ship mates yarrrr');
-        console.log(`ye shipmates are costin ya ${cost} doubloons but ye only have ${this.balance}`);
+        console.log('Ye cannot afford yer shipmates, yarrrr!');
+        console.log(`Yer crew be costin' ${cost} Doubloons but ye only have ${this.balance}.`);
         return false;
     }
 

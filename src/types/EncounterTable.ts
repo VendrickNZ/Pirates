@@ -2,7 +2,7 @@ import type { ShipStats } from "../models/Ship"
 import { getRandomFloat, getRandomInt } from "../utils/NumberUtils"
 import { formatFloat } from "../utils/TextUtils";
 
-export const MAX_ENCOUNTER_TABLE_PERCENTAGE = 100;
+export const MAX_ENCOUNTER_TABLE_PERCENTAGE = 70;
 
 /** List of Events */
 export type EncounterTable = Event[];
@@ -41,7 +41,7 @@ const DiseaseEvents: DiseaseEvent[] = [
         "type": "Disease",
         "name": "Coronavirus",
         "weight": 2,
-        "severity": 0.3
+        "severity": 0.2
     },
     {
         "type": "Disease",
@@ -53,19 +53,19 @@ const DiseaseEvents: DiseaseEvent[] = [
         "type": "Disease",
         "name": "Smallpox",
         "weight": 3,
-        "severity": 0.25
+        "severity": 0.2
     },
     {
         "type": "Disease",
         "name": "Cholera",
         "weight": 2,
-        "severity": 0.45
+        "severity": 0.25
     },
     {
         "type": "Disease",
         "name": "Black Death",
         "weight": 1,
-        "severity": 0.75
+        "severity": 0.35
     },
     {
         "type": "Disease",
@@ -178,15 +178,15 @@ export const PirateEvents: PirateEvent[] = [
         weight: 1,
         ship: {
             name: "Queen Anne's Revenge",
-            currentHealth: 330,
-            maxHealth: 330,
+            currentHealth: 290,
+            maxHealth: 290,
             crew: 80,
             numberOfBeds: 100,
             minimumCrewToSail: 20,
             wagesPerDay: 3,
-            speed: 5,
+            speed: 4,
             armour: 38,
-            damage: 30,
+            damage: 40,
             currentWeight: 0,
             maxWeight: 500,
             currentUpgradeSlots: 0,
@@ -196,18 +196,18 @@ export const PirateEvents: PirateEvent[] = [
     {
         type: "Pirate",
         name: "Red Beard Pirates",
-        weight: 2,
+        weight: 3,
         ship: {
             name: "Queen Boudicca's Revenge",
-            currentHealth: 180,
-            maxHealth: 180,
+            currentHealth: 220,
+            maxHealth: 220,
             crew: 70,
             numberOfBeds: 100,
             minimumCrewToSail: 18,
             wagesPerDay: 3,
             speed: 4,
-            armour: 22,
-            damage: 22,
+            armour: 28,
+            damage: 30,
             currentWeight: 0,
             maxWeight: 400,
             currentUpgradeSlots: 0,
@@ -217,18 +217,18 @@ export const PirateEvents: PirateEvent[] = [
     {
         type: "Pirate",
         name: "Pirates of Edward Kenway",
-        weight: 4,
+        weight: 6,
         ship: {
-            name: "Jackdaw",
-            currentHealth: 155,
-            maxHealth: 155,
+            name: "The Jackdaw",
+            currentHealth: 170,
+            maxHealth: 170,
             crew: 65,
             numberOfBeds: 100,
             minimumCrewToSail: 16,
             wagesPerDay: 2,
             speed: 4,
-            armour: 18,
-            damage: 18,
+            armour: 20,
+            damage: 22,
             currentWeight: 0,
             maxWeight: 300,
             currentUpgradeSlots: 0,
@@ -238,18 +238,18 @@ export const PirateEvents: PirateEvent[] = [
     {
         type: "Pirate",
         name: "Jack Sparrow",
-        weight: 6,
+        weight: 12,
         ship: {
-            name: "Black Pearl",
-            currentHealth: 100,
-            maxHealth: 100,
+            name: "The Black Pearl",
+            currentHealth: 130,
+            maxHealth: 130,
             crew: 60,
             numberOfBeds: 100,
             minimumCrewToSail: 15,
             wagesPerDay: 2,
-            speed: 3,
-            armour: 5,
-            damage: 40,
+            speed: 5,
+            armour: 14,
+            damage: 16,
             currentWeight: 0,
             maxWeight: 250,
             currentUpgradeSlots: 0,
@@ -263,7 +263,7 @@ export const allEvents = [...DiseaseEvents, ...WeatherEvents, ...RescueEvents, .
 /** Get min-max random events, defaults to 3-7, no duplicates */
 export function getRandomEvents(min = 3, max = 7): EncounterTable {
     const eventsToChooseFrom = allEvents.slice();
-    const numberOfEventsToGet = getRandomInt(min, max);
+    const numberOfEventsToGet = getRandomInt(min, Math.min(max, eventsToChooseFrom.length));
 
     const eventsChosen = [];
     for (let i = 0; i < numberOfEventsToGet; i++) {
@@ -280,7 +280,7 @@ export function normalizeEncounterTable(events: EncounterTable) {
     const normalizedTable: EncounterTable = events.map(
         x => ({
             ...x,
-            weight: formatFloat(x.weight * getRandomFloat(0.5, 3))
+            weight: formatFloat(x.weight * getRandomFloat(0.7, 1.5))
         })
     )
 

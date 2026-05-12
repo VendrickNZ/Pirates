@@ -66,3 +66,7 @@ export function isValidGameDuration(durationString: string): boolean {
 export function formatFloat(number: number, dp = 1) {
     return parseFloat(number.toFixed(dp));
 }
+
+export function sleepInMs(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}

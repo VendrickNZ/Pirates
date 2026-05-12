@@ -2,8 +2,8 @@ import { ItemTypes, type ItemType } from "../types/Item";
 import { getRandomFloat, getRandomInt } from "../utils/NumberUtils";
 import { Vendor } from "./Vendor";
 
-const MAX_COORDINATE = 1000;
-const MIN_COORDINATE = -1000;
+const MAX_COORDINATE = 400;
+const MIN_COORDINATE = -400;
 
 type IslandNames = 'Barataria Bay' | 'Port Royal' | 'Tortuga' | 'Prince Edward Island'
 export type IslandCommoditiesTable = Record<ItemType, number>;
@@ -52,7 +52,7 @@ let islands: Island[] | null = null;
 function generateCommodityMultipliers() {
     const commodityMultiplier: Partial<IslandCommoditiesTable> = {};
     for (const type of ItemTypes) {
-        commodityMultiplier[type] = getRandomFloat(0.25, 2, 2); 
+        commodityMultiplier[type] = getRandomFloat(0.55, 1.55, 2);
     }
     return commodityMultiplier as IslandCommoditiesTable;
 }
