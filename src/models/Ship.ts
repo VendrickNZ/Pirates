@@ -160,7 +160,7 @@ export class Ship {
     updateWeightForStartingCargo(startingCargo: Inventory) {
         for (const itemRef of startingCargo) {
             const item = ItemLookup.get(itemRef.id);
-            this._stats.currentWeight += item?.weight ?? 0;
+            this._stats.currentWeight += (item?.weight ?? 0) * itemRef.units;
         }
     }
 }
