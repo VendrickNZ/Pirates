@@ -34,12 +34,7 @@ export class Ship {
         this._stats = stats;
         this._cargo = new Cargo(startingCargo);
 
-        if (startingCargo) {
-            for (const itemRef of startingCargo) {
-                const item = ItemLookup.get(itemRef.id);
-                this._stats.currentWeight += item?.weight ?? 0;
-            }
-        }
+        if (startingCargo) this.updateWeightForStartingCargo(startingCargo);
     }
 
     get name(): string { return this._stats.name; }
@@ -159,6 +154,13 @@ export class Ship {
         const itemEffect = item.effect;
         for (const [key, value] of Object.entries(itemEffect) as [keyof NumericShipStats, number][]) {
             this._stats[key] = (this._stats[key] as number) - value;
+        }
+    }
+   
+    updateWeightForStartingCargo(startingCargo: Inventory) {
+        for (const itemRef of startingCargo) {
+            const item = ItemLookup.get(itemRef.id);
+            this._stats.currentWeight += item?.weight ?? 0;
         }
     }
 }
