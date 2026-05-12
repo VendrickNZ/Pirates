@@ -32,9 +32,14 @@ export class Ship {
 
     constructor(stats: ShipStats, startingCargo?: Inventory) {
         this._stats = stats;
-        this._cargo = new Cargo(this.maxWeight, startingCargo);
+        this._cargo = new Cargo(startingCargo);
 
-        if (startingCargo) this.cargo.calculateStartingCargoWeight();
+        if (startingCargo) {
+            for (const itemRef of startingCargo) {
+                const item = ItemLookup.get(itemRef.id);
+                this._stats.currentWeight += item?.weight ?? 0;
+            }
+        }
     }
 
     get name(): string { return this._stats.name; }
@@ -51,7 +56,6 @@ export class Ship {
     get currentWeight(): number { return this._stats.currentWeight; }
     get maxWeight(): number { return this._stats.maxWeight; }
     get cargo(): Cargo { return this._cargo; }
-    get cargoMax(): number { return this.cargo.maxCapacity; }
     get upgradeCount(): number { return this._stats.currentUpgradeSlots; }
     get upgradeMax(): number { return this._stats.maxUpgradeSlots; }
     get stats(): ShipStats { return this._stats; }
@@ -65,10 +69,6 @@ export class Ship {
         this.stats.currentHealth = Math.min(health, this.stats.maxHealth);
     }
 
-    set currentWeight(weight: number) {
-        this.stats.currentWeight = weight;
-    }
-
     addCargo(itemRef: ItemReference) {
         const existingItem = this._cargo.inventory.find(x => x.id === itemRef.id);
         if (existingItem) {
@@ -80,7 +80,7 @@ export class Ship {
 
         const item = ItemLookup.get(itemRef.id)!;
 
-        this.cargo.currentCapacity += item.weight;
+        this._stats.currentWeight += item.weight;
         this._cargo.update();
     }
 
@@ -95,7 +95,7 @@ export class Ship {
             this.cargo.inventory.splice(index, 1);
         }
 
-        this.cargo.currentCapacity -= item.weight;
+        this._stats.currentWeight -= item.weight;
         this._cargo.update();
     }
 
@@ -109,8 +109,8 @@ export class Ship {
 
     haveEnoughCapacityForCargo(cargoToAdd: ItemReference) {
         const cargoItem = ItemLookup.get(cargoToAdd.id);
-        const newWeight = this.cargo.currentCapacity + (cargoItem?.weight || 0);
-        return this.cargo.maxCapacity > newWeight;
+        const newWeight = this._stats.currentWeight + (cargoItem?.weight || 0);
+        return this._stats.maxWeight > newWeight;
     }
 
     addCrew(crewToHire: number): CrewOutcome {
@@ -195,9 +195,7 @@ function printShipStatistics(ship: Ship): string {
         `Wages per day: ${ship.wagesPerDay} Doubloons`,
         `Speed: ${ship.speed} km / day`,
         `Armor: ${ship.armour}, Damage: ${ship.damage}`,
-        `Current weight: ${ship.currentWeight}`,
-        `Max weight: ${ship.maxWeight}`,
-        `Cargo: ${ship.cargo.currentCapacity} / ${ship.cargo.maxCapacity} slots filled`,
+        `Cargo weight: ${ship.currentWeight} / ${ship.maxWeight}`,
         `Upgrades: ${ship.upgradeCount} / ${ship.upgradeMax} slots filled`,
     ].join('\n');
 }

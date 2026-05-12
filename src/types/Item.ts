@@ -38,7 +38,7 @@ export const GameUpgrades: readonly UpgradeItem[] = [
     { id: 105, name: "Iron Scantlings", type: "Upgrade", baseValue: 32.0, weight: 5, effect: { maxHealth: 50, armour: 10 } },
     { id: 106, name: "Fine-Grain Powder", type: "Upgrade", baseValue: 10.0, weight: 5, effect: { damage: 5 } },
     { id: 107, name: "Triple Hammocks", type: "Upgrade", baseValue: 12.0, weight: 5, effect: { numberOfBeds: 25 } },
-    { id: 108, name: "Armory", type: "Upgrade", baseValue: 20.0, weight: 5, effect: { maxUpgradeSlots: 2 } },
+    { id: 108, name: "Armory", type: "Upgrade", baseValue: 65.0, weight: 5, effect: { maxUpgradeSlots: 3 } },
     { id: 109, name: "Extended Keel", type: "Upgrade", baseValue: 12.0, weight: 5, effect: { maxWeight: 75 } },
 ]
 

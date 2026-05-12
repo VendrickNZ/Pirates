@@ -8,20 +8,15 @@ import type { Ship } from "./Ship";
 import type { VendorSession } from "./Vendor";
 
 export default class Cargo {
-    private _maxCapacity: number;
-    private _currentCapacity: number;
     private _inventory: Inventory;
     private _page: Page;
 
-    constructor(maxCapacity: number, startingInventory?: Inventory) {
+    constructor(startingInventory?: Inventory) {
         this._inventory = startingInventory ?? [];
-        if (startingInventory) this.calculateStartingCargoWeight();
-
-        this._maxCapacity = maxCapacity
-        this._currentCapacity = 0
         this._page = new Page(this.inventory)
         this.update();
     }
+
     update() {
         cleanInventory(this);
         this._page.max = this._page.calculateMaxPages(this.inventory);
@@ -29,18 +24,6 @@ export default class Cargo {
 
     get inventory() {
         return this._inventory;
-    }
-
-    get maxCapacity() {
-        return this._maxCapacity;
-    }
-
-    set currentCapacity(newCapacity: number) {
-        this._currentCapacity = newCapacity;
-    }
-
-    get currentCapacity(): number {
-        return this._currentCapacity
     }
 
     get page() {
@@ -125,12 +108,7 @@ export default class Cargo {
         return true;
     }
 
-    calculateStartingCargoWeight() {
-        for (const itemRef of this.inventory) {
-            const item = ItemLookup.get(itemRef.id);
-            this.currentCapacity += item?.weight ?? 0
-        }
-    }
+
 }
 
 export async function viewCargo(ship: Ship, rl: Interface): Promise<GameState> {

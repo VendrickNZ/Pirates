@@ -98,7 +98,6 @@ export default class Player {
 
         console.log(`You purchased ${chosenItem.name} for ${itemPrice} doubloons!`);
         this._balance -= itemPrice;
-        this.ship.currentWeight += chosenItem.weight;
         this.ship.addCargo(itemRef);
 
     }
@@ -120,7 +119,6 @@ export default class Player {
 
         this.ship.removeItemEffectIfApplicable(chosenItem);
         this._balance += itemRef.currentValue;
-        this._ship.currentWeight -= chosenItem.weight;
         this._ship.removeCargo(itemRef);
     }
 }
