@@ -1,7 +1,7 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
 import { GameOverError } from "./GameOver";
-import { formatCommand, formatFloat, isNumber, printInformation, sleepInMs, timeoutInSeconds } from "../utils/TextUtils";
+import { expandAlias, formatCommand, formatFloat, isNumber, narrate, printHeader, prompt, resetCompletions, setCompletions, sleepInMs, type AliasMap } from "../utils/TextUtils";
 import type Player from "./Player";
 import { getRandomEvents, PirateEvents, type DiseaseEvent, type EncounterTable, type Event, type PirateEvent, type RescueEvent, type WeatherEvent } from "../types/EncounterTable";
 import { getIslands } from "./Island";
@@ -58,18 +58,22 @@ function healShip(ship: Ship) {
     }
 }
 
+const DOCKS_ALIASES: AliasMap = {
+    'R': 'Return',
+};
+
 export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<DocksResult> {
+    setCompletions(['Return']);
     printAvailableRoutes(worldGraph, player);
     const selectedOption = await promptPlayerForRoute(rl);
+    resetCompletions();
 
     if (selectedOption.kind === 'back') {
-        await timeoutInSeconds(2);
         return { nextState: 'At Island', daysPassed: 0 };
     }
 
     healShip(player.ship);
     const daysPassed = await attemptTravelToIsland(selectedOption.routeIndex, player, worldGraph, rl);
-    await timeoutInSeconds(2);
     return { nextState: 'At Island', daysPassed };
 }
 
@@ -118,15 +122,15 @@ function createEncounterTable(): EncounterTable {
 }
 
 function printAvailableRoutes(graph: WorldGraph, player: Player) {
-    printInformation('Available Routes:', 0);
+    printHeader('Available Routes');
 
     const availableRoutes = graph.getRoutesFor(player.island.id);
     for (const [i, route] of availableRoutes.entries()) {
         const island = getIslands().find(i => i.id === route.destinationIslandId)!;
+        console.log('');
         printIslandRouteTitle(i, island.name, route.distanceKm, player.ship);
         printIslandRouteInformation(route.encounterTable, island);
         printIslandRouteItemModifiers(island);
-        printInformation('---', 0)
     }
 }
 
@@ -161,11 +165,12 @@ async function promptPlayerForRoute(rl: Interface): Promise<RouteSelection> {
     const islands = getIslands();
     const numberOfRoutes = islands.length - 1;
     while (true) {
-        console.log(`Select a route (1-${numberOfRoutes}) or exit`);
+        console.log('');
+        console.log(`Select a route (1-${numberOfRoutes}) or type 'return' [R] to go back.`);
+        const rawAnswer = await prompt(rl);
 
-        const rawAnswer = await rl.question('');
-
-        if (formatCommand(rawAnswer) === 'Exit') {
+        const command = expandAlias(formatCommand(rawAnswer), DOCKS_ALIASES);
+        if (command === 'Return') {
             return { kind: 'back' }
         }
         if (isValidRoute(rawAnswer, numberOfRoutes)) {
@@ -201,11 +206,11 @@ async function attemptTravelToIsland(selectedRoute: number, player: Player, worl
         const daysAdded = await playEvent(selectedEvent.event, player, rl);
         daysPassed += daysAdded;
     } else {
-        console.log('The seas be calm. A peaceful voyage, with naught but the wind in yer sails.');
+        await narrate('The seas be calm. A peaceful voyage, with naught but the wind in yer sails.');
     }
 
     player.island = islandToTravelTo;
-    console.log(`Land ho! Ye dropped anchor at ${islandToTravelTo.name} after ${daysPassed} days at sea.`);
+    await narrate(`Land ho! Ye dropped anchor at ${islandToTravelTo.name} after ${daysPassed} days at sea.`);
     return daysPassed;
 }
 
@@ -222,9 +227,9 @@ function selectEvent(encounterTable: EncounterTable): ReceivedEvent {
 async function playEvent(event: Event, player: Player, rl: Interface): Promise<number> {
     switch (event.type) {
         case 'Disease':
-            return playDiseaseEvent(event, player.ship);
+            return await playDiseaseEvent(event, player.ship);
         case 'Weather':
-            return playWeatherEvent(event, player.ship);
+            return await playWeatherEvent(event, player.ship);
         case 'Rescue':
             return playRescueEvent(event, player.ship, rl);
         case 'Pirate':
@@ -234,13 +239,13 @@ async function playEvent(event: Event, player: Player, rl: Interface): Promise<n
     }
 }
 
-function playDiseaseEvent(event: DiseaseEvent, ship: Ship) {
+async function playDiseaseEvent(event: DiseaseEvent, ship: Ship) {
     const crewToRemove = Math.ceil(ship.crew * event.severity);
     const crewRemoved = Math.min(crewToRemove, ship.crew)
     ship.removeCrew(crewRemoved);
 
-    console.log(`Disaster! ${event.name} swept through yer ship and ${crewRemoved} crewmates were lost to it.`);
-    console.log(`Ye only have ${ship.crew} mateys left aboard.`);
+    await narrate(`Disaster! ${event.name} swept through yer ship and ${crewRemoved} crewmates were lost to it.`);
+    await narrate(`Ye only have ${ship.crew} mateys left aboard.`);
 
     if (!ship.hasEnoughCrewForSailing()) {
         return initiateStranded();
@@ -249,29 +254,29 @@ function playDiseaseEvent(event: DiseaseEvent, ship: Ship) {
     return 0;
 }
 
-function playWeatherEvent(event: WeatherEvent, ship: Ship) {
+async function playWeatherEvent(event: WeatherEvent, ship: Ship) {
     const damageToDeal = (event.severity * ship.maxHealth);
     ship.takeDamage(damageToDeal);
 
+    await narrate(`Ye sailed into a ${event.name}!`);
+
     if (ship.currentHealth <= 0) {
-        console.log(`Ye sailed into a ${event.name}!`);
-        console.log(`Yer ship took ${damageToDeal} damage - she be torn asunder, and all hands lost to the deep.`);
+        await narrate(`Yer ship took ${damageToDeal} damage - she be torn asunder, and all hands lost to the deep.`);
         throw new GameOverError('Weather');
     }
 
-    console.log(`Ye sailed into a ${event.name}!`);
-    console.log(`Yer ship took ${damageToDeal} damage - only ${ship.currentHealth} health left in her hull.`);
+    await narrate(`Yer ship took ${damageToDeal} damage - only ${ship.currentHealth} health left in her hull.`);
 
     return calculateTimeLossDueToWeatherEvent(event.severity);
 }
 
 async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
-    console.log(`Yarr! Wreckage on the horizon - the ${event.name} be in trouble!`);
+    await narrate(`Yarr! Wreckage on the horizon - the ${event.name} be in trouble!`);
     console.log(`Ye spy ${event.numberOfSailors} marooned sailors clingin' to the flotsam.`);
     console.log(`Ye 'ave ${ship.numberOfBeds - ship.crew} cots free aboard yer ship.`);
     while (true) {
         console.log(`How many do ye wants t' save?`);
-        const answer = await rl.question('');
+        const answer = await prompt(rl);
         if (!isNumber(answer)) {
             console.log(`Yarr! That ain't a number.`);
             continue;
@@ -280,7 +285,7 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
 
         const largestNumberAllowed = Math.min(event.numberOfSailors, ship.numberOfBeds - ship.crew);
         if (convertedAnswer >= 0 && convertedAnswer <= largestNumberAllowed) {
-            console.log(`Ye hauled ${convertedAnswer} sailors aboard. They owe ye their lives.`);
+            await narrate(`Ye hauled ${convertedAnswer} sailors aboard. They owe ye their lives.`);
             ship.addCrew(convertedAnswer);
             break;
         }
@@ -291,7 +296,7 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
 }
 
 async function playPirateEvent(event: PirateEvent, player: Player, rl: Interface) {
-    console.log(`A sail on the horizon! It be ${event.name} aboard the ${event.ship.name}!`);
+    await narrate(`A sail on the horizon! It be ${event.name} aboard the ${event.ship.name}!`);
     const enemyShip = new Ship(event.ship, getItems(20));
     await initiateCombat(player, enemyShip, rl);
     return 0;
@@ -299,8 +304,8 @@ async function playPirateEvent(event: PirateEvent, player: Player, rl: Interface
 
 async function initiateCombat(player: Player, enemyShip: Ship, rl: Interface) {
     let playersTurn = player.ship.speed > enemyShip.speed;
-    console.log(`Battle stations! ${enemyShip.name} closes in fer a fight!`);
-    console.log(playersTurn ? 'Ye have the wind - ye strike first!' : 'They have the wind - they strike first!');
+    await narrate(`Battle stations! ${enemyShip.name} closes in fer a fight!`);
+    await narrate(playersTurn ? 'Ye have the wind - ye strike first!' : 'They have the wind - they strike first!');
     while (!eitherShipHasBeenDestroyed(player.ship.currentHealth, enemyShip.currentHealth)) {
         if (playersTurn) {
             shipAttack(player.ship, enemyShip);
@@ -316,8 +321,7 @@ async function initiateCombat(player: Player, enemyShip: Ship, rl: Interface) {
     }
 
     player.recordCombatWin();
-    console.log(`Hoist the colors! ${enemyShip.name} be defeated!`);
-    // player won and enemy ship plunderable (TODO: when dummy ships exist)
+    await narrate(`Hoist the colors! ${enemyShip.name} be defeated!`);
     await plunder(player, enemyShip, rl);
 }
 
@@ -373,25 +377,25 @@ function removeShipFromPool(pirateShip: Ship) {
     // check if any custom ships left, if not populate with the dummy ships
 }
 async function plunder(player: Player, enemyShip: Ship, rl: Interface) {
-    console.log(`You have defeated ${enemyShip.name}. Would you like to commandeer her? (y/n)`);
+    console.log(`Ye've bested ${enemyShip.name}. Commandeer her? (y/n)`);
     let answer;
     do {
-        answer = await rl.question('');
+        answer = (await prompt(rl)).trim().toLowerCase();
     } while (!validPlunderAnswer(answer));
 
     if (answer === 'n') {
         seizeCargo(player.ship, enemyShip);
-        console.log(`Ye stripped ${enemyShip.name} o' her cargo and let her sink to the depths.`);
+        await narrate(`Ye stripped ${enemyShip.name} o' her cargo and let her sink to the depths.`);
         return;
     }
 
     commandeerShip(player, enemyShip);
-    console.log(`A fine prize! Ye've taken command o' ${player.ship.name}.`);
+    await narrate(`A fine prize! Ye've taken command o' ${player.ship.name}.`);
 }
 
 function validPlunderAnswer(answer: string) {
     const isValid = answer === 'y' || answer === 'n';
-    if (!isValid) console.log(`ye answer is invalid, try again`);
+    if (!isValid) console.log(`Yer answer be invalid. Try again.`);
     return isValid
 }
 
@@ -418,7 +422,7 @@ function rollCombatDice(): number {
 }
 
 /** ~~20% chance of death */
-function initiateStranded(): number {
+async function initiateStranded(): Promise<number> {
     const daysToSurvive = 10;
     let found = false;
     let i = 0;
@@ -432,7 +436,7 @@ function initiateStranded(): number {
         throw new GameOverError('Stranded');
     }
 
-    console.log(`Ye were stranded fer ${i} days, but a passin' ship hauled ye aboard!`);
+    await narrate(`Ye were stranded fer ${i} days, but a passin' ship hauled ye aboard!`);
     return i;
 }
 

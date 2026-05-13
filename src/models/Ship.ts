@@ -1,6 +1,6 @@
 import type { Interface } from "readline/promises"
 import type { GameState } from "../types/GameState"
-import { printInformation, timeoutInSeconds, isNumber } from "../utils/TextUtils"
+import { printInformation, prompt, isNumber } from "../utils/TextUtils"
 import Cargo from "./Cargo"
 import type Player from "./Player"
 import { ItemLookup, type ItemReference, type Item, type Inventory } from "../types/Item"
@@ -29,6 +29,7 @@ type NumericShipStats = Omit<ShipStats, 'name'>
 export class Ship {
     private _stats: ShipStats;
     private _cargo: Cargo;
+    private _speedPenaltyStack: number[] = [];
 
     constructor(stats: ShipStats, startingCargo?: Inventory) {
         this._stats = stats;
@@ -136,23 +137,47 @@ export class Ship {
         return this.upgradeCount < this.upgradeMax;
     }
 
+    upgradeWouldStallShip(item: Item): boolean {
+        if (item.type !== 'Upgrade') return false;
+        const { speedPenaltyFactor, speed } = item.effect;
+        if (speedPenaltyFactor !== undefined) {
+            return (this._stats.speed - Math.floor(this._stats.speed * speedPenaltyFactor)) < 1;
+        }
+        if (speed !== undefined) {
+            return (this._stats.speed + speed) < 1;
+        }
+        return false;
+    }
+
     applyItemEffectIfApplicable(item: Item) {
         if (item.type !== 'Upgrade') return;
         this.upgradeCount += 1;
 
-        const itemEffect = item.effect;
-        for (const [key, value] of Object.entries(itemEffect) as [keyof NumericShipStats, number][]) {
+        const { speedPenaltyFactor, ...flatEffects } = item.effect;
+
+        if (speedPenaltyFactor !== undefined) {
+            const penalty = Math.floor(this._stats.speed * speedPenaltyFactor);
+            this._speedPenaltyStack.push(penalty);
+            this._stats.speed = Math.max(1, this._stats.speed - penalty);
+        }
+
+        for (const [key, value] of Object.entries(flatEffects) as [keyof NumericShipStats, number][]) {
             this._stats[key] = (this._stats[key] as number) + value;
         }
     }
 
-    // remove duplication
     removeItemEffectIfApplicable(item: Item) {
         if (item.type !== 'Upgrade') return;
         this.upgradeCount -= 1;
 
-        const itemEffect = item.effect;
-        for (const [key, value] of Object.entries(itemEffect) as [keyof NumericShipStats, number][]) {
+        const { speedPenaltyFactor, ...flatEffects } = item.effect;
+
+        if (speedPenaltyFactor !== undefined) {
+            const penalty = this._speedPenaltyStack.pop() ?? 0;
+            this._stats.speed += penalty;
+        }
+
+        for (const [key, value] of Object.entries(flatEffects) as [keyof NumericShipStats, number][]) {
             this._stats[key] = (this._stats[key] as number) - value;
         }
     }
@@ -181,7 +206,6 @@ function message(outcome: CrewOutcome) {
 
 export async function viewShip(ship: Ship): Promise<GameState> {
     printInformation(printShipStatistics(ship))
-    await timeoutInSeconds(3);
     return 'At Island'
 }
 
@@ -201,7 +225,7 @@ function printShipStatistics(ship: Ship): string {
 }
 
 export async function hireCrew(player: Player, rl: Interface): Promise<GameState> {
-    const crewToHirePlayerResponse = await rl.question("Enter the number of crew to hire (negative to dismiss): ");
+    const crewToHirePlayerResponse = await prompt(rl, "Enter the number of crew to hire (negative to dismiss):");
 
     if (!isNumber(crewToHirePlayerResponse)) {
         console.log(message({ kind: 'NotANumber', input: crewToHirePlayerResponse }));

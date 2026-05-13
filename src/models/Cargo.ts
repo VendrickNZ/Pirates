@@ -2,10 +2,17 @@ import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
 import { ItemLookup, type Inventory } from "../types/Item";
 import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber, updateInventoryPrices, updateCargoPrices, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
-import { formatCommand, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
+import { expandAlias, formatCommand, printHeader, printInformation, prompt, resetCompletions, setCompletions, type AliasMap } from "../utils/TextUtils";
 import type Player from "./Player";
 import type { Ship } from "./Ship";
 import type { VendorSession } from "./Vendor";
+
+const CARGO_COMMANDS = ['Next Page', 'Previous Page', 'Return'];
+const CARGO_ALIASES: AliasMap = {
+    'N': 'Next Page',
+    'P': 'Previous Page',
+    'R': 'Return',
+};
 
 export default class Cargo {
     private _inventory: Inventory;
@@ -31,21 +38,22 @@ export default class Cargo {
     }
 
     async playerCommand(rl: Interface) {
+        setCompletions(CARGO_COMMANDS);
         let choice;
         while (choice !== 'Return') {
             choice = await this.promptPlayer(rl);
         }
+        resetCompletions();
     }
 
     async promptPlayer(rl: Interface): Promise<PageCommand | ContinuePrompting> {
         this.printCargoContent();
         this.printViewCargoCommands();
-        const rawAnswer = await rl.question('');
+        const rawAnswer = await prompt(rl);
 
-        const formattedAnswer = formatCommand(rawAnswer);
+        const expanded = expandAlias(formatCommand(rawAnswer), CARGO_ALIASES);
 
-
-        return this.executePlayerCommand(formattedAnswer as PageCommand);
+        return this.executePlayerCommand(expanded as PageCommand);
     }
 
     executePlayerCommand(answer: PageCommand): PageCommand | ContinuePrompting {
@@ -53,13 +61,14 @@ export default class Cargo {
             case 'Next Page':
                 this.page.nextPage();
                 return 'Next Page';
-            
+
             case 'Previous Page':
                 this.page.previousPage();
                 return 'Previous Page';
 
             case 'Return':
                 return 'Return'
+
             default:
                 console.log('Arghhh... try again.');
                 return 'Continue'
@@ -67,8 +76,8 @@ export default class Cargo {
     }
 
     printViewCargoCommands() {
-        console.log(`Type 'next page' or 'previous page' to see what other items you have.`);
-        console.log(`Type 'return' if you wish to go back.`);
+        console.log('');
+        console.log("[N] Next Page  [P] Previous Page  [R] Return");
     }
 
     printCargoContent() {
@@ -77,7 +86,7 @@ export default class Cargo {
     }
 
     printEmptyInventoryMessage() {
-        printInformation('Ye cargo is empty!');
+        printInformation('Ye have no cargo!');
     }
 
     async sellItem(id: number, session: VendorSession) {
@@ -103,7 +112,7 @@ export default class Cargo {
 
     hasCargo() {
         if (this._inventory.length === 0) {
-            printInformation('You have no cargo!')
+            printInformation('Ye have no cargo!')
             return false;
         }
         return true;
@@ -116,7 +125,6 @@ export async function viewCargo(ship: Ship, rl: Interface): Promise<GameState> {
     if (ship.cargo.hasCargo()) {
         await ship.viewCargo(rl);
     }
-    await timeoutInSeconds(3);
     return 'At Island'
 }
 
@@ -132,14 +140,11 @@ export function printAllSellCargoInformation(session: VendorSession) {
 }
 
 export function printSellCargoHeader(player: Player) {
-    console.log(newLine(1));
-    console.log(`Current balance: ${player.balance} Doubloons`);
-    console.log(`===== Selling Cargo at ${player.island.name} =====`);
+    printHeader(`Selling Cargo at ${player.island.name}`);
+    console.log(`Balance: ${player.balance} Doubloons`);
 }
 
-// need to put my logs into some instruction builder at some point
 export function printSellCargoInstructions() {
-    console.log("Type the number of the item you wish to sell, or type 'next page' or 'previous page' to see what other items you have.")
-    console.log("If you wish to buy an item, type 'buy items'.");
-    console.log("Type 'return' if you wish to go back.");
+    console.log('');
+    console.log("Type an item number to sell. [N] Next Page  [P] Previous Page  [B] Buy Items  [R] Return");
 }

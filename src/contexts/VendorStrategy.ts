@@ -56,7 +56,7 @@ export class BuyStrategy implements VendorStrategy {
         const page = vendor.page.pageItems[currentPage];
 
         if (!page || page.length === 0) {
-            printInformation('Thar be no cargo on this page, yarrr');
+            printInformation('Thar be no cargo on this page, yarrr.');
             return null;
         }
 
@@ -64,7 +64,7 @@ export class BuyStrategy implements VendorStrategy {
         const endIndex = startIndex + page.length - 1;
 
         if (number < startIndex || number > endIndex) {
-            printInformation('yer number is out of bounds, yarrr');
+            printInformation('Yer number be out o\' bounds, yarrr.');
             return null;
         }
 
@@ -87,7 +87,9 @@ export class BuyStrategy implements VendorStrategy {
                 return returnToMenu();
             }
             default: {
-                return returnToMenu();
+                printInformation(`Yarr! "${answer}" be no command I know. Try again.`);
+                this.printPlayerCommands();
+                return 'Continue';
             }
         }
     }
@@ -135,7 +137,7 @@ export class SellStrategy implements VendorStrategy {
         const page = cargo.page.pageItems[currentPage];
 
         if (!page || page.length === 0) {
-            printInformation('Thar be no cargo on this page, yarrr');
+            printInformation('Thar be no cargo on this page, yarrr.');
             return null;
         }
 
@@ -143,7 +145,7 @@ export class SellStrategy implements VendorStrategy {
         const endIndex = startIndex + page.length - 1;
 
         if (number < startIndex || number > endIndex) {
-            printInformation('yer number is out of bounds, yarrr');
+            printInformation('Yer number be out o\' bounds, yarrr.');
             return null;
         }
 
@@ -166,7 +168,9 @@ export class SellStrategy implements VendorStrategy {
                 return returnToMenu();
             }
             default: {
-                return returnToMenu();
+                printInformation(`Yarr! "${answer}" be no command I know. Try again.`);
+                this.printPlayerCommands();
+                return 'Continue';
             }
         }
     }

@@ -1,14 +1,41 @@
 import type { CompleterResult } from "readline";
+import type { Interface } from "readline/promises";
 
 const MIN_GAME_DURATION = 20;
 const MAX_GAME_DURATION = 50;
 
-export function completer(line: string): CompleterResult {
-    const completions = ['View Ship', 'View Cargo', 'Visit Docks', 'Visit Vendor', 'Hire Crew', 'Exit'];
-    const formattedLine = formatCommand(line);
-    const hits = completions.filter(c => c.startsWith(formattedLine));
+export const MAIN_MENU_COMMANDS = ['View Ship', 'View Cargo', 'Visit Docks', 'Visit Vendor', 'Hire Crew', 'Exit'];
 
-    return [hits.length ? hits : completions, formattedLine];
+let activeCompletions: string[] = MAIN_MENU_COMMANDS;
+
+export function setCompletions(commands: string[]): void {
+    activeCompletions = commands;
+}
+
+export function resetCompletions(): void {
+    activeCompletions = MAIN_MENU_COMMANDS;
+}
+
+export function completer(line: string): CompleterResult {
+    const formattedLine = formatCommand(line);
+    const hits = activeCompletions.filter(c => c.startsWith(formattedLine));
+    return [hits.length ? hits : activeCompletions, formattedLine];
+}
+
+export type AliasMap = Record<string, string>;
+
+export function expandAlias(input: string, aliases: AliasMap): string {
+    return aliases[input] ?? input;
+}
+
+export function prompt(rl: Interface, label?: string): Promise<string> {
+    if (label) console.log(label);
+    return rl.question('> ');
+}
+
+export function printHeader(title: string): void {
+    console.log('');
+    console.log(`===== ${title} =====`);
 }
 
 export function printInformation(toPrint: string, spacing: number = 0): void {
@@ -17,11 +44,9 @@ export function printInformation(toPrint: string, spacing: number = 0): void {
     console.log(newLine(spacing))
 }
 
-export async function printInformationWithDelay(toPrint: string, spacing: number = 1, delayInSeconds: number = 1): Promise<void> {
-    console.log(newLine(spacing))
-    console.log(toPrint);
-    console.log(newLine(spacing))
-    await timeoutInSeconds(delayInSeconds);
+export async function narrate(text: string, delayMs: number = 1200): Promise<void> {
+    console.log(text);
+    await sleepInMs(delayMs);
 }
 
 export function newLine(n: number) {

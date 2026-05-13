@@ -1,6 +1,6 @@
 import type Player from "./Player";
 import type { GameState } from "../types/GameState";
-import { formatCommand } from "../utils/TextUtils";
+import { expandAlias, formatCommand, MAIN_MENU_COMMANDS, printHeader, prompt, resetCompletions, type AliasMap } from "../utils/TextUtils";
 import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { visitVendor } from "./Vendor";
@@ -8,6 +8,16 @@ import type { Interface } from "node:readline/promises";
 import { visitDocks, WorldGraph } from "./WorldGraph";
 import { GameOverError, type GameOverReason } from "./GameOver";
 import { computeFinalScore, printScoreBreakdown, type ScoreBreakdown } from "./Score";
+
+const MAIN_MENU_ALIASES: AliasMap = {
+    'S': 'View Ship',
+    'C': 'View Cargo',
+    'D': 'Visit Docks',
+    'V': 'Visit Vendor',
+    'H': 'Hire Crew',
+    'X': 'Exit',
+    'E': 'Exit',
+};
 export default class GameManager {
     private _duration: number;
     private _maxDays: number;
@@ -63,24 +73,22 @@ export default class GameManager {
     }
 
     async promptPlayer(): Promise<GameState> {
+        resetCompletions();
         this.printCommands();
-        const playerResponse = await this._rl.question('What would you like to do? ');
-        return formatCommand(playerResponse) as GameState;
+        const playerResponse = await prompt(this._rl, 'What would ye like to do?');
+        const formatted = formatCommand(playerResponse);
+        return expandAlias(formatted, MAIN_MENU_ALIASES) as GameState;
     }
 
     printCommands() {
-        console.log('======================');
-        console.log('Days remaining: %d', this.daysRemaining);
-        console.log('Current balance: %d', this._player.balance);
-        console.log('Docked at: %s', this._player.islandName);
-        console.log('======================');
+        printHeader(`${this._player.islandName} - Day ${this.maxDays - this.daysRemaining + 1} of ${this.maxDays}`);
+        console.log(`Balance: ${this._player.balance} Doubloons   Days remaining: ${this.daysRemaining}`);
+        console.log('');
         console.log('Available Commands:');
-        console.log('- View Ship');
-        console.log('- View Cargo');
-        console.log('- Visit Docks');
-        console.log('- Visit Vendor');
-        console.log('- Hire Crew');
-        console.log('- Exit');
+        for (const cmd of MAIN_MENU_COMMANDS) {
+            const alias = Object.entries(MAIN_MENU_ALIASES).find(([, v]) => v === cmd)?.[0];
+            console.log(alias ? `  [${alias}] ${cmd}` : `  ${cmd}`);
+        }
     }
 
     handleState(state: GameState): Promise<GameState> {

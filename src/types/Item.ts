@@ -12,6 +12,9 @@ export type TradeItem = {
 export type ShipEffect = {
     maxHealth?: number;
     speed?: number;
+    /** Fraction of current speed to subtract (0.25 = lose 25%)
+     * Computed at purchase time so it scales with ship. */
+    speedPenaltyFactor?: number;
     damage?: number;
     armour?: number;
     numberOfBeds?: number;
@@ -32,7 +35,7 @@ export type Item = TradeItem | UpgradeItem
 
 export const GameUpgrades: readonly UpgradeItem[] = [
     { id: 101, name: "Bronze Cannons", type: "Upgrade", baseValue: 35.0, weight: 25, effect: { maxHealth: 5, damage: 15, armour: 5 } },
-    { id: 102, name: "Steel Hull", type: "Upgrade", baseValue: 40.0, weight: 25, effect: { maxHealth: 15, speed: -5, armour: 15 } },
+    { id: 102, name: "Steel Hull", type: "Upgrade", baseValue: 40.0, weight: 25, effect: { maxHealth: 15, speedPenaltyFactor: 0.25, armour: 15 } },
     { id: 103, name: "Ram", type: "Upgrade", baseValue: 25.0, weight: 15, effect: { speed: 5, damage: 15, armour: 3 } },
     { id: 104, name: "Cotton Sails", type: "Upgrade", baseValue: 12.0, weight: 5, effect: { speed: 3 } },
     { id: 105, name: "Iron Scantlings", type: "Upgrade", baseValue: 32.0, weight: 5, effect: { maxHealth: 50, armour: 10 } },

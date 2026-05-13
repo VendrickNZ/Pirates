@@ -1,6 +1,6 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
-import { formatCommand, isNumber, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
+import { expandAlias, formatCommand, isNumber, printHeader, printInformation, prompt, resetCompletions, setCompletions, type AliasMap } from "../utils/TextUtils";
 import type Player from "./Player";
 import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber, updateInventoryPrices } from "../types/Page";
 import { ItemLookup, type Inventory, getItems, type ItemReference, getUpgradeItems } from "../types/Item";
@@ -11,6 +11,17 @@ import type { IslandCommoditiesTable } from "./Island";
 import { getRandomInt } from "../utils/NumberUtils";
 
 const STARTING_VENDOR_BALANCE = 750;
+
+export const VENDOR_BUY_COMMANDS = ['Next Page', 'Previous Page', 'Sell Cargo', 'Return'];
+export const VENDOR_SELL_COMMANDS = ['Next Page', 'Previous Page', 'Buy Items', 'Return'];
+
+export const VENDOR_ALIASES: AliasMap = {
+    'N': 'Next Page',
+    'P': 'Previous Page',
+    'R': 'Return',
+    'S': 'Sell Cargo',
+    'B': 'Buy Items',
+};
 
 export type VendorOptions = 'Next Page' | 'Previous Page' | 'Sell Cargo' | 'Return' | 'Continue';
 export type VendorSession = {
@@ -60,7 +71,11 @@ export class Vendor {
         
         if (!(await player.canPurchase(itemPrice, item.weight))) return false;
         if (item.type === 'Upgrade' && !player.ship.hasEnoughUpgradeSlots()) {
-            printInformation("ye do nah 'ave enough upgrade slots");
+            printInformation("Ye do nah 'ave enough upgrade slots.");
+            return false;
+        }
+        if (item.type === 'Upgrade' && player.ship.upgradeWouldStallShip(item)) {
+            printInformation("That upgrade would leave ye dead in the water - yer ship be too slow already!");
             return false;
         }
         
@@ -115,6 +130,7 @@ export async function visitVendor(player: Player, rl: Interface): Promise<GameSt
     const vendorContext = new VendorContext(new BuyStrategy());
     updateInventoryPrices(vendor, player);
     setupInitialVendorPages(vendor);
+    setCompletions(VENDOR_BUY_COMMANDS);
     vendorContext.printAllPlayerInstructions(session);
 
     let choice;
@@ -122,12 +138,12 @@ export async function visitVendor(player: Player, rl: Interface): Promise<GameSt
         choice = await promptPlayer(rl, session, vendorContext);
     }
 
-    await timeoutInSeconds(1);
+    resetCompletions();
     return 'At Island';
 }
 
 async function promptPlayer(rl: Interface, session: VendorSession, ctx: VendorContext): Promise<VendorOptions> {
-    const rawAnswer = await rl.question('');
+    const rawAnswer = await prompt(rl);
 
     if (isNumber(rawAnswer)) {
         return executeItemSelection(rawAnswer, session, ctx)
@@ -150,8 +166,8 @@ async function executeItemSelection(rawAnswer: string, session: VendorSession, c
 }
 
 function executeCommandSelection(rawAnswer: string, session: VendorSession, ctx: VendorContext): VendorOptions {
-    const formattedAnswer = formatCommand(rawAnswer);
-    return ctx.playerAnswer(formattedAnswer, session, ctx);
+    const expanded = expandAlias(formatCommand(rawAnswer), VENDOR_ALIASES);
+    return ctx.playerAnswer(expanded, session, ctx);
 }
 
 function hasSelectedValidItem(rawAnswer: string, session: VendorSession, ctx: VendorContext): ItemReference | null {
@@ -182,12 +198,14 @@ export function previousPage(ctx: VendorContext, session: VendorSession): Vendor
 
 export function sellCargo(ctx: VendorContext, session: VendorSession): VendorOptions {
     ctx.vendorStrategy = new SellStrategy();
+    setCompletions(VENDOR_SELL_COMMANDS);
     ctx.printAllPlayerInstructions(session);
     return 'Continue';
 }
 
 export function buyItems(ctx: VendorContext, session: VendorSession): VendorOptions {
     ctx.vendorStrategy = new BuyStrategy();
+    setCompletions(VENDOR_BUY_COMMANDS);
     ctx.printAllPlayerInstructions(session);
     return 'Continue'
 }
@@ -205,13 +223,11 @@ export function printAllVendorInformation(session: VendorSession) {
 }
 
 export function printPlayerAtVendorInstructions() {
-    console.log("Type the number of the item you wish to buy, or type 'next page' or 'previous page' to see what else this vendor has.");
-    console.log("If you wish to sell your cargo, type 'sell cargo'.");
-    console.log("Type 'return' if you wish to go back.");
+    console.log('');
+    console.log("Type an item number to buy. [N] Next Page  [P] Previous Page  [S] Sell Cargo  [R] Return");
 }
 
 export function printVendorHeader(player: Player) {
-    console.log(newLine(1));
-    console.log(`Current balance: ${player.balance} Doubloons`);
-    console.log(`===== ${player.island.name} Vendor Stock =====`);
+    printHeader(`${player.island.name} Vendor Stock`);
+    console.log(`Balance: ${player.balance} Doubloons`);
 }

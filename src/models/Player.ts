@@ -1,5 +1,5 @@
 import { ItemLookup, type ItemReference } from "../types/Item"
-import { formatFloat, printInformationWithDelay } from "../utils/TextUtils"
+import { formatFloat, printInformation } from "../utils/TextUtils"
 import { createShip, type Ship } from "./Ship"
 import type { Vendor } from "./Vendor"
 import { type Island, getStartingIsland } from "./Island";
@@ -91,11 +91,11 @@ export default class Player {
     async canPurchase(cost: number, weight: number): Promise<boolean> {
         const hasEnoughMoney = (this.balance - cost) >= 0;
         if (!hasEnoughMoney) {
-            await printInformationWithDelay('Yarrr ye are poor!', 1, 2);
+            printInformation('Yarrr, ye be too poor!');
         }
         const shipHasEnoughSpace = (this.ship.currentWeight + weight <= this.ship.maxWeight);
         if (!shipHasEnoughSpace) {
-            await printInformationWithDelay('Ye ship is too small!', 1, 2);
+            printInformation('Yer ship be too small!');
         }
 
         return hasEnoughMoney && shipHasEnoughSpace;
@@ -109,7 +109,7 @@ export default class Player {
         this.ship.applyItemEffectIfApplicable(chosenItem);
         itemRef.units--;
 
-        console.log(`You purchased ${chosenItem.name} for ${itemPrice} doubloons!`);
+        console.log(`Ye purchased ${chosenItem.name} for ${itemPrice} Doubloons!`);
         this._balance -= itemPrice;
         this.ship.addCargo(itemRef);
 
@@ -120,7 +120,7 @@ export default class Player {
         const vendorHasEnoughMoney = (vendor.balance - cost) >= 0;
 
         if (!vendorHasEnoughMoney) {
-            await printInformationWithDelay('The vendor be broke!', 1, 2);
+            printInformation('The vendor be broke!');
         }
 
         return vendorHasEnoughMoney;
