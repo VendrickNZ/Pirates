@@ -4,7 +4,7 @@ import { expandAlias, formatCommand, MAIN_MENU_COMMANDS, printHeader, prompt, re
 import { viewCargo } from "./Cargo";
 import { viewShip, hireCrew } from "./Ship";
 import { visitVendor } from "./Vendor";
-import type { Interface } from "node:readline/promises";
+import type { Rl } from "../types/Rl";
 import { visitDocks, WorldGraph } from "./WorldGraph";
 import { GameOverError, type GameOverReason } from "./GameOver";
 import { computeFinalScore, printScoreBreakdown, type ScoreBreakdown } from "./Score";
@@ -24,10 +24,10 @@ export default class GameManager {
     private _player: Player;
     private _exitGame: boolean;
     private _state: GameState;
-    private _rl: Interface;
+    private _rl: Rl;
     private _worldGraph: WorldGraph;
 
-    constructor(duration: number, player: Player, rl: Interface) {
+    constructor(duration: number, player: Player, rl: Rl) {
         this._duration = duration;
         this._maxDays = duration;
         this._player = player;
@@ -69,7 +69,7 @@ export default class GameManager {
     }
 
     beginGame() {
-        this.run();
+        return this.run();
     }
 
     async promptPlayer(): Promise<GameState> {
@@ -124,8 +124,26 @@ export default class GameManager {
         printEndOfGameInformation(reason, score);
         this._exitGame = true;
         this._rl.close();
+        await waitForKeypress();
         return 'Exit';
     }
+}
+
+function waitForKeypress(): Promise<void> {
+    return new Promise(resolve => {
+        process.stdout.write('\nPress any key to exit...');
+        if (process.stdin.isTTY) {
+            process.stdin.setRawMode(true);
+        }
+        process.stdin.resume();
+        process.stdin.once('data', () => {
+            if (process.stdin.isTTY) {
+                process.stdin.setRawMode(false);
+            }
+            process.stdin.pause();
+            resolve();
+        });
+    });
 }
 
 function printEndOfGameInformation(reason: GameOverReason, score: ScoreBreakdown) {

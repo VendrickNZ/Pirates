@@ -1,4 +1,4 @@
-import type { Interface } from "readline/promises";
+import type { Rl } from "../types/Rl";
 import type { GameState } from "../types/GameState";
 import { ItemLookup, type Inventory } from "../types/Item";
 import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber, updateInventoryPrices, updateCargoPrices, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
@@ -37,7 +37,7 @@ export default class Cargo {
         return this._page;
     }
 
-    async playerCommand(rl: Interface) {
+    async playerCommand(rl: Rl) {
         setCompletions(CARGO_COMMANDS);
         let choice;
         while (choice !== 'Return') {
@@ -46,7 +46,7 @@ export default class Cargo {
         resetCompletions();
     }
 
-    async promptPlayer(rl: Interface): Promise<PageCommand | ContinuePrompting> {
+    async promptPlayer(rl: Rl): Promise<PageCommand | ContinuePrompting> {
         this.printCargoContent();
         this.printViewCargoCommands();
         const rawAnswer = await prompt(rl);
@@ -121,7 +121,7 @@ export default class Cargo {
 
 }
 
-export async function viewCargo(ship: Ship, rl: Interface): Promise<GameState> {
+export async function viewCargo(ship: Ship, rl: Rl): Promise<GameState> {
     if (ship.cargo.hasCargo()) {
         await ship.viewCargo(rl);
     }

@@ -1,8 +1,9 @@
 import { stdin, stdout } from "process";
-import { createInterface, Interface, type Completer, type ReadLineOptions } from "readline/promises";
+import { createInterface, type Completer, type ReadLineOptions } from "node:readline";
+import type { Rl } from "../types/Rl";
 
 
-export function constructReadline(completerFunction?: Completer): Interface {
+export function constructReadline(completerFunction?: Completer): Rl {
     const rlConstructor: ReadLineOptions = {
         input: stdin,
         output: stdout,

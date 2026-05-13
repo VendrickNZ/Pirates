@@ -1,5 +1,5 @@
 import type { CompleterResult } from "readline";
-import type { Interface } from "readline/promises";
+import type { Rl } from "../types/Rl";
 
 const MIN_GAME_DURATION = 20;
 const MAX_GAME_DURATION = 50;
@@ -28,9 +28,9 @@ export function expandAlias(input: string, aliases: AliasMap): string {
     return aliases[input] ?? input;
 }
 
-export function prompt(rl: Interface, label?: string): Promise<string> {
+export function prompt(rl: Rl, label?: string): Promise<string> {
     if (label) console.log(label);
-    return rl.question('> ');
+    return new Promise(resolve => rl.question('> ', resolve));
 }
 
 export function printHeader(title: string): void {

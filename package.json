@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "tsup src/main.ts --format cjs --platform node --out-dir dist --external readline/promises",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "postject": "^1.0.0-alpha.6",
+    "tsup": "^8.5.1",
     "typescript": "~5.8.3",
     "vite": "^7.1.2"
   },

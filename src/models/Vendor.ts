@@ -1,4 +1,4 @@
-import type { Interface } from "readline/promises";
+import type { Rl } from "../types/Rl";
 import type { GameState } from "../types/GameState";
 import { expandAlias, formatCommand, isNumber, printHeader, printInformation, prompt, resetCompletions, setCompletions, type AliasMap } from "../utils/TextUtils";
 import type Player from "./Player";
@@ -124,7 +124,7 @@ function setupInitialVendorPages(vendor: Vendor) {
     vendor.page.maxPageNumber = vendor.page.calculateMaxPages(vendor.inventory);
 }
 
-export async function visitVendor(player: Player, rl: Interface): Promise<GameState> {
+export async function visitVendor(player: Player, rl: Rl): Promise<GameState> {
     const vendor = player.island.vendor;
     const session: VendorSession = { vendor, player };
     const vendorContext = new VendorContext(new BuyStrategy());
@@ -142,7 +142,7 @@ export async function visitVendor(player: Player, rl: Interface): Promise<GameSt
     return 'At Island';
 }
 
-async function promptPlayer(rl: Interface, session: VendorSession, ctx: VendorContext): Promise<VendorOptions> {
+async function promptPlayer(rl: Rl, session: VendorSession, ctx: VendorContext): Promise<VendorOptions> {
     const rawAnswer = await prompt(rl);
 
     if (isNumber(rawAnswer)) {

@@ -1,4 +1,4 @@
-import { Interface } from "node:readline/promises";
+import type { Rl } from "../types/Rl";
 import Player from "../models/Player";
 import GameManager from "../models/GameManager";
 import { completer, isValidGameDuration, isValidPlayerName, printInformation, prompt } from "../utils/TextUtils";
@@ -12,7 +12,7 @@ export async function createNewGame(configs?: DevConfigs) {
         const { duration, name } = configs;
         const player = createPlayer(name);
         const gm = new GameManager(duration, player, rl);
-        gm.beginGame();
+        await gm.beginGame();
         return;
     }
 
@@ -23,14 +23,14 @@ export async function createNewGame(configs?: DevConfigs) {
 
     const player = createPlayer(name);
     const gm = new GameManager(duration, player, rl);
-    gm.beginGame();
+    await gm.beginGame();
 }
 
 function createPlayer(name: string): Player {
     return new Player(name);
 }
 
-async function promptPlayerName(rl: Interface): Promise<string> {
+async function promptPlayerName(rl: Rl): Promise<string> {
     const name = await prompt(rl, 'Enter player name (3-15 characters, letters and spaces only):');
 
     if (!isValidPlayerName(name)) {
@@ -41,7 +41,7 @@ async function promptPlayerName(rl: Interface): Promise<string> {
     }
 }
 
-async function promptGameDuration(rl: Interface): Promise<number> {
+async function promptGameDuration(rl: Rl): Promise<number> {
     const duration = await prompt(rl, 'How many days do ye want the game to last (20-50)?');
 
     if (!isValidGameDuration(duration)) {

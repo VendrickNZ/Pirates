@@ -1,4 +1,4 @@
-import type { Interface } from "readline/promises"
+import type { Rl } from "../types/Rl"
 import type { GameState } from "../types/GameState"
 import { printInformation, prompt, isNumber } from "../utils/TextUtils"
 import Cargo from "./Cargo"
@@ -125,7 +125,7 @@ export class Ship {
         this.currentHealth -= damageToTake;
     }
 
-    async viewCargo(rl: Interface) {
+    async viewCargo(rl: Rl) {
         await this.cargo.playerCommand(rl);
     }
 
@@ -224,7 +224,7 @@ function printShipStatistics(ship: Ship): string {
     ].join('\n');
 }
 
-export async function hireCrew(player: Player, rl: Interface): Promise<GameState> {
+export async function hireCrew(player: Player, rl: Rl): Promise<GameState> {
     const crewToHirePlayerResponse = await prompt(rl, "Enter the number of crew to hire (negative to dismiss):");
 
     if (!isNumber(crewToHirePlayerResponse)) {

@@ -1,4 +1,4 @@
-import type { Interface } from "readline/promises";
+import type { Rl } from "../types/Rl";
 import type { GameState } from "../types/GameState";
 import { GameOverError } from "./GameOver";
 import { expandAlias, formatCommand, formatFloat, isNumber, narrate, printHeader, prompt, resetCompletions, setCompletions, sleepInMs, type AliasMap } from "../utils/TextUtils";
@@ -62,7 +62,7 @@ const DOCKS_ALIASES: AliasMap = {
     'R': 'Return',
 };
 
-export async function visitDocks(player: Player, rl: Interface, worldGraph: WorldGraph): Promise<DocksResult> {
+export async function visitDocks(player: Player, rl: Rl, worldGraph: WorldGraph): Promise<DocksResult> {
     setCompletions(['Return']);
     printAvailableRoutes(worldGraph, player);
     const selectedOption = await promptPlayerForRoute(rl);
@@ -161,7 +161,7 @@ function computeTravelDays(distance: number, playerShip: Ship) {
     return formatFloat(distance / distancePerDay, 0);
 }
 
-async function promptPlayerForRoute(rl: Interface): Promise<RouteSelection> {
+async function promptPlayerForRoute(rl: Rl): Promise<RouteSelection> {
     const islands = getIslands();
     const numberOfRoutes = islands.length - 1;
     while (true) {
@@ -186,7 +186,7 @@ function isValidRoute(rawAnswer: string, numberOfRoutes: number) {
     return true;
 }
 
-async function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph, rl: Interface): Promise<number> {
+async function attemptTravelToIsland(selectedRoute: number, player: Player, worldGraph: WorldGraph, rl: Rl): Promise<number> {
     if (!player.ship.hasEnoughCrewForSailing()) {
         console.log("Yarr! Ye haven't enough crew to set sail. Hire more hands at the docks!");
         return 0;
@@ -224,7 +224,7 @@ function selectEvent(encounterTable: EncounterTable): ReceivedEvent {
     return { result: false }
 }
 
-async function playEvent(event: Event, player: Player, rl: Interface): Promise<number> {
+async function playEvent(event: Event, player: Player, rl: Rl): Promise<number> {
     switch (event.type) {
         case 'Disease':
             return await playDiseaseEvent(event, player.ship);
@@ -270,7 +270,7 @@ async function playWeatherEvent(event: WeatherEvent, ship: Ship) {
     return calculateTimeLossDueToWeatherEvent(event.severity);
 }
 
-async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
+async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Rl) {
     await narrate(`Yarr! Wreckage on the horizon - the ${event.name} be in trouble!`);
     console.log(`Ye spy ${event.numberOfSailors} marooned sailors clingin' to the flotsam.`);
     console.log(`Ye 'ave ${ship.numberOfBeds - ship.crew} cots free aboard yer ship.`);
@@ -295,14 +295,14 @@ async function playRescueEvent(event: RescueEvent, ship: Ship, rl: Interface) {
     return 0;
 }
 
-async function playPirateEvent(event: PirateEvent, player: Player, rl: Interface) {
+async function playPirateEvent(event: PirateEvent, player: Player, rl: Rl) {
     await narrate(`A sail on the horizon! It be ${event.name} aboard the ${event.ship.name}!`);
     const enemyShip = new Ship(event.ship, getItems(20));
     await initiateCombat(player, enemyShip, rl);
     return 0;
 }
 
-async function initiateCombat(player: Player, enemyShip: Ship, rl: Interface) {
+async function initiateCombat(player: Player, enemyShip: Ship, rl: Rl) {
     let playersTurn = player.ship.speed > enemyShip.speed;
     await narrate(`Battle stations! ${enemyShip.name} closes in fer a fight!`);
     await narrate(playersTurn ? 'Ye have the wind - ye strike first!' : 'They have the wind - they strike first!');
@@ -376,7 +376,7 @@ function removeShipFromPool(pirateShip: Ship) {
 
     // check if any custom ships left, if not populate with the dummy ships
 }
-async function plunder(player: Player, enemyShip: Ship, rl: Interface) {
+async function plunder(player: Player, enemyShip: Ship, rl: Rl) {
     console.log(`Ye've bested ${enemyShip.name}. Commandeer her? (y/n)`);
     let answer;
     do {
