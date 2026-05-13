@@ -97,8 +97,7 @@ export class SellStrategy implements VendorStrategy {
     constructor() {}
 
     printPlayerInformation(session: VendorSession): void {
-        const { player } = session;
-        printAllSellCargoInformation(player);
+        printAllSellCargoInformation(session);
     }
 
     printPlayerCommands(): void {
@@ -117,14 +116,14 @@ export class SellStrategy implements VendorStrategy {
     nextPage(session: VendorSession) {
         const { player } = session;
         player.ship.cargo.page.nextPage();
-        printAllSellCargoInformation(player);
+        printAllSellCargoInformation(session);
         printSellCargoInstructions();
     }
 
     previousPage(session: VendorSession) {
         const { player } = session;
         player.ship.cargo.page.previousPage();
-        printAllSellCargoInformation(player);
+        printAllSellCargoInformation(session);
         printSellCargoInstructions();
     }
 

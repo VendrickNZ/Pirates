@@ -1,7 +1,7 @@
 import type { Interface } from "readline/promises";
 import type { GameState } from "../types/GameState";
 import { ItemLookup, type Inventory } from "../types/Item";
-import { cleanInventory, Page, printInventoryStock, printPageNumber, updateInventoryPrices, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
+import { cleanInventory, Page, paginate, printInventoryStock, printPageNumber, updateInventoryPrices, updateCargoPrices, type ContinuePrompting, type PageCommand as PageCommand } from "../types/Page";
 import { formatCommand, newLine, printInformation, timeoutInSeconds } from "../utils/TextUtils";
 import type Player from "./Player";
 import type { Ship } from "./Ship";
@@ -88,6 +88,7 @@ export default class Cargo {
         const item = ItemLookup.get(itemRef.id);
         if (!item) return false;
 
+        updateCargoPrices(vendor, player);
         if (!(await player.canSell(itemRef.currentValue, vendor))) return false;
 
         player.sellItem(itemRef);
@@ -119,10 +120,13 @@ export async function viewCargo(ship: Ship, rl: Interface): Promise<GameState> {
     return 'At Island'
 }
 
-export function printAllSellCargoInformation(player: Player) {
-    printSellCargoHeader(player);
-
+export function printAllSellCargoInformation(session: VendorSession) {
+    const { player, vendor } = session;
     const cargo = player.ship.cargo;
+    updateCargoPrices(vendor, player);
+    paginate(cargo);
+
+    printSellCargoHeader(player);
     printInventoryStock(cargo);
     printPageNumber(cargo);
 }

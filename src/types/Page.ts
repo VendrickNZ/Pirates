@@ -166,3 +166,10 @@ export function updateInventoryPrices(vendor: Vendor, player: Player) {
         itemReference.currentValue = formatFloat(recomputePrices(item!, vendor.commodities, player), 1);
     }
 }
+
+export function updateCargoPrices(vendor: Vendor, player: Player) {
+    for (const itemReference of player.ship.cargo.inventory) {
+        const item = ItemLookup.get(itemReference.id);
+        itemReference.currentValue = formatFloat(recomputePrices(item!, vendor.commodities, player), 1);
+    }
+}
